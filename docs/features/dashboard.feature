@@ -42,3 +42,18 @@ Feature: Dashboard customization
     When the user views the dashboard
     Then the persistent "log today" entry point is still present
     And the user is not blocked from logging a day
+
+  Scenario: Dashboard customization is discoverable, not buried
+    Given the user is on the dashboard for the first time
+    Then a visible entry point invites the user to customize which cards
+      are shown and how each one presents its data
+    And the app frames this as the user's own dashboard to shape, not a
+      fixed layout
+
+  Scenario: Every visualization card can be changed, not just shown or hidden
+    Given a card renders its data as a specific chart type
+    When the user opens that card's display options
+    Then an alternative presentation of the same underlying data is
+      offered (see docs/features/dashboard_visualizations.feature)
+    And choosing a different presentation never alters the underlying
+      cycle_day_logs data, only how it is displayed
