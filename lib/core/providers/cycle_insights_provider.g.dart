@@ -6,22 +6,44 @@ part of 'cycle_insights_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$cycleInsightsHash() => r'd178ece6172fab4a84fd430d2c3b4b86f5c2cea4';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [cycleInsights].
 @ProviderFor(cycleInsights)
-final cycleInsightsProvider = AutoDisposeFutureProvider<CycleInsights>.internal(
-  cycleInsights,
-  name: r'cycleInsightsProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$cycleInsightsHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+final cycleInsightsProvider = CycleInsightsProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef CycleInsightsRef = AutoDisposeFutureProviderRef<CycleInsights>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+final class CycleInsightsProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<CycleInsights>,
+          CycleInsights,
+          FutureOr<CycleInsights>
+        >
+    with $FutureModifier<CycleInsights>, $FutureProvider<CycleInsights> {
+  CycleInsightsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'cycleInsightsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$cycleInsightsHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<CycleInsights> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<CycleInsights> create(Ref ref) {
+    return cycleInsights(ref);
+  }
+}
+
+String _$cycleInsightsHash() => r'd178ece6172fab4a84fd430d2c3b4b86f5c2cea4';

@@ -1,6 +1,5 @@
 import 'package:inner_flare/core/cycle_math/cycle_math.dart';
 import 'package:inner_flare/core/providers/cycle_day_log_repository_provider.dart';
-import 'package:riverpod/riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'cycle_insights_provider.g.dart';

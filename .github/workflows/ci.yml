@@ -15,6 +15,7 @@ jobs:
   analyze:
     name: Format & analyze
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
@@ -26,7 +27,7 @@ jobs:
       - run: flutter pub get
 
       - name: Generate Riverpod code
-        run: dart run build_runner build --delete-conflicting-outputs
+        run: dart run build_runner build
 
       - name: Check formatting
         run: dart format --output=none --set-exit-if-changed .
@@ -40,6 +41,7 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
@@ -51,7 +53,7 @@ jobs:
       - run: flutter pub get
 
       - name: Generate Riverpod code
-        run: dart run build_runner build --delete-conflicting-outputs
+        run: dart run build_runner build
 
       - name: Run tests
         run: flutter test --coverage
