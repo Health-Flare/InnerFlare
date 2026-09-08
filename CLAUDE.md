@@ -6,9 +6,14 @@ The database is encrypted at rest with SQLCipher (`sqflite_sqlcipher`, same API 
 
 See `BRIEF.md` for the product/technical brief this project started from — note that BRIEF.md §4.1 recommends plain `sqflite`; the encryption layer was added afterward as an explicit privacy requirement and supersedes that recommendation.
 
+> **Status:** scaffolded (`pubspec.yaml`, `lib/`, `test/` all exist). The structure and workflow below describe the current shape of the project, not just a target.
+
 ## Quick Start Commands
 
 ```bash
+# One-time: install git hooks (pre-commit: format/analyze/URL-scan, pre-push: test)
+./scripts/setup_git_hooks.sh
+
 # Run the app
 flutter run
 
@@ -137,6 +142,22 @@ flutter test test/widget/log_screen_test.dart
 ```
 
 Use `pump(Duration(milliseconds: 500))` instead of `pumpAndSettle()` when providers are loading asynchronously.
+
+## CI/CD & Git Hooks
+
+- **Git hooks** (`.githooks/`, enabled via `./scripts/setup_git_hooks.sh`):
+  `pre-commit` runs `dart format --set-exit-if-changed`, `flutter analyze`,
+  and the offline-URL scan; `pre-push` runs `flutter test`. Skip either with
+  `--no-verify` when you know what you're doing.
+- **CI** (`.github/workflows/ci.yml`): the same format/analyze/URL-scan
+  checks plus `flutter test --coverage`, on every push to `main` and every
+  PR.
+- **Android build & release** (`.github/workflows/android-release.yml`):
+  a debug APK builds on every push to `main` and on manual dispatch, for
+  sideloading during development. Pushing a `v*.*.*` tag builds a signed
+  release App Bundle + APK and attaches them to a GitHub Release — see
+  `docs/deployment/android-release.md` for the one-time keystore/secrets
+  setup and the pre-launch Play Store checklist.
 
 ## Code Quality Rules
 
