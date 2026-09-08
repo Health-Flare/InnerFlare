@@ -6,26 +6,48 @@ part of 'has_any_logs_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$hasAnyLogsHash() => r'518666a35d6ff54b500b859b5bb69e75c04ca367';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+/// Whether the user has ever logged a day — distinguishes "no data yet"
+/// from "nothing in this particular month" for the calendar's empty state
+/// (docs/features/calendar.feature, "Empty calendar before any logging").
+
+@ProviderFor(hasAnyLogs)
+final hasAnyLogsProvider = HasAnyLogsProvider._();
 
 /// Whether the user has ever logged a day — distinguishes "no data yet"
 /// from "nothing in this particular month" for the calendar's empty state
 /// (docs/features/calendar.feature, "Empty calendar before any logging").
-///
-/// Copied from [hasAnyLogs].
-@ProviderFor(hasAnyLogs)
-final hasAnyLogsProvider = AutoDisposeFutureProvider<bool>.internal(
-  hasAnyLogs,
-  name: r'hasAnyLogsProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$hasAnyLogsHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef HasAnyLogsRef = AutoDisposeFutureProviderRef<bool>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+final class HasAnyLogsProvider
+    extends $FunctionalProvider<AsyncValue<bool>, bool, FutureOr<bool>>
+    with $FutureModifier<bool>, $FutureProvider<bool> {
+  /// Whether the user has ever logged a day — distinguishes "no data yet"
+  /// from "nothing in this particular month" for the calendar's empty state
+  /// (docs/features/calendar.feature, "Empty calendar before any logging").
+  HasAnyLogsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'hasAnyLogsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$hasAnyLogsHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<bool> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<bool> create(Ref ref) {
+    return hasAnyLogs(ref);
+  }
+}
+
+String _$hasAnyLogsHash() => r'518666a35d6ff54b500b859b5bb69e75c04ca367';

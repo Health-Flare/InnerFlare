@@ -1,5 +1,4 @@
 import 'package:inner_flare/core/providers/cycle_day_log_repository_provider.dart';
-import 'package:riverpod/riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'has_any_logs_provider.g.dart';

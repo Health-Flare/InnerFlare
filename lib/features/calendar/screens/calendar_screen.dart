@@ -127,7 +127,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
               AsyncData(:final value) => CalendarMonthGrid(
                 month: _visibleMonth,
                 logsByDate: value,
-                prediction: prediction.valueOrNull ?? const CyclePrediction(),
+                prediction: prediction.value ?? const CyclePrediction(),
                 today: today,
                 onDayTap: _openLogEntry,
               ),
@@ -142,7 +142,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
             },
             const SizedBox(height: 20),
             const CalendarLegend(),
-            if (hasAnyLogs.valueOrNull == false) ...[
+            if (hasAnyLogs.value == false) ...[
               const SizedBox(height: 28),
               Text(
                 "Nothing logged yet — tap any day above to add your first "

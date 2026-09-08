@@ -6,25 +6,49 @@ part of 'dashboard_card_preferences_repository_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$dashboardCardPreferencesRepositoryHash() =>
-    r'9a48092faef1cc68f6ab66208e73d613b2796396';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [dashboardCardPreferencesRepository].
 @ProviderFor(dashboardCardPreferencesRepository)
 final dashboardCardPreferencesRepositoryProvider =
-    FutureProvider<DashboardCardPreferencesRepository>.internal(
-      dashboardCardPreferencesRepository,
-      name: r'dashboardCardPreferencesRepositoryProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$dashboardCardPreferencesRepositoryHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+    DashboardCardPreferencesRepositoryProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef DashboardCardPreferencesRepositoryRef =
-    FutureProviderRef<DashboardCardPreferencesRepository>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+final class DashboardCardPreferencesRepositoryProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<DashboardCardPreferencesRepository>,
+          DashboardCardPreferencesRepository,
+          FutureOr<DashboardCardPreferencesRepository>
+        >
+    with
+        $FutureModifier<DashboardCardPreferencesRepository>,
+        $FutureProvider<DashboardCardPreferencesRepository> {
+  DashboardCardPreferencesRepositoryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'dashboardCardPreferencesRepositoryProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() =>
+      _$dashboardCardPreferencesRepositoryHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<DashboardCardPreferencesRepository> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<DashboardCardPreferencesRepository> create(Ref ref) {
+    return dashboardCardPreferencesRepository(ref);
+  }
+}
+
+String _$dashboardCardPreferencesRepositoryHash() =>
+    r'9a48092faef1cc68f6ab66208e73d613b2796396';
