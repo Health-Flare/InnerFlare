@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:inner_flare/core/providers/cycle_day_log_repository_provider.dart';
+import 'package:inner_flare/core/providers/dashboard_card_preferences_repository_provider.dart';
 import 'package:inner_flare/core/providers/now_provider.dart';
 import 'package:inner_flare/data/database/schema.dart';
 import 'package:inner_flare/data/repositories/cycle_day_log_repository.dart';
+import 'package:inner_flare/data/repositories/dashboard_card_preferences_repository.dart';
 import 'package:inner_flare/features/dashboard/screens/dashboard_screen.dart';
 import 'package:inner_flare/models/cycle_day_log.dart';
 import 'package:inner_flare/models/period_flow.dart';
@@ -27,6 +29,18 @@ void main() {
     openDb = null;
   });
 
+  // Dashboard screen also reads the dashboard card layout; every override
+  // list needs this so it resolves to an in-memory db instead of the real
+  // (biometric-gated) one. Caches by the shared ":memory:" path, so this
+  // reuses whichever in-memory db a test already opened for the cycle log
+  // repository above.
+  Override dashboardPrefsOverride() {
+    return dashboardCardPreferencesRepositoryProvider.overrideWith((ref) async {
+      final db = await openInMemoryTestDatabase(onCreate: onCreate);
+      return DashboardCardPreferencesRepository(db);
+    });
+  }
+
   List<Override> overridesFor(DateTime Function() now) {
     return [
       nowProvider.overrideWithValue(now),
@@ -35,6 +49,7 @@ void main() {
         openDb = db;
         return CycleDayLogRepository(db);
       }),
+      dashboardPrefsOverride(),
     ];
   }
 
@@ -100,6 +115,7 @@ void main() {
             repository = CycleDayLogRepository(db);
             return repository;
           }),
+          dashboardPrefsOverride(),
         ],
       );
       await tester.pumpAndSettle();
@@ -149,6 +165,7 @@ void main() {
           cycleDayLogRepositoryProvider.overrideWith((ref) async {
             return repository;
           }),
+          dashboardPrefsOverride(),
         ],
       );
       await tester.pumpAndSettle();
@@ -196,6 +213,7 @@ void main() {
             repository = CycleDayLogRepository(db);
             return repository;
           }),
+          dashboardPrefsOverride(),
         ],
       );
       await tester.pumpAndSettle();
@@ -237,6 +255,7 @@ void main() {
             repository = CycleDayLogRepository(db);
             return repository;
           }),
+          dashboardPrefsOverride(),
         ],
       );
       await tester.pumpAndSettle();
@@ -290,6 +309,7 @@ void main() {
           cycleDayLogRepositoryProvider.overrideWith((ref) async {
             return repository;
           }),
+          dashboardPrefsOverride(),
         ],
       );
       await tester.pumpAndSettle();
@@ -321,7 +341,9 @@ void main() {
     },
   );
 
-  testWidgets('customize entry point is discoverable', (tester) async {
+  testWidgets('customize entry point is discoverable and opens customization', (
+    tester,
+  ) async {
     await pumpTestApp(
       tester,
       const DashboardScreen(),
@@ -330,5 +352,46 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byTooltip('Customize dashboard'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Customize dashboard'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Customize dashboard'), findsWidgets);
   });
+
+  testWidgets(
+    'hiding a card in customization removes it from the dashboard and '
+    'persists after the app is reopened',
+    (tester) async {
+      final overrides = overridesFor(() => DateTime(2026, 1, 1, 9));
+      await pumpTestApp(tester, const DashboardScreen(), overrides: overrides);
+      await tester.pumpAndSettle();
+
+      await tester.scrollUntilVisible(find.text('Insights'), 200);
+      expect(find.text('Insights'), findsOneWidget);
+
+      await tester.tap(find.byTooltip('Customize dashboard'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.widgetWithText(SwitchListTile, 'Insights'));
+      await tester.pumpAndSettle();
+
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+
+      expect(find.text('Insights'), findsNothing);
+      // The persistent log entry point stays reachable even with a card
+      // hidden.
+      expect(find.text('Log today'), findsWidgets);
+
+      // "Reopening the app": rebuild the same widget tree fresh, reusing
+      // the same overrides (and therefore the same in-memory db) so the
+      // saved preference is read back rather than recreated.
+      await pumpTestApp(tester, const DashboardScreen(), overrides: overrides);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Insights'), findsNothing);
+      expect(find.text('Calendar'), findsOneWidget);
+    },
+  );
 }
