@@ -11,13 +11,12 @@ import 'package:inner_flare/features/dashboard/widgets/data_preview_card.dart';
 import 'package:inner_flare/features/dashboard/widgets/log_today_hero_card.dart';
 import 'package:inner_flare/features/dashboard/widgets/privacy_reassurance_card.dart';
 import 'package:inner_flare/features/dashboard/widgets/unlock_error_banner.dart';
+import 'package:inner_flare/features/insights/screens/insights_screen.dart';
 import 'package:inner_flare/features/log/screens/log_entry_screen.dart';
 
-/// The dashboard's welcoming first impression. The "log today" entry point
-/// and the Calendar card are wired to the real, encrypted on-device
-/// database (see lib/data/database/app_database.dart); Insights is still
-/// an honest empty state, since predictions need more history than a
-/// calendar view does.
+/// The dashboard's welcoming first impression. The "log today" entry point,
+/// the Calendar card, and the Insights card are all wired to the real,
+/// encrypted on-device database (see lib/data/database/app_database.dart).
 ///
 /// The real customizable card layout (see docs/features/dashboard.feature)
 /// lands separately; this screen is the UI shell that layout will slot
@@ -72,6 +71,15 @@ class DashboardScreen extends ConsumerWidget {
     Navigator.of(
       context,
     ).push(MaterialPageRoute(builder: (_) => const CalendarScreen()));
+  }
+
+  /// Opens insights (docs/features/insights.feature) — always navigable;
+  /// the screen itself shows the honest "not enough data yet" state when
+  /// there's no history to draw statistics from.
+  void _openInsights(BuildContext context) {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const InsightsScreen()));
   }
 
   void _retryUnlock(WidgetRef ref) {
@@ -172,12 +180,16 @@ class DashboardScreen extends ConsumerWidget {
               onTap: () => _openCalendar(context),
             ),
             const SizedBox(height: 12),
-            const DataPreviewCard(
+            DataPreviewCard(
               icon: Icons.insights_rounded,
               title: 'Insights',
-              message:
-                  'Not enough data yet. Log a couple of cycles and you\'ll '
-                  'see predictions here, plus exactly what they\'re based on.',
+              message: hasAnyLogs
+                  ? 'See your average cycle length and predictions, plus '
+                        'exactly what they\'re based on.'
+                  : 'Not enough data yet. Log a couple of cycles and you\'ll '
+                        'see predictions here, plus exactly what they\'re '
+                        'based on.',
+              onTap: () => _openInsights(context),
             ),
             const SizedBox(height: 12),
             const PrivacyReassuranceCard(),

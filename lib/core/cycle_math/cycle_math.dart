@@ -134,6 +134,22 @@ PredictedPeriodRange? predictNextPeriodRange({
   );
 }
 
+/// Whether the last [windowSize] cycle lengths vary by more than [thresholdDays]
+/// from each other (max - min), per docs/features/insights.feature,
+/// "Irregular cycles still produce an average, clearly caveated". Fewer than
+/// 2 cycle lengths in the window can't be irregular — there's nothing to vary
+/// against.
+bool cycleLengthsAreIrregular(
+  List<int> cycleLengths, {
+  int windowSize = 3,
+  int thresholdDays = 7,
+}) {
+  final window = _lastN(cycleLengths, windowSize);
+  if (window.length < 2) return false;
+  final spread = window.reduce(math.max) - window.reduce(math.min);
+  return spread > thresholdDays;
+}
+
 List<int> _lastN(List<int> values, int n) {
   if (values.length <= n) return values;
   return values.sublist(values.length - n);
