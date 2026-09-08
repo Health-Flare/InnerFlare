@@ -70,6 +70,11 @@ class FertileWindow {
 
   final DateTime start;
   final DateTime end;
+
+  bool includes(DateTime date) {
+    final day = dateOnly(date);
+    return !day.isBefore(start) && !day.isAfter(end);
+  }
 }
 
 /// Predicted fertile window computed from the predicted next period start
@@ -88,6 +93,44 @@ FertileWindow? predictFertileWindow({
   return FertileWindow(
     start: ovulationDay.subtract(const Duration(days: 5)),
     end: ovulationDay,
+  );
+}
+
+/// Standard clinical estimate for luteal phase length, used until the user
+/// sets their own value in settings (docs/features/insights.feature covers
+/// the settings surface; not yet implemented).
+const int defaultLutealPhaseLengthDays = 14;
+
+/// Standard estimate for how many days a period lasts, used until the app
+/// computes a per-user average from logged period days (v2 candidate per
+/// BRIEF.md §5).
+const int defaultPeriodLengthDays = 5;
+
+/// A predicted next-period date range, inclusive of both ends.
+class PredictedPeriodRange {
+  const PredictedPeriodRange({required this.start, required this.end});
+
+  final DateTime start;
+  final DateTime end;
+
+  bool includes(DateTime date) {
+    final day = dateOnly(date);
+    return !day.isBefore(start) && !day.isAfter(end);
+  }
+}
+
+/// Predicted next period date range: [nextPeriodStart] through
+/// [nextPeriodStart] plus [periodLengthDays] - 1. Null if there's no
+/// predicted start yet.
+PredictedPeriodRange? predictNextPeriodRange({
+  required DateTime? nextPeriodStart,
+  required int periodLengthDays,
+}) {
+  if (nextPeriodStart == null) return null;
+  final start = dateOnly(nextPeriodStart);
+  return PredictedPeriodRange(
+    start: start,
+    end: start.add(Duration(days: periodLengthDays - 1)),
   );
 }
 

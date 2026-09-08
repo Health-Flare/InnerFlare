@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inner_flare/core/providers/cycle_day_log_repository_provider.dart';
 import 'package:inner_flare/core/providers/database_provider.dart';
+import 'package:inner_flare/core/providers/has_any_logs_provider.dart';
 import 'package:inner_flare/core/providers/now_provider.dart';
 import 'package:inner_flare/core/providers/today_log_provider.dart';
+import 'package:inner_flare/features/calendar/screens/calendar_screen.dart';
 import 'package:inner_flare/features/dashboard/greeting.dart';
 import 'package:inner_flare/features/dashboard/widgets/data_preview_card.dart';
 import 'package:inner_flare/features/dashboard/widgets/log_today_hero_card.dart';
@@ -12,10 +14,10 @@ import 'package:inner_flare/features/dashboard/widgets/unlock_error_banner.dart'
 import 'package:inner_flare/features/log/screens/log_entry_screen.dart';
 
 /// The dashboard's welcoming first impression. The "log today" entry point
-/// is wired to the real, encrypted on-device database (see
-/// lib/data/database/app_database.dart); everything else is still an
-/// honest empty state, since a single logged day isn't enough for a
-/// calendar or insights view yet.
+/// and the Calendar card are wired to the real, encrypted on-device
+/// database (see lib/data/database/app_database.dart); Insights is still
+/// an honest empty state, since predictions need more history than a
+/// calendar view does.
 ///
 /// The real customizable card layout (see docs/features/dashboard.feature)
 /// lands separately; this screen is the UI shell that layout will slot
@@ -61,29 +63,15 @@ class DashboardScreen extends ConsumerWidget {
     return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 
-  /// Lets the user pick any past day to add to or edit — the interim way
-  /// to reach back-logging until a full calendar view exists (see
+  /// Opens the calendar (docs/features/calendar.feature) — now the way to
+  /// reach back-logging, since tapping any day there opens the same
+  /// single-screen log UI as "Log today" (see
   /// docs/features/log.feature, "Back-logging a missed day is exactly as
   /// fast as logging today").
-  Future<void> _backLogPreviousDay(
-    BuildContext context,
-    WidgetRef ref,
-    DateTime today,
-  ) async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: today,
-      firstDate: today.subtract(const Duration(days: 730)),
-      lastDate: today,
-      helpText: 'Log a previous day',
-    );
-    if (picked == null || !context.mounted) return;
-
-    await _openLogEntry(
+  void _openCalendar(BuildContext context) {
+    Navigator.of(
       context,
-      ref,
-      DateTime(picked.year, picked.month, picked.day),
-    );
+    ).push(MaterialPageRoute(builder: (_) => const CalendarScreen()));
   }
 
   void _retryUnlock(WidgetRef ref) {
@@ -101,6 +89,7 @@ class DashboardScreen extends ConsumerWidget {
     final todayLog = ref.watch(todayLogProvider);
     final isLoggedToday = todayLog.valueOrNull != null;
     final isBusy = todayLog.isLoading;
+    final hasAnyLogs = ref.watch(hasAnyLogsProvider).valueOrNull ?? false;
 
     return Scaffold(
       appBar: AppBar(
@@ -152,7 +141,7 @@ class DashboardScreen extends ConsumerWidget {
             Align(
               alignment: Alignment.centerLeft,
               child: TextButton.icon(
-                onPressed: () => _backLogPreviousDay(context, ref, today),
+                onPressed: () => _openCalendar(context),
                 icon: const Icon(Icons.history_rounded, size: 18),
                 label: const Text('Log a previous day'),
               ),
@@ -172,12 +161,15 @@ class DashboardScreen extends ConsumerWidget {
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
-            const DataPreviewCard(
+            DataPreviewCard(
               icon: Icons.calendar_month_rounded,
               title: 'Calendar',
-              message:
-                  'Nothing logged yet. Your history will show up here the '
-                  'moment you log your first day.',
+              message: hasAnyLogs
+                  ? 'See every logged day, plus predicted period and '
+                        'fertile windows once you have enough history.'
+                  : 'Nothing logged yet. Your history will show up here '
+                        'the moment you log your first day.',
+              onTap: () => _openCalendar(context),
             ),
             const SizedBox(height: 12),
             const DataPreviewCard(

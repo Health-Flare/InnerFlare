@@ -10,15 +10,17 @@ class DataPreviewCard extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.message,
+    this.onTap,
   });
 
   final IconData icon;
   final String title;
   final String message;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final card = Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -55,6 +57,13 @@ class DataPreviewCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+
+    if (onTap == null) return card;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(24),
+      child: card,
     );
   }
 }

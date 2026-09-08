@@ -23,6 +23,38 @@ class CycleDayLogRepository {
     return _fromRow(rows.first);
   }
 
+  /// All logged days between [start] and [end], inclusive — backs the
+  /// calendar's month view (docs/features/calendar.feature).
+  Future<List<CycleDayLog>> getInRange(DateTime start, DateTime end) async {
+    final rows = await _db.query(
+      cycleDayLogsTable,
+      where: 'date >= ? AND date <= ?',
+      whereArgs: [_dateKey(start), _dateKey(end)],
+    );
+    return rows.map(_fromRow).toList();
+  }
+
+  /// Every period-start date on record, oldest first — the raw input to
+  /// the cycle-length/prediction math in `cycle_math.dart`.
+  Future<List<DateTime>> getPeriodStartDates() async {
+    final rows = await _db.query(
+      cycleDayLogsTable,
+      columns: ['date'],
+      where: 'is_period_start = 1',
+      orderBy: 'date ASC',
+    );
+    return rows.map((row) => DateTime.parse(row['date'] as String)).toList();
+  }
+
+  /// Whether the user has logged anything at all — distinguishes "no data
+  /// yet" from "nothing in this particular month" for the calendar's empty
+  /// state (docs/features/calendar.feature, "Empty calendar before any
+  /// logging").
+  Future<bool> hasAnyLogs() async {
+    final rows = await _db.query(cycleDayLogsTable, limit: 1);
+    return rows.isNotEmpty;
+  }
+
   /// Saves [log], replacing any existing row for that date — there is
   /// never more than one row per date (see docs/features/log.feature,
   /// "Editing an existing day's log"). `isPeriodStart` on [log] is

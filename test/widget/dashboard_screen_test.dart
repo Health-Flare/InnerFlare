@@ -222,8 +222,8 @@ void main() {
   );
 
   testWidgets(
-    'log a previous day: the date picker opens the same log screen for '
-    'that date, without touching today\'s entry',
+    'log a previous day opens the calendar; tapping a date opens the same '
+    'log screen for that date, without touching today\'s entry',
     (tester) async {
       late CycleDayLogRepository repository;
       await pumpTestApp(
@@ -245,10 +245,9 @@ void main() {
       await tester.tap(find.text('Log a previous day'));
       await tester.pumpAndSettle();
 
-      // The date picker opens on the current month; pick the 10th.
-      await tester.tap(find.text('10').first);
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('OK'));
+      // The calendar opens on the current month; tap the 10th.
+      expect(find.text('January 2026'), findsOneWidget);
+      await tester.tap(find.byKey(ValueKey(DateTime(2026, 1, 10))));
       await tester.pumpAndSettle();
 
       // Same single-screen log UI, now for Jan 10 instead of today.
@@ -258,7 +257,8 @@ void main() {
       await tester.tap(find.byTooltip('Done'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Saved that day.'), findsOneWidget);
+      // Back on the calendar.
+      expect(find.text('January 2026'), findsOneWidget);
 
       final backLogged = await repository.getByDate(DateTime(2026, 1, 10));
       expect(backLogged?.periodFlow, PeriodFlow.heavy);
@@ -269,8 +269,8 @@ void main() {
   );
 
   testWidgets(
-    'reopening a back-logged day pre-fills it and edits update the same '
-    'row',
+    'reopening a back-logged day from the calendar pre-fills it and edits '
+    'update the same row',
     (tester) async {
       final db = await openInMemoryTestDatabase(onCreate: onCreate);
       openDb = db;
@@ -296,9 +296,7 @@ void main() {
 
       await tester.tap(find.text('Log a previous day'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('10').first);
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('OK'));
+      await tester.tap(find.byKey(ValueKey(DateTime(2026, 1, 10))));
       await tester.pumpAndSettle();
 
       final spottingChip = tester.widget<ChoiceChip>(
