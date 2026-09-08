@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:inner_flare/core/providers/dashboard_card_preferences_repository_provider.dart';
 import 'package:inner_flare/data/database/schema.dart';

@@ -127,13 +127,13 @@ class DashboardScreen extends ConsumerWidget {
     final today = DateTime(now.year, now.month, now.day);
     final greeting = greetingForHour(now.hour);
     final todayLog = ref.watch(todayLogProvider);
-    final isLoggedToday = todayLog.valueOrNull != null;
+    final isLoggedToday = todayLog.value != null;
     final isBusy = todayLog.isLoading;
-    final hasAnyLogs = ref.watch(hasAnyLogsProvider).valueOrNull ?? false;
+    final hasAnyLogs = ref.watch(hasAnyLogsProvider).value ?? false;
     final visibleCards =
         ref
-            .watch(dashboardCardPreferencesNotifierProvider)
-            .valueOrNull
+            .watch(dashboardCardPreferencesProvider)
+            .value
             ?.where((pref) => pref.visible)
             .map((pref) => pref.card)
             .toList() ??

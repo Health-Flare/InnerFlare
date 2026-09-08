@@ -22,6 +22,7 @@ class CycleDayLogEntry extends _$CycleDayLogEntry {
   /// repository upserts by date, so there is only ever one row per date
   /// (docs/features/log.feature, "Editing an existing day's log").
   Future<void> save(CycleDayLog log) async {
+    // ignore: invalid_use_of_internal_member
     state = const AsyncLoading<CycleDayLog?>().copyWithPrevious(state);
     state = await AsyncValue.guard(() async {
       final repository = await ref.read(cycleDayLogRepositoryProvider.future);

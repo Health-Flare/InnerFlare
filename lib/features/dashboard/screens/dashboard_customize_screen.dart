@@ -21,7 +21,7 @@ class DashboardCustomizeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final prefsAsync = ref.watch(dashboardCardPreferencesNotifierProvider);
+    final prefsAsync = ref.watch(dashboardCardPreferencesProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Customize dashboard')),
@@ -44,7 +44,7 @@ class DashboardCustomizeScreen extends ConsumerWidget {
                   itemCount: prefs.length,
                   onReorder: (oldIndex, newIndex) {
                     ref
-                        .read(dashboardCardPreferencesNotifierProvider.notifier)
+                        .read(dashboardCardPreferencesProvider.notifier)
                         .reorder(oldIndex, newIndex);
                   },
                   itemBuilder: (context, index) {
@@ -55,9 +55,7 @@ class DashboardCustomizeScreen extends ConsumerWidget {
                       value: pref.visible,
                       onChanged: (_) {
                         ref
-                            .read(
-                              dashboardCardPreferencesNotifierProvider.notifier,
-                            )
+                            .read(dashboardCardPreferencesProvider.notifier)
                             .toggleVisibility(pref.card);
                       },
                       secondary: ReorderableDragStartListener(
