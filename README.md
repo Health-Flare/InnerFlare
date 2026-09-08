@@ -1,1 +1,123 @@
 # InnerFlare
+
+A menstrual cycle tracking companion for iOS and Android. Fully offline — no
+network calls, no cloud sync, no accounts. All data stays on-device in a
+SQLite database encrypted at rest, unlocked with biometrics where the device
+supports it.
+
+See `BRIEF.md` for the original product/technical brief and `CLAUDE.md` for
+full architecture, conventions, and troubleshooting notes.
+
+## Getting started
+
+```bash
+flutter pub get
+dart run build_runner build --delete-conflicting-outputs  # generates Riverpod .g.dart files
+flutter run
+```
+
+## Running on a simulator/emulator
+
+### iOS Simulator
+
+```bash
+# List available simulators (find a device UDID or name)
+xcrun simctl list devices available
+
+# Boot one and open Simulator.app
+xcrun simctl boot "iPhone 17 Pro"
+open -a Simulator
+
+# Run the app on it (by name or UDID — `flutter devices` must show it first)
+flutter devices
+flutter run -d "iPhone 17 Pro"
+```
+
+If `flutter devices` doesn't pick up a freshly-booted simulator right away,
+give it a few seconds and try again — `flutter doctor -v` also lists
+connected devices.
+
+### Android Emulator
+
+```bash
+# List configured emulators
+flutter emulators
+
+# Launch one (this repo already has "Medium_Phone_API_36.1" configured)
+flutter emulators --launch Medium_Phone_API_36.1
+
+# Run the app on it
+flutter devices
+flutter run -d emulator-5554   # or whatever device id `flutter devices` shows
+```
+
+### macOS desktop
+
+```bash
+flutter run -d macos
+```
+
+Useful for quickly checking UI/layout changes, but **not** representative of
+the real biometric/Keychain flow — see "Known issues" below before relying
+on it to test the encrypted storage or logging feature.
+
+## Testing
+
+```bash
+flutter test                              # full suite
+flutter test --coverage
+flutter test test/widget/dashboard_screen_test.dart   # a single file
+```
+
+Widget tests that touch the database use `sqflite_common_ffi`'s
+**no-isolate** factory (`databaseFactoryFfiNoIsolate`, set up in
+`test/helpers/test_database.dart`) — the isolate-backed one hangs forever
+inside `testWidgets`' fake-async pumping. See `CLAUDE.md` → Troubleshooting
+for details.
+
+## Known issues / platform notes
+
+### macOS: encrypted storage doesn't work out of the box
+
+The database is encrypted with SQLCipher, and the encryption passphrase is
+stored in the platform's secure key store (`flutter_secure_storage` — iOS
+Keychain / Android Keystore), gated behind biometrics via `local_auth`. This
+works cleanly on iOS and Android.
+
+**On macOS specifically**, it does not, for two stacked reasons discovered
+while testing this locally:
+
+1. `flutter_secure_storage` needs a `keychain-access-groups` entitlement to
+   write to the Keychain on macOS at all. Without it, every read/write
+   throws `PlatformException(..., -34018, A required entitlement isn't
+   present., ...)` — this is what surfaces in the app as "Couldn't save."
+2. Adding that entitlement in turn requires macOS to sign the app with a
+   **real local development certificate** (a `DEVELOPMENT_TEAM` + resolvable
+   signing identity) — the default "Sign to Run Locally" ad-hoc signing this
+   project uses isn't enough, since Keychain Sharing is a provisioned
+   capability. If your Apple Developer team is an organization account, this
+   also requires the specific Mac to be registered as a device under that
+   team, which needs admin permission on the team account.
+
+Because macOS isn't a shipping target for this app (iOS and Android are),
+the entitlement is deliberately **not** included — `flutter run -d macos`
+builds and runs fine, but tapping "Log today" there will fail to unlock the
+database with the error above. **Test the encrypted-storage and logging
+flow on an iOS Simulator, Android emulator, or a real device instead** —
+all three work without any of this friction.
+
+If macOS ever becomes a real target: add `<key>keychain-access-groups</key>
+<array/>` to both `macos/Runner/DebugProfile.entitlements` and
+`Release.entitlements`, then configure a working `DEVELOPMENT_TEAM` +
+`CODE_SIGN_IDENTITY` for the Runner target in Xcode (Signing & Capabilities)
+using a team that can register this Mac as a device — a personal/free
+Apple ID team sidesteps the admin-approval requirement an organization team
+has.
+
+### iOS deployment target
+
+`ios/Podfile` and the Xcode project target iOS 14.0, not the Flutter default
+of 13.0 — `file_picker_darwin` requires it. If a future `flutter create`
+regeneration or template update resets this, bump both back to 14.0 or the
+build will fail during `pod install` with a "requires a higher minimum
+deployment target" error.
