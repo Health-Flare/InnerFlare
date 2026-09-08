@@ -42,7 +42,7 @@ class DashboardCustomizeScreen extends ConsumerWidget {
                 child: ReorderableListView.builder(
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   itemCount: prefs.length,
-                  onReorder: (oldIndex, newIndex) {
+                  onReorderItem: (oldIndex, newIndex) {
                     ref
                         .read(dashboardCardPreferencesProvider.notifier)
                         .reorder(oldIndex, newIndex);
