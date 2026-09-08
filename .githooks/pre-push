@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Installed via scripts/setup_git_hooks.sh (git config core.hooksPath .githooks).
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+
+if ! command -v flutter >/dev/null 2>&1; then
+  echo "pre-push: 'flutter' not found on PATH. Install Flutter, or run 'git push --no-verify' to skip this check." >&2
+  exit 1
+fi
+
+echo "pre-push: running flutter test..."
+flutter test
