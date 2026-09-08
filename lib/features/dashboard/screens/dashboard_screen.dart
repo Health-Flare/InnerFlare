@@ -1,33 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inner_flare/core/providers/cycle_day_log_repository_provider.dart';
+import 'package:inner_flare/core/providers/dashboard_card_preferences_provider.dart';
 import 'package:inner_flare/core/providers/database_provider.dart';
 import 'package:inner_flare/core/providers/has_any_logs_provider.dart';
 import 'package:inner_flare/core/providers/now_provider.dart';
 import 'package:inner_flare/core/providers/today_log_provider.dart';
 import 'package:inner_flare/features/calendar/screens/calendar_screen.dart';
 import 'package:inner_flare/features/dashboard/greeting.dart';
+import 'package:inner_flare/features/dashboard/screens/dashboard_customize_screen.dart';
 import 'package:inner_flare/features/dashboard/widgets/data_preview_card.dart';
 import 'package:inner_flare/features/dashboard/widgets/log_today_hero_card.dart';
 import 'package:inner_flare/features/dashboard/widgets/privacy_reassurance_card.dart';
 import 'package:inner_flare/features/dashboard/widgets/unlock_error_banner.dart';
 import 'package:inner_flare/features/insights/screens/insights_screen.dart';
 import 'package:inner_flare/features/log/screens/log_entry_screen.dart';
+import 'package:inner_flare/models/dashboard_card.dart';
 
 /// The dashboard's welcoming first impression. The "log today" entry point,
 /// the Calendar card, and the Insights card are all wired to the real,
 /// encrypted on-device database (see lib/data/database/app_database.dart).
 ///
-/// The real customizable card layout (see docs/features/dashboard.feature)
-/// lands separately; this screen is the UI shell that layout will slot
-/// into.
+/// Which of those cards show, and in what order, is user-customizable
+/// (see docs/features/dashboard.feature) via [DashboardCustomizeScreen].
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
-  void _showComingSoon(BuildContext context, String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
+  void _openCustomize(BuildContext context) {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const DashboardCustomizeScreen()));
   }
 
   /// Opens the single-screen log UI for [date] — whether that day is
@@ -89,6 +91,36 @@ class DashboardScreen extends ConsumerWidget {
       ..invalidate(todayLogProvider);
   }
 
+  /// Builds the [DataPreviewCard] for a customizable [card] — the one
+  /// place that maps a [DashboardCard] to its icon, copy, and tap target.
+  Widget _buildCard(BuildContext context, DashboardCard card, bool hasAnyLogs) {
+    switch (card) {
+      case DashboardCard.calendar:
+        return DataPreviewCard(
+          icon: Icons.calendar_month_rounded,
+          title: 'Calendar',
+          message: hasAnyLogs
+              ? 'See every logged day, plus predicted period and '
+                    'fertile windows once you have enough history.'
+              : 'Nothing logged yet. Your history will show up here '
+                    'the moment you log your first day.',
+          onTap: () => _openCalendar(context),
+        );
+      case DashboardCard.insights:
+        return DataPreviewCard(
+          icon: Icons.insights_rounded,
+          title: 'Insights',
+          message: hasAnyLogs
+              ? 'See your average cycle length and predictions, plus '
+                    'exactly what they\'re based on.'
+              : 'Not enough data yet. Log a couple of cycles and you\'ll '
+                    'see predictions here, plus exactly what they\'re '
+                    'based on.',
+          onTap: () => _openInsights(context),
+        );
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final now = ref.watch(nowProvider)();
@@ -98,6 +130,14 @@ class DashboardScreen extends ConsumerWidget {
     final isLoggedToday = todayLog.valueOrNull != null;
     final isBusy = todayLog.isLoading;
     final hasAnyLogs = ref.watch(hasAnyLogsProvider).valueOrNull ?? false;
+    final visibleCards =
+        ref
+            .watch(dashboardCardPreferencesNotifierProvider)
+            .valueOrNull
+            ?.where((pref) => pref.visible)
+            .map((pref) => pref.card)
+            .toList() ??
+        const <DashboardCard>[];
 
     return Scaffold(
       appBar: AppBar(
@@ -117,11 +157,7 @@ class DashboardScreen extends ConsumerWidget {
           IconButton(
             tooltip: 'Customize dashboard',
             icon: const Icon(Icons.tune_rounded),
-            onPressed: () => _showComingSoon(
-              context,
-              'Dashboard customization is coming soon — you\'ll be able to '
-              'show, hide, and reorder every card.',
-            ),
+            onPressed: () => _openCustomize(context),
           ),
         ],
       ),
@@ -161,37 +197,21 @@ class DashboardScreen extends ConsumerWidget {
                 detail: todayLog.error?.toString(),
               ),
             ],
-            const SizedBox(height: 28),
-            Text(
-              'Your data, at a glance',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 12),
-            DataPreviewCard(
-              icon: Icons.calendar_month_rounded,
-              title: 'Calendar',
-              message: hasAnyLogs
-                  ? 'See every logged day, plus predicted period and '
-                        'fertile windows once you have enough history.'
-                  : 'Nothing logged yet. Your history will show up here '
-                        'the moment you log your first day.',
-              onTap: () => _openCalendar(context),
-            ),
-            const SizedBox(height: 12),
-            DataPreviewCard(
-              icon: Icons.insights_rounded,
-              title: 'Insights',
-              message: hasAnyLogs
-                  ? 'See your average cycle length and predictions, plus '
-                        'exactly what they\'re based on.'
-                  : 'Not enough data yet. Log a couple of cycles and you\'ll '
-                        'see predictions here, plus exactly what they\'re '
-                        'based on.',
-              onTap: () => _openInsights(context),
-            ),
-            const SizedBox(height: 12),
+            if (visibleCards.isNotEmpty) ...[
+              const SizedBox(height: 28),
+              Text(
+                'Your data, at a glance',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 12),
+              for (final card in visibleCards) ...[
+                _buildCard(context, card, hasAnyLogs),
+                const SizedBox(height: 12),
+              ],
+            ] else
+              const SizedBox(height: 28),
             const PrivacyReassuranceCard(),
           ],
         ),
