@@ -6,30 +6,78 @@ part of 'dashboard_card_preferences_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$dashboardCardPreferencesNotifierHash() =>
-    r'5512cea45a3f62570f85128e7370019496d11175';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+/// The dashboard's customizable card layout — show/hide and order
+/// (docs/features/dashboard.feature). Backs both the dashboard screen's
+/// rendering and the customization screen's controls.
+
+@ProviderFor(DashboardCardPreferencesNotifier)
+final dashboardCardPreferencesProvider =
+    DashboardCardPreferencesNotifierProvider._();
 
 /// The dashboard's customizable card layout — show/hide and order
 /// (docs/features/dashboard.feature). Backs both the dashboard screen's
 /// rendering and the customization screen's controls.
-///
-/// Copied from [DashboardCardPreferencesNotifier].
-@ProviderFor(DashboardCardPreferencesNotifier)
-final dashboardCardPreferencesNotifierProvider =
-    AutoDisposeAsyncNotifierProvider<
-      DashboardCardPreferencesNotifier,
-      List<DashboardCardPreference>
-    >.internal(
-      DashboardCardPreferencesNotifier.new,
-      name: r'dashboardCardPreferencesNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$dashboardCardPreferencesNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+final class DashboardCardPreferencesNotifierProvider
+    extends
+        $AsyncNotifierProvider<
+          DashboardCardPreferencesNotifier,
+          List<DashboardCardPreference>
+        > {
+  /// The dashboard's customizable card layout — show/hide and order
+  /// (docs/features/dashboard.feature). Backs both the dashboard screen's
+  /// rendering and the customization screen's controls.
+  DashboardCardPreferencesNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'dashboardCardPreferencesProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
-typedef _$DashboardCardPreferencesNotifier =
-    AutoDisposeAsyncNotifier<List<DashboardCardPreference>>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+  @override
+  String debugGetCreateSourceHash() => _$dashboardCardPreferencesNotifierHash();
+
+  @$internal
+  @override
+  DashboardCardPreferencesNotifier create() =>
+      DashboardCardPreferencesNotifier();
+}
+
+String _$dashboardCardPreferencesNotifierHash() =>
+    r'31e0983507ea60abfc013131d95c80f4d53493a4';
+
+/// The dashboard's customizable card layout — show/hide and order
+/// (docs/features/dashboard.feature). Backs both the dashboard screen's
+/// rendering and the customization screen's controls.
+
+abstract class _$DashboardCardPreferencesNotifier
+    extends $AsyncNotifier<List<DashboardCardPreference>> {
+  FutureOr<List<DashboardCardPreference>> build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref =
+        this.ref
+            as $Ref<
+              AsyncValue<List<DashboardCardPreference>>,
+              List<DashboardCardPreference>
+            >;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<
+                AsyncValue<List<DashboardCardPreference>>,
+                List<DashboardCardPreference>
+              >,
+              AsyncValue<List<DashboardCardPreference>>,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}

@@ -40,13 +40,14 @@ class DashboardCardPreferencesNotifier
   }
 
   /// Moves the card at [oldIndex] to [newIndex] in the full (visible +
-  /// hidden) list, matching `ReorderableListView`'s index semantics.
+  /// hidden) list, matching `ReorderableListView.onReorderItem`'s index
+  /// semantics: [newIndex] is already adjusted for the removed item at
+  /// [oldIndex].
   Future<void> reorder(int oldIndex, int newIndex) async {
     final current = await future;
     final updated = [...current];
     final moved = updated.removeAt(oldIndex);
-    final insertAt = newIndex > oldIndex ? newIndex - 1 : newIndex;
-    updated.insert(insertAt, moved);
+    updated.insert(newIndex, moved);
     await _persist(updated);
   }
 

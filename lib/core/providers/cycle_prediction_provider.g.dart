@@ -6,23 +6,44 @@ part of 'cycle_prediction_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$cyclePredictionHash() => r'4f1b927e11b0d172a295add368296aa96dbdeb67';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [cyclePrediction].
 @ProviderFor(cyclePrediction)
-final cyclePredictionProvider =
-    AutoDisposeFutureProvider<CyclePrediction>.internal(
-      cyclePrediction,
-      name: r'cyclePredictionProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$cyclePredictionHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+final cyclePredictionProvider = CyclePredictionProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef CyclePredictionRef = AutoDisposeFutureProviderRef<CyclePrediction>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+final class CyclePredictionProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<CyclePrediction>,
+          CyclePrediction,
+          FutureOr<CyclePrediction>
+        >
+    with $FutureModifier<CyclePrediction>, $FutureProvider<CyclePrediction> {
+  CyclePredictionProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'cyclePredictionProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$cyclePredictionHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<CyclePrediction> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<CyclePrediction> create(Ref ref) {
+    return cyclePrediction(ref);
+  }
+}
+
+String _$cyclePredictionHash() => r'4f1b927e11b0d172a295add368296aa96dbdeb67';

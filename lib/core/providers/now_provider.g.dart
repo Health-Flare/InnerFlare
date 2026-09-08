@@ -6,26 +6,62 @@ part of 'now_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$nowHash() => r'a18fd0a1c525818279254bbe775974fc6f13cf60';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+/// The current time, as a provider — so anything that needs "now" can be
+/// given a fixed value in tests instead of depending on [DateTime.now]
+/// directly (same rule CLAUDE.md sets for the pure cycle-math functions).
+
+@ProviderFor(now)
+final nowProvider = NowProvider._();
 
 /// The current time, as a provider — so anything that needs "now" can be
 /// given a fixed value in tests instead of depending on [DateTime.now]
 /// directly (same rule CLAUDE.md sets for the pure cycle-math functions).
-///
-/// Copied from [now].
-@ProviderFor(now)
-final nowProvider = Provider<DateTime Function()>.internal(
-  now,
-  name: r'nowProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$nowHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef NowRef = ProviderRef<DateTime Function()>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+final class NowProvider
+    extends
+        $FunctionalProvider<
+          DateTime Function(),
+          DateTime Function(),
+          DateTime Function()
+        >
+    with $Provider<DateTime Function()> {
+  /// The current time, as a provider — so anything that needs "now" can be
+  /// given a fixed value in tests instead of depending on [DateTime.now]
+  /// directly (same rule CLAUDE.md sets for the pure cycle-math functions).
+  NowProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'nowProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$nowHash();
+
+  @$internal
+  @override
+  $ProviderElement<DateTime Function()> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  DateTime Function() create(Ref ref) {
+    return now(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(DateTime Function() value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<DateTime Function()>(value),
+    );
+  }
+}
+
+String _$nowHash() => r'a18fd0a1c525818279254bbe775974fc6f13cf60';
