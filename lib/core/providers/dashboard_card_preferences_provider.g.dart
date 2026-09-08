@@ -49,7 +49,7 @@ final class DashboardCardPreferencesNotifierProvider
 }
 
 String _$dashboardCardPreferencesNotifierHash() =>
-    r'5512cea45a3f62570f85128e7370019496d11175';
+    r'31e0983507ea60abfc013131d95c80f4d53493a4';
 
 /// The dashboard's customizable card layout — show/hide and order
 /// (docs/features/dashboard.feature). Backs both the dashboard screen's
