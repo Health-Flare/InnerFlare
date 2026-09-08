@@ -106,6 +106,30 @@ void main() {
     });
   });
 
+  group('cycleLengthsAreIrregular', () {
+    test('fewer than 2 lengths in the window is never irregular', () {
+      expect(cycleLengthsAreIrregular(const []), isFalse);
+      expect(cycleLengthsAreIrregular([28]), isFalse);
+    });
+
+    test('lengths within 7 days of each other are not irregular', () {
+      expect(cycleLengthsAreIrregular([26, 28, 30]), isFalse);
+    });
+
+    test('lengths spread by more than 7 days are irregular', () {
+      expect(cycleLengthsAreIrregular([21, 35, 27]), isTrue);
+    });
+
+    test('only considers the last windowSize lengths', () {
+      // Older 21/35 spread would be irregular, but the window only sees
+      // the last 2, which are close together.
+      expect(
+        cycleLengthsAreIrregular([21, 35, 28, 29], windowSize: 2),
+        isFalse,
+      );
+    });
+  });
+
   group('daysBetween — date/timezone edge cases', () {
     final cases = <(DateTime, DateTime, int)>[
       // Crosses US spring-forward DST transition (2026-03-08).

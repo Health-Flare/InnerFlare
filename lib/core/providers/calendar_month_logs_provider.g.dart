@@ -6,7 +6,7 @@ part of 'calendar_month_logs_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$calendarMonthLogsHash() => r'c4678509de8844d6012f02848ad005fd215d8216';
+String _$calendarMonthLogsHash() => r'd6bb99b23ec7f4eb1f16ccbf3f6dd841f302c3aa';
 
 /// Copied from Dart SDK
 class _SystemHash {
