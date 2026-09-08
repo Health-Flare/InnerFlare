@@ -9,6 +9,7 @@ import 'package:inner_flare/features/dashboard/widgets/data_preview_card.dart';
 import 'package:inner_flare/features/dashboard/widgets/log_today_hero_card.dart';
 import 'package:inner_flare/features/dashboard/widgets/privacy_reassurance_card.dart';
 import 'package:inner_flare/features/dashboard/widgets/unlock_error_banner.dart';
+import 'package:inner_flare/features/log/screens/log_entry_screen.dart';
 
 /// The dashboard's welcoming first impression. The "log today" entry point
 /// is wired to the real, encrypted on-device database (see
@@ -28,23 +29,60 @@ class DashboardScreen extends ConsumerWidget {
       ..showSnackBar(SnackBar(content: Text(message)));
   }
 
-  Future<void> _logToday(BuildContext context, WidgetRef ref) async {
-    await ref.read(todayLogProvider.notifier).logToday();
+  /// Opens the single-screen log UI for [date] — whether that day is
+  /// unlogged (starting blank) or already has an entry (pre-filled for
+  /// editing). The screen itself persists every change; this only shows
+  /// a confirmation once the user is done (docs/features/log.feature).
+  Future<void> _openLogEntry(
+    BuildContext context,
+    WidgetRef ref,
+    DateTime date,
+  ) async {
+    final isToday = _isSameDate(date, ref.read(nowProvider)());
+    final repository = await ref.read(cycleDayLogRepositoryProvider.future);
+    final existing = await repository.getByDate(date);
     if (!context.mounted) return;
 
-    final messenger = ScaffoldMessenger.of(context)..hideCurrentSnackBar();
-    final result = ref.read(todayLogProvider);
-    if (result.hasError) {
-      debugPrint('Log today failed: ${result.error}\n${result.stackTrace}');
-    }
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(
-          result.hasError
-              ? "Couldn't save: ${result.error}"
-              : 'Logged today.',
-        ),
+    final saved = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => LogEntryScreen(date: date, initialLog: existing),
       ),
+    );
+    if (!context.mounted || saved != true) return;
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(content: Text(isToday ? 'Logged today.' : 'Saved that day.')),
+      );
+  }
+
+  bool _isSameDate(DateTime a, DateTime b) {
+    return a.year == b.year && a.month == b.month && a.day == b.day;
+  }
+
+  /// Lets the user pick any past day to add to or edit — the interim way
+  /// to reach back-logging until a full calendar view exists (see
+  /// docs/features/log.feature, "Back-logging a missed day is exactly as
+  /// fast as logging today").
+  Future<void> _backLogPreviousDay(
+    BuildContext context,
+    WidgetRef ref,
+    DateTime today,
+  ) async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: today,
+      firstDate: today.subtract(const Duration(days: 730)),
+      lastDate: today,
+      helpText: 'Log a previous day',
+    );
+    if (picked == null || !context.mounted) return;
+
+    await _openLogEntry(
+      context,
+      ref,
+      DateTime(picked.year, picked.month, picked.day),
     );
   }
 
@@ -57,8 +95,9 @@ class DashboardScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final now = ref.watch(nowProvider);
-    final greeting = greetingForHour(now().hour);
+    final now = ref.watch(nowProvider)();
+    final today = DateTime(now.year, now.month, now.day);
+    final greeting = greetingForHour(now.hour);
     final todayLog = ref.watch(todayLogProvider);
     final isLoggedToday = todayLog.valueOrNull != null;
     final isBusy = todayLog.isLoading;
@@ -108,12 +147,15 @@ class DashboardScreen extends ConsumerWidget {
             LogTodayHeroCard(
               isLoggedToday: isLoggedToday,
               isBusy: isBusy,
-              onLogToday: isLoggedToday
-                  ? () => _showComingSoon(
-                      context,
-                      'Editing today\'s details is coming soon.',
-                    )
-                  : () => _logToday(context, ref),
+              onLogToday: () => _openLogEntry(context, ref, today),
+            ),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: () => _backLogPreviousDay(context, ref, today),
+                icon: const Icon(Icons.history_rounded, size: 18),
+                label: const Text('Log a previous day'),
+              ),
             ),
             if (todayLog.hasError) ...[
               const SizedBox(height: 12),
@@ -151,14 +193,7 @@ class DashboardScreen extends ConsumerWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: isBusy
-            ? null
-            : (isLoggedToday
-                  ? () => _showComingSoon(
-                      context,
-                      'Editing today\'s details is coming soon.',
-                    )
-                  : () => _logToday(context, ref)),
+        onPressed: isBusy ? null : () => _openLogEntry(context, ref, today),
         icon: Icon(isLoggedToday ? Icons.check_rounded : Icons.add_rounded),
         label: const Text('Log today'),
       ),
