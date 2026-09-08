@@ -5,14 +5,16 @@ network calls, no cloud sync, no accounts. All data stays on-device in a
 SQLite database encrypted at rest, unlocked with biometrics where the device
 supports it.
 
-See `BRIEF.md` for the original product/technical brief and `CLAUDE.md` for
-full architecture, conventions, and troubleshooting notes.
+See `BRIEF.md` for the original product/technical brief, `CLAUDE.md` for full
+architecture, conventions, and troubleshooting notes, and
+`docs/deployment/android-release.md` for the Android build/release pipeline.
 
 ## Getting started
 
 ```bash
 flutter pub get
 dart run build_runner build --delete-conflicting-outputs  # generates Riverpod .g.dart files
+./scripts/setup_git_hooks.sh   # one-time: installs pre-commit/pre-push checks
 flutter run
 ```
 
@@ -121,3 +123,12 @@ of 13.0 — `file_picker_darwin` requires it. If a future `flutter create`
 regeneration or template update resets this, bump both back to 14.0 or the
 build will fail during `pod install` with a "requires a higher minimum
 deployment target" error.
+
+## CI/CD
+
+- **CI** (`.github/workflows/ci.yml`): format check, `flutter analyze`,
+  offline-URL scan, and `flutter test` on every push to `main` and every PR.
+- **Android build & release** (`.github/workflows/android-release.yml`):
+  builds a debug APK you can sideload on every push to `main` or on demand;
+  pushing a `v*.*.*` tag builds a signed release bundle and attaches it to a
+  GitHub Release. See `docs/deployment/android-release.md`.
