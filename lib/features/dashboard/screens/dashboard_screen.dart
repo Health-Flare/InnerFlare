@@ -15,6 +15,7 @@ import 'package:inner_flare/features/dashboard/widgets/privacy_reassurance_card.
 import 'package:inner_flare/features/dashboard/widgets/unlock_error_banner.dart';
 import 'package:inner_flare/features/insights/screens/insights_screen.dart';
 import 'package:inner_flare/features/log/screens/log_entry_screen.dart';
+import 'package:inner_flare/features/settings/screens/settings_screen.dart';
 import 'package:inner_flare/models/dashboard_card.dart';
 
 /// The dashboard's welcoming first impression. The "log today" entry point,
@@ -30,6 +31,12 @@ class DashboardScreen extends ConsumerWidget {
     Navigator.of(
       context,
     ).push(MaterialPageRoute(builder: (_) => const DashboardCustomizeScreen()));
+  }
+
+  void _openSettings(BuildContext context) {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const SettingsScreen()));
   }
 
   /// Opens the single-screen log UI for [date] — whether that day is
@@ -158,6 +165,11 @@ class DashboardScreen extends ConsumerWidget {
             tooltip: 'Customize dashboard',
             icon: const Icon(Icons.tune_rounded),
             onPressed: () => _openCustomize(context),
+          ),
+          IconButton(
+            tooltip: 'Settings',
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () => _openSettings(context),
           ),
         ],
       ),
