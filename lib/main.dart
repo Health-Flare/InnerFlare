@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:inner_flare/features/dashboard/screens/dashboard_screen.dart';
+import 'package:inner_flare/features/loading/screens/loading_screen.dart';
 
 void main() {
   runApp(const ProviderScope(child: InnerFlareApp()));
@@ -16,7 +16,7 @@ class InnerFlareApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const DashboardScreen(),
+      home: const LoadingScreen(),
     );
   }
 }
