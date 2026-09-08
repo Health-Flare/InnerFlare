@@ -1,10 +1,10 @@
-# Claude Code Project Guide — [App Name TBD]
+# Claude Code Project Guide — InnerFlare
 
-[App Name] is a menstrual cycle tracking companion for iOS and Android. It's built with Flutter, uses Riverpod for state management, plain SQLite (`sqflite`) for local storage, and follows a feature-first architecture. The app is **fully offline** — no network calls, no cloud sync, all data stays on device unless the user explicitly exports it.
+InnerFlare is a menstrual cycle tracking companion for iOS and Android. It's built with Flutter, uses Riverpod for state management, SQLite for local storage, and follows a feature-first architecture. The app is **fully offline** — no network calls, no cloud sync, all data stays on device unless the user explicitly exports it.
 
-See `BRIEF.md` for the product/technical brief this project started from.
+The database is encrypted at rest with SQLCipher (`sqflite_sqlcipher`, same API as `sqflite`), not plain `sqflite` — see "Encrypted, biometric-gated storage" under Key Design Decisions before touching `lib/data/database/` or `lib/core/security/`.
 
-> **Status:** not yet scaffolded — no `pubspec.yaml`, `lib/`, or `test/` exist yet. Everything below (commands, structure, workflow) describes the target shape of the project; treat it as the plan to scaffold *into*, not a description of what's on disk today.
+See `BRIEF.md` for the product/technical brief this project started from — note that BRIEF.md §4.1 recommends plain `sqflite`; the encryption layer was added afterward as an explicit privacy requirement and supersedes that recommendation.
 
 ## Quick Start Commands
 
@@ -28,7 +28,7 @@ dart format .
 dart run build_runner build --delete-conflicting-outputs
 ```
 
-There is no separate database codegen step — storage is plain `sqflite` with hand-written SQL and hand-written migrations. Do not add an ORM or database code generator without updating this file and confirming it doesn't conflict with `riverpod_generator`'s `build_runner` step.
+There is no separate database codegen step — storage is hand-written SQL and hand-written migrations against an encrypted SQLite file (`sqflite_sqlcipher`, a drop-in `sqflite` fork). Do not add an ORM or database code generator without updating this file and confirming it doesn't conflict with `riverpod_generator`'s `build_runner` step.
 
 ## Project Architecture
 
@@ -37,9 +37,10 @@ lib/
 ├── core/
 │   ├── providers/      # Riverpod providers (state management)
 │   ├── router/         # go_router configuration
+│   ├── security/        # Encryption passphrase store, biometric gate, backup exclusion
 │   └── theme/          # Colors, typography, theming
 ├── data/
-│   ├── database/        # sqflite setup, schema, migrations (schema_version tracked)
+│   ├── database/        # Encrypted sqflite_sqlcipher setup, schema, migrations (schema_version tracked)
 │   └── repositories/     # Hand-written SQL query/repository classes
 ├── features/            # Feature-first organization
 │   ├── dashboard/        # Customizable card layout: show/hide/reorder
@@ -195,6 +196,14 @@ Use `pump(Duration(milliseconds: 500))` instead of `pumpAndSettle()` when provid
 - No ORM, no database code generator — hand-written SQL against a small, stable schema
 - Prefer one fewer dependency over one more abstraction; revisit this only if the schema outgrows hand-written queries
 
+### Encrypted, biometric-gated storage
+
+- The SQLite file is encrypted at rest with SQLCipher (`sqflite_sqlcipher`), lives under the app's private support directory (never Documents), and is named to not advertise its contents.
+- The passphrase never touches disk — it's generated once and stored only in the platform secure key store (`flutter_secure_storage`: iOS Keychain / Android Keystore-backed prefs). See `lib/core/security/db_passphrase_store.dart`.
+- Opening the database is gated behind `local_auth` (Face ID/Touch ID/fingerprint, falling back to device passcode) via `lib/core/security/biometric_gate.dart`. If a device has no biometrics/passcode configured at all, the gate fails open rather than locking the user out — the data is still encrypted regardless.
+- The file is excluded from OS backups: `android:allowBackup="false"` in the Android manifest, and an `isExcludedFromBackup` native call on iOS (`lib/core/security/backup_exclusion.dart` + `ios/Runner/AppDelegate.swift`). The only way data leaves the device is the explicit export feature.
+- Android's `MainActivity` is a `FlutterFragmentActivity`, not `FlutterActivity` — `local_auth` requires a fragment host to show its prompt. Don't revert this.
+
 ### Privacy-Centric
 
 - No login/account required
@@ -207,4 +216,20 @@ Use `pump(Duration(milliseconds: 500))` instead of `pumpAndSettle()` when provid
 
 ### sqflite on desktop test runners
 
-If running tests on a non-mobile target (CI, desktop dev), use `sqflite_common_ffi`'s `databaseFactory` override in test setup rather than the platform channel implementation.
+If running tests on a non-mobile target (CI, desktop dev), use `sqflite_common_ffi`'s `databaseFactory` override in test setup rather than the platform channel implementation — see `test/helpers/test_database.dart`.
+
+Use `databaseFactoryFfiNoIsolate`, not `databaseFactoryFfi`, in that override. The isolate-backed factory talks to a real background isolate; inside a `testWidgets` test, `pump`/`pumpAndSettle` run in a fake-async zone that never lets that isolate's messages resolve, so the test just hangs with no error. The no-isolate factory runs SQLite on the same isolate and works fine with normal pumping. Plain `test()` bodies (no widget pumping involved) work with either.
+
+Also close every test database explicitly (`tearDown`), even in-memory ones. sqflite caches open databases by path, and every in-memory test database shares the literal `":memory:"` path — an unclosed database from one test is silently reused (rows and all) by the next test's `openDatabase` call.
+
+### macOS: `PlatformException(..., -34018, A required entitlement isn't present., ...)`
+
+`flutter_secure_storage` needs the `keychain-access-groups` entitlement (an empty `<array/>` is enough) in **both** `macos/Runner/DebugProfile.entitlements` and `Release.entitlements` — without it, every Keychain read/write throws this on macOS specifically (`errSecMissingEntitlement`). iOS and Android don't need this for an app's own storage.
+
+Adding that entitlement pulls in a second requirement: macOS enforces it via Keychain Sharing, which needs real local development code signing (a `DEVELOPMENT_TEAM` + resolvable `CODE_SIGN_IDENTITY`, not "Sign to Run Locally"). If your Apple Developer team is an organization account, provisioning also requires this specific Mac to be registered as a device under that team, which needs admin permission on the team — a personal (free) Apple ID team sidesteps that since there's no admin approval step.
+
+Given all of that is macOS-desktop-only friction and this app's shipping targets are iOS and Android (see the top of this file), the current entitlements files deliberately do **not** include `keychain-access-groups` — `flutter run -d macos` builds and runs, but the encrypted database will fail to unlock there with the error above. Test the storage/logging flow on an iOS Simulator or a real iOS/Android device instead; both work without any of this. Only add the macOS entitlement (and matching Xcode signing config) if macOS becomes a real target and you've sorted out signing for it.
+
+### macOS Keychain prompts during local dev
+
+Running the app on macOS desktop (`flutter run -d macos`) will pop a real system Keychain "enter your password to allow access" dialog the first time `flutter_secure_storage` writes the database passphrase — this is macOS-specific behavior tied to ad-hoc/debug code signing identity, not something iOS or Android do for an app's own Keychain/Keystore items. It's expected; don't try to "fix" it as a bug. Never click through it on the user's behalf — it's asking for their real macOS login password.

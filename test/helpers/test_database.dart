@@ -11,7 +11,12 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 /// ```
 void useInMemoryTestDatabaseFactory() {
   sqfliteFfiInit();
-  databaseFactory = databaseFactoryFfi;
+  // The isolate-backed `databaseFactoryFfi` talks to a real background
+  // isolate; inside a `testWidgets` fake-async zone, `pump`/`pumpAndSettle`
+  // never let that isolate's messages resolve and the test just hangs with
+  // no error. The no-isolate variant runs SQLite on the same isolate, so
+  // its futures resolve like any other awaited call.
+  databaseFactory = databaseFactoryFfiNoIsolate;
 }
 
 /// Opens a fresh in-memory database for a single test.
