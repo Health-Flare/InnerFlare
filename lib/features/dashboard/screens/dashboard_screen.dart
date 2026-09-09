@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inner_flare/core/providers/cycle_day_log_repository_provider.dart';
 import 'package:inner_flare/core/providers/dashboard_card_preferences_provider.dart';
-import 'package:inner_flare/core/providers/database_provider.dart';
 import 'package:inner_flare/core/providers/has_any_logs_provider.dart';
 import 'package:inner_flare/core/providers/now_provider.dart';
 import 'package:inner_flare/core/providers/today_log_provider.dart';
@@ -10,6 +9,7 @@ import 'package:inner_flare/features/calendar/screens/calendar_screen.dart';
 import 'package:inner_flare/features/dashboard/greeting.dart';
 import 'package:inner_flare/features/dashboard/screens/dashboard_customize_screen.dart';
 import 'package:inner_flare/features/dashboard/widgets/data_preview_card.dart';
+import 'package:inner_flare/features/dashboard/widgets/database_status_indicator.dart';
 import 'package:inner_flare/features/dashboard/widgets/log_today_hero_card.dart';
 import 'package:inner_flare/features/dashboard/widgets/privacy_reassurance_card.dart';
 import 'package:inner_flare/features/dashboard/widgets/unlock_error_banner.dart';
@@ -91,13 +91,6 @@ class DashboardScreen extends ConsumerWidget {
     ).push(MaterialPageRoute(builder: (_) => const InsightsScreen()));
   }
 
-  void _retryUnlock(WidgetRef ref) {
-    ref
-      ..invalidate(appDatabaseProvider)
-      ..invalidate(cycleDayLogRepositoryProvider)
-      ..invalidate(todayLogProvider);
-  }
-
   /// Builds the [DataPreviewCard] for a customizable [card] — the one
   /// place that maps a [DashboardCard] to its icon, copy, and tap target.
   Widget _buildCard(BuildContext context, DashboardCard card, bool hasAnyLogs) {
@@ -161,6 +154,7 @@ class DashboardScreen extends ConsumerWidget {
           ],
         ),
         actions: [
+          const DatabaseStatusIndicator(),
           IconButton(
             tooltip: 'Customize dashboard',
             icon: const Icon(Icons.tune_rounded),
@@ -205,7 +199,7 @@ class DashboardScreen extends ConsumerWidget {
             if (todayLog.hasError) ...[
               const SizedBox(height: 12),
               UnlockErrorBanner(
-                onRetry: () => _retryUnlock(ref),
+                onRetry: () => retryDatabaseUnlock(ref),
                 detail: todayLog.error?.toString(),
               ),
             ],
