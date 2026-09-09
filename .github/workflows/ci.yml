@@ -3,8 +3,20 @@ name: CI
 on:
   push:
     branches: [main]
+    paths: &ci-paths
+      - 'lib/**'
+      - 'test/**'
+      - 'integration_test/**'
+      - 'assets/**'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+      - 'analysis_options.yaml'
+      - 'scripts/check_no_network_urls.sh'
+      - '.url-scan-ignore'
+      - '.github/workflows/ci.yml'
   pull_request:
     branches: [main]
+    paths: *ci-paths
   workflow_dispatch:
 
 concurrency:
