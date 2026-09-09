@@ -153,8 +153,9 @@ Use `pump(Duration(milliseconds: 500))` instead of `pumpAndSettle()` when provid
   checks plus `flutter test --coverage`, on every push to `main` and every
   PR.
 - **Android build & release** (`.github/workflows/android-release.yml`):
-  a debug APK builds on every push to `main` and on manual dispatch, for
-  sideloading during development. Pushing a `v*.*.*` tag builds a signed
+  a debug APK builds only on manual dispatch (Actions tab → "Run workflow"),
+  for sideloading during development — it no longer builds automatically on
+  push to `main`. Pushing a `v*.*.*` tag builds a signed
   release App Bundle + APK and attaches them to a GitHub Release — see
   `docs/deployment/android-release.md` for the one-time keystore/secrets
   setup and the pre-launch Play Store checklist.
