@@ -39,6 +39,24 @@ If `flutter devices` doesn't pick up a freshly-booted simulator right away,
 give it a few seconds and try again — `flutter doctor -v` also lists
 connected devices.
 
+### Running on a real iOS device / a locally-signed iOS build
+
+The Simulator needs no signing setup, but a physical device (or a signed
+local release build) does. The Xcode project doesn't hardcode a Team ID —
+it reads `DEVELOPMENT_TEAM` from `ios/Flutter/Local.xcconfig`, which is
+gitignored since it's specific to whichever Apple Developer account you
+build with:
+
+```bash
+cp ios/Flutter/Local.xcconfig.example ios/Flutter/Local.xcconfig
+# then edit ios/Flutter/Local.xcconfig and set DEVELOPMENT_TEAM to your
+# Team ID (Xcode → Runner target → Signing & Capabilities → Team, or
+# https://developer.appleid.apple.com/account under Membership)
+```
+
+Without this file, `DEVELOPMENT_TEAM` resolves to empty and Xcode falls
+back to "Sign to Run Locally" / Simulator-only builds.
+
 ### Android Emulator
 
 ```bash
@@ -132,3 +150,17 @@ deployment target" error.
   builds a debug APK you can sideload on every push to `main` or on demand;
   pushing a `v*.*.*` tag builds a signed release bundle and attaches it to a
   GitHub Release. See `docs/deployment/android-release.md`.
+
+## Contributing
+
+See `CONTRIBUTING.md` for the development workflow and the ground rules
+(offline-only, encrypted-at-rest) that PRs are held to, and
+`CODE_OF_CONDUCT.md` for community expectations.
+
+## License
+
+InnerFlare is free software: you can redistribute it and/or modify it
+under the terms of the GNU General Public License v3.0 or later — see
+`LICENSE`. Third-party dependencies are under their own (permissive)
+licenses — see `NOTICE.md`, or Settings → "Open source licenses" in the
+app itself for the complete, auto-generated list.

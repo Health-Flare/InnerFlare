@@ -82,6 +82,19 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
           ),
+          const Divider(height: 32),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(20, 0, 20, 4),
+            child: Text('About', style: TextStyle(fontWeight: FontWeight.w600)),
+          ),
+          ListTile(
+            title: const Text('Open source licenses'),
+            trailing: const Icon(Icons.chevron_right_rounded),
+            onTap: () => showLicensePage(
+              context: context,
+              applicationName: 'InnerFlare',
+            ),
+          ),
         ],
       ),
     );

@@ -1,0 +1,11 @@
+// Per-developer Xcode signing settings — not committed (see ios/.gitignore).
+//
+// Copy this file to Local.xcconfig and fill in your own Apple Developer
+// Team ID to build/run on a real device or produce a locally-signed
+// release build. Find your Team ID in Xcode → Runner target → Signing &
+// Capabilities → Team, or at https://developer.appleid.apple.com/account
+// under Membership.
+//
+// Leave Local.xcconfig absent (or this value empty) to build for the iOS
+// Simulator only, or to use Xcode's automatic "Sign to Run Locally".
+DEVELOPMENT_TEAM =
