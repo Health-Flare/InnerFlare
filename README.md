@@ -39,6 +39,24 @@ If `flutter devices` doesn't pick up a freshly-booted simulator right away,
 give it a few seconds and try again — `flutter doctor -v` also lists
 connected devices.
 
+### Running on a real iOS device / a locally-signed iOS build
+
+The Simulator needs no signing setup, but a physical device (or a signed
+local release build) does. The Xcode project doesn't hardcode a Team ID —
+it reads `DEVELOPMENT_TEAM` from `ios/Flutter/Local.xcconfig`, which is
+gitignored since it's specific to whichever Apple Developer account you
+build with:
+
+```bash
+cp ios/Flutter/Local.xcconfig.example ios/Flutter/Local.xcconfig
+# then edit ios/Flutter/Local.xcconfig and set DEVELOPMENT_TEAM to your
+# Team ID (Xcode → Runner target → Signing & Capabilities → Team, or
+# https://developer.appleid.apple.com/account under Membership)
+```
+
+Without this file, `DEVELOPMENT_TEAM` resolves to empty and Xcode falls
+back to "Sign to Run Locally" / Simulator-only builds.
+
 ### Android Emulator
 
 ```bash
