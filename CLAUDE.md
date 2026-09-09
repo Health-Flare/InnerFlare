@@ -158,6 +158,16 @@ Use `pump(Duration(milliseconds: 500))` instead of `pumpAndSettle()` when provid
   release App Bundle + APK and attaches them to a GitHub Release — see
   `docs/deployment/android-release.md` for the one-time keystore/secrets
   setup and the pre-launch Play Store checklist.
+- **Dependency updates** (`renovate.json5`): weekly (Monday) batched PRs for
+  `pubspec.yaml` and GitHub Actions versions, gated by the same CI checks as
+  any other PR. Patch/minor dev-only tooling and GitHub Actions bumps
+  auto-merge once green; runtime (`dependencies:`) bumps, the riverpod
+  family (grouped — it spans `dependencies:`/`dev_dependencies:` and must
+  move together), and every major version bump always wait for manual
+  review. This split exists because routine-looking bumps have broken the
+  build here before (see the biometric-gate and riverpod migration notes
+  under "Encrypted, biometric-gated storage") — tune the `packageRules` in
+  `renovate.json5` directly if that balance needs to shift.
 
 ## Code Quality Rules
 
