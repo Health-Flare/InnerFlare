@@ -132,3 +132,17 @@ deployment target" error.
   builds a debug APK you can sideload on every push to `main` or on demand;
   pushing a `v*.*.*` tag builds a signed release bundle and attaches it to a
   GitHub Release. See `docs/deployment/android-release.md`.
+
+## Contributing
+
+See `CONTRIBUTING.md` for the development workflow and the ground rules
+(offline-only, encrypted-at-rest) that PRs are held to, and
+`CODE_OF_CONDUCT.md` for community expectations.
+
+## License
+
+InnerFlare is free software: you can redistribute it and/or modify it
+under the terms of the GNU General Public License v3.0 or later — see
+`LICENSE`. Third-party dependencies are under their own (permissive)
+licenses — see `NOTICE.md`, or Settings → "Open source licenses" in the
+app itself for the complete, auto-generated list.
