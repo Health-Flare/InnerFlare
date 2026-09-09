@@ -4,44 +4,14 @@ on:
   # Manual "get me an APK now" run — download the artifact and sideload it.
   workflow_dispatch:
   push:
-    branches: [main]
     # Signed release build for the Play Store, triggered by a version tag.
     tags:
       - "v*.*.*"
 
 jobs:
-  changes:
-    name: Detect relevant changes
-    # Only meaningful for the branch-push trigger below — workflow_dispatch and
-    # tag pushes always build regardless of what changed, so this job is skipped
-    # (and debug-apk's `needs.changes.outputs.app == 'true'` check short-circuits)
-    # for those events rather than pointlessly diffing paths.
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    outputs:
-      app: ${{ steps.filter.outputs.app }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          filters: |
-            app:
-              - 'lib/**'
-              - 'android/**'
-              - 'assets/**'
-              - 'pubspec.yaml'
-              - 'pubspec.lock'
-              - '.github/workflows/android-release.yml'
-
   debug-apk:
     name: Debug APK (sideload build)
-    needs: changes
-    if: |
-      always() &&
-      (github.event_name == 'workflow_dispatch' ||
-        (github.ref == 'refs/heads/main' && needs.changes.outputs.app == 'true'))
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
