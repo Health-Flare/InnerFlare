@@ -1,7 +1,17 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:inner_flare/core/debug/demo_data.dart';
+import 'package:inner_flare/core/providers/calendar_month_logs_provider.dart';
+import 'package:inner_flare/core/providers/cycle_day_log_entry_provider.dart';
+import 'package:inner_flare/core/providers/cycle_day_log_repository_provider.dart';
+import 'package:inner_flare/core/providers/cycle_insights_provider.dart';
+import 'package:inner_flare/core/providers/cycle_prediction_provider.dart';
 import 'package:inner_flare/core/providers/database_provider.dart';
+import 'package:inner_flare/core/providers/has_any_logs_provider.dart';
 import 'package:inner_flare/core/providers/lock_timeout_provider.dart';
+import 'package:inner_flare/core/providers/now_provider.dart';
+import 'package:inner_flare/core/providers/today_log_provider.dart';
 import 'package:inner_flare/features/dashboard/widgets/database_status_indicator.dart';
 import 'package:inner_flare/models/lock_timeout.dart';
 import 'package:sqflite_common/sqlite_api.dart';
@@ -95,10 +105,61 @@ class SettingsScreen extends ConsumerWidget {
               applicationName: 'InnerFlare',
             ),
           ),
+          if (kDebugMode) ...[
+            const Divider(height: 32),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(20, 0, 20, 4),
+              child: Text(
+                'Demo data',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(20, 0, 20, 8),
+              child: Text(
+                'Debug builds only, never shipped to users — fills the log '
+                'with a few months of sample history for taking '
+                'screenshots.',
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: OutlinedButton(
+                onPressed: () => _loadDemoData(context, ref),
+                child: const Text('Load demo data'),
+              ),
+            ),
+          ],
         ],
       ),
     );
   }
+}
+
+/// Fills the log with [buildDemoCycleLogs] via the same repository real
+/// logging goes through, then invalidates every provider that reads from
+/// it so the dashboard/calendar/insights screens reflect it immediately.
+/// Debug-only — see the "Demo data" section above.
+Future<void> _loadDemoData(BuildContext context, WidgetRef ref) async {
+  final repository = await ref.read(cycleDayLogRepositoryProvider.future);
+  final now = ref.read(nowProvider)();
+  final logs = buildDemoCycleLogs(now: now)
+    ..sort((a, b) => a.date.compareTo(b.date));
+  for (final log in logs) {
+    await repository.save(log);
+  }
+
+  ref.invalidate(todayLogProvider);
+  ref.invalidate(hasAnyLogsProvider);
+  ref.invalidate(cycleInsightsProvider);
+  ref.invalidate(cyclePredictionProvider);
+  ref.invalidate(calendarMonthLogsProvider);
+  ref.invalidate(cycleDayLogEntryProvider);
+
+  if (!context.mounted) return;
+  ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(const SnackBar(content: Text('Demo data loaded.')));
 }
 
 /// The database connection's current state, in full: a status line, the

@@ -43,3 +43,8 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Ephemeral output of integration_test/screenshot_test.dart — the curated,
+# submission-ready copies live in /screenshots/app_store and
+# /screenshots/play_store instead (see test_driver/integration_test.dart).
+/screenshots/raw/
