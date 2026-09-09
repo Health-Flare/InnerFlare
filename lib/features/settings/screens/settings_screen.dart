@@ -3,15 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inner_flare/core/providers/database_provider.dart';
 import 'package:inner_flare/core/providers/lock_timeout_provider.dart';
 import 'package:inner_flare/features/dashboard/widgets/database_status_indicator.dart';
+import 'package:inner_flare/features/settings/screens/symptom_settings_screen.dart';
 import 'package:inner_flare/models/lock_timeout.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 
 /// App settings (docs/features/navigation.feature: "Settings is reachable
 /// without leaving the current task"). Currently the encrypted database's
 /// connection status (a diagnostic aid for real-device unlock issues —
-/// see lib/core/security/biometric_gate.dart) and the idle-lock timeout
-/// (docs/features/app_lock.feature) — more settings land here as they're
-/// built.
+/// see lib/core/security/biometric_gate.dart), the idle-lock timeout
+/// (docs/features/app_lock.feature), and the symptom catalog
+/// (docs/features/symptom_settings.feature) — more settings land here as
+/// they're built.
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
@@ -81,6 +83,29 @@ class SettingsScreen extends ConsumerWidget {
                 ],
               ),
             ),
+          ),
+          const Divider(height: 32),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(20, 0, 20, 4),
+            child: Text(
+              'Symptoms',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ),
+          ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+            title: const Text('Symptoms to track'),
+            subtitle: const Text(
+              'Change, add, enable, or disable the symptoms you can log.',
+            ),
+            trailing: const Icon(Icons.chevron_right_rounded),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const SymptomSettingsScreen(),
+                ),
+              );
+            },
           ),
         ],
       ),

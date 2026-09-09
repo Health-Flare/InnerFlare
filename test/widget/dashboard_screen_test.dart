@@ -4,13 +4,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:inner_flare/core/providers/cycle_day_log_repository_provider.dart';
 import 'package:inner_flare/core/providers/dashboard_card_preferences_repository_provider.dart';
 import 'package:inner_flare/core/providers/now_provider.dart';
+import 'package:inner_flare/core/providers/tracked_symptoms_repository_provider.dart';
 import 'package:inner_flare/data/database/schema.dart';
 import 'package:inner_flare/data/repositories/cycle_day_log_repository.dart';
 import 'package:inner_flare/data/repositories/dashboard_card_preferences_repository.dart';
+import 'package:inner_flare/data/repositories/tracked_symptoms_repository.dart';
 import 'package:inner_flare/features/dashboard/screens/dashboard_screen.dart';
 import 'package:inner_flare/models/cycle_day_log.dart';
 import 'package:inner_flare/models/period_flow.dart';
-import 'package:inner_flare/models/symptom.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 
 import '../helpers/test_app_builder.dart';
@@ -41,6 +42,17 @@ void main() {
     });
   }
 
+  // The log screen (opened via "Log today" or the calendar) reads the
+  // tracked symptom catalog; every override list needs this so it
+  // resolves to an in-memory db instead of the real (biometric-gated)
+  // one.
+  Override symptomsOverride() {
+    return trackedSymptomsRepositoryProvider.overrideWith((ref) async {
+      final db = await openInMemoryTestDatabase(onCreate: onCreate);
+      return TrackedSymptomsRepository(db);
+    });
+  }
+
   List<Override> overridesFor(DateTime Function() now) {
     return [
       nowProvider.overrideWithValue(now),
@@ -50,6 +62,7 @@ void main() {
         return CycleDayLogRepository(db);
       }),
       dashboardPrefsOverride(),
+      symptomsOverride(),
     ];
   }
 
@@ -116,6 +129,7 @@ void main() {
             return repository;
           }),
           dashboardPrefsOverride(),
+          symptomsOverride(),
         ],
       );
       await tester.pumpAndSettle();
@@ -152,7 +166,7 @@ void main() {
         CycleDayLog(
           date: DateTime(2026, 1, 1),
           periodFlow: PeriodFlow.light,
-          symptoms: const {Symptom.cramps},
+          symptoms: const {'cramps'},
           note: 'feeling off',
         ),
       );
@@ -166,6 +180,7 @@ void main() {
             return repository;
           }),
           dashboardPrefsOverride(),
+          symptomsOverride(),
         ],
       );
       await tester.pumpAndSettle();
@@ -190,7 +205,7 @@ void main() {
 
       final saved = await repository.getByDate(DateTime(2026, 1, 1));
       expect(saved?.periodFlow, PeriodFlow.heavy);
-      expect(saved?.symptoms, {Symptom.cramps});
+      expect(saved?.symptoms, {'cramps'});
       expect(saved?.note, 'feeling off');
 
       final rows = await openDb!.query(cycleDayLogsTable);
@@ -214,6 +229,7 @@ void main() {
             return repository;
           }),
           dashboardPrefsOverride(),
+          symptomsOverride(),
         ],
       );
       await tester.pumpAndSettle();
@@ -229,7 +245,7 @@ void main() {
       await tester.tap(find.widgetWithText(FilterChip, 'Fatigue'));
       await tester.pumpAndSettle();
       saved = await repository.getByDate(DateTime(2026, 1, 1));
-      expect(saved?.symptoms, {Symptom.fatigue});
+      expect(saved?.symptoms, {'fatigue'});
 
       // Tapping a selected symptom chip again removes it.
       await tester.tap(find.widgetWithText(FilterChip, 'Fatigue'));
@@ -256,6 +272,7 @@ void main() {
             return repository;
           }),
           dashboardPrefsOverride(),
+          symptomsOverride(),
         ],
       );
       await tester.pumpAndSettle();
@@ -310,6 +327,7 @@ void main() {
             return repository;
           }),
           dashboardPrefsOverride(),
+          symptomsOverride(),
         ],
       );
       await tester.pumpAndSettle();

@@ -2,7 +2,6 @@ import 'package:inner_flare/data/database/schema.dart';
 import 'package:inner_flare/models/cycle_day_log.dart';
 import 'package:inner_flare/models/ovulation_test_result.dart';
 import 'package:inner_flare/models/period_flow.dart';
-import 'package:inner_flare/models/symptom.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 
 /// Hand-written SQL access to `cycle_day_logs`. Maps rows to/from
@@ -101,7 +100,7 @@ class CycleDayLogRepository {
       'date': dateKey,
       'period_flow': log.periodFlow?.name,
       'is_period_start': log.isPeriodStart ? 1 : 0,
-      'symptoms': log.symptoms.map((symptom) => symptom.name).join(','),
+      'symptoms': log.symptoms.join(','),
       'note': log.note,
       'ovulation_test_result': log.ovulationTestResult?.name,
       'basal_body_temp_celsius': log.basalBodyTempCelsius,
@@ -116,10 +115,7 @@ class CycleDayLogRepository {
       isPeriodStart: (row['is_period_start'] as int? ?? 0) != 0,
       symptoms: symptomsRaw.isEmpty
           ? const {}
-          : symptomsRaw
-                .split(',')
-                .map((name) => Symptom.values.byName(name))
-                .toSet(),
+          : symptomsRaw.split(',').toSet(),
       note: row['note'] as String?,
       ovulationTestResult: _enumOrNull(
         OvulationTestResult.values,

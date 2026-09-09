@@ -1,6 +1,5 @@
 import 'package:inner_flare/models/cycle_day_log.dart';
 import 'package:inner_flare/models/period_flow.dart';
-import 'package:inner_flare/models/symptom.dart';
 
 /// A day with no period flow and no symptoms — the "confirm with zero
 /// input" case from docs/features/log.feature.
@@ -32,7 +31,7 @@ List<DateTime> regularPeriodStarts({
 /// A day logged with symptoms only, no period flow.
 CycleDayLog symptomOnlyLog({
   required DateTime date,
-  Set<Symptom> symptoms = const {Symptom.cramps, Symptom.fatigue},
+  Set<String> symptoms = const {'cramps', 'fatigue'},
 }) {
   return CycleDayLog(date: date, symptoms: symptoms);
 }

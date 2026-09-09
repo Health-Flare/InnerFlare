@@ -1,6 +1,5 @@
 import 'package:inner_flare/models/ovulation_test_result.dart';
 import 'package:inner_flare/models/period_flow.dart';
-import 'package:inner_flare/models/symptom.dart';
 
 /// Domain model for a single logged day. Immutable; maps to the
 /// `cycle_day_logs` table (see BRIEF.md §4.3) via a repository, never
@@ -20,7 +19,11 @@ class CycleDayLog {
   final DateTime date;
   final PeriodFlow? periodFlow;
   final bool isPeriodStart;
-  final Set<Symptom> symptoms;
+
+  /// [TrackedSymptom.id] values (see lib/models/tracked_symptom.dart), not
+  /// the symptoms themselves — a day's log outlives any later rename or
+  /// disabling of the symptom it references.
+  final Set<String> symptoms;
   final String? note;
   final OvulationTestResult? ovulationTestResult;
   final double? basalBodyTempCelsius;
@@ -29,7 +32,7 @@ class CycleDayLog {
     DateTime? date,
     PeriodFlow? periodFlow,
     bool? isPeriodStart,
-    Set<Symptom>? symptoms,
+    Set<String>? symptoms,
     String? note,
     OvulationTestResult? ovulationTestResult,
     double? basalBodyTempCelsius,

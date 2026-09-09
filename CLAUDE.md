@@ -87,6 +87,7 @@ Cycle-math logic (average cycle length, variability, next-period/fertile-window 
 | Dashboard customization | `docs/features/dashboard.feature` |
 | Export/import | `docs/features/export.feature` |
 | Navigation | `docs/features/navigation.feature` |
+| Symptom tracking settings | `docs/features/symptom_settings.feature` |
 
 ## Code Patterns
 
@@ -101,7 +102,7 @@ Cycle-math logic (average cycle length, variability, next-period/fertile-window 
 class CycleDayLog {
   final DateTime date;
   final PeriodFlow? flow;
-  final Set<Symptom> symptoms;
+  final Set<String> symptoms; // TrackedSymptom ids
   final String? note;
   // ...
 }

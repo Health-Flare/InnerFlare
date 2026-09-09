@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:inner_flare/core/providers/security_settings_repository_provider.dart';
+import 'package:inner_flare/core/providers/tracked_symptoms_repository_provider.dart';
 import 'package:inner_flare/data/database/schema.dart';
 import 'package:inner_flare/data/repositories/security_settings_repository.dart';
+import 'package:inner_flare/data/repositories/tracked_symptoms_repository.dart';
 import 'package:inner_flare/features/settings/screens/settings_screen.dart';
+import 'package:inner_flare/features/settings/screens/symptom_settings_screen.dart';
 import 'package:inner_flare/models/lock_timeout.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 
@@ -26,6 +29,10 @@ void main() {
         final db = await openInMemoryTestDatabase(onCreate: onCreate);
         openDb = db;
         return SecuritySettingsRepository(db);
+      }),
+      trackedSymptomsRepositoryProvider.overrideWith((ref) async {
+        final db = await openInMemoryTestDatabase(onCreate: onCreate);
+        return TrackedSymptomsRepository(db);
       }),
     ];
   }
@@ -72,4 +79,24 @@ void main() {
       expect(find.text(timeout.label), findsOneWidget);
     }
   });
+
+  testWidgets(
+    'the symptoms entry point opens symptom settings '
+    '(docs/features/symptom_settings.feature)',
+    (tester) async {
+      await pumpTestApp(
+        tester,
+        const SettingsScreen(),
+        overrides: overrides(),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Symptoms to track'), findsOneWidget);
+
+      await tester.tap(find.text('Symptoms to track'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SymptomSettingsScreen), findsOneWidget);
+    },
+  );
 }
