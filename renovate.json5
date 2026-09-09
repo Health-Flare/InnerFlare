@@ -74,6 +74,22 @@
       automerge: false,
       labels: ['dependencies', 'major-update'],
     },
+
+    // android/settings.gradle.kts declares the standard `flutter create`
+    // boilerplate plugin `dev.flutter.flutter-plugin-loader` version
+    // "1.0.0". It isn't fetched from Maven/Gradle Plugin Portal at all —
+    // pluginManagement's includeBuild("$flutterSdkPath/packages/flutter_tools/gradle")
+    // supplies it locally from the bundled Flutter SDK, and its version
+    // tracks the Flutter SDK rather than an independent release train.
+    // Renovate's gradle manager doesn't know that and repeatedly fails
+    // trying to resolve it against the configured repositories (see the
+    // "Package lookup failures" / "Dependency Lookup Warnings" repository
+    // problems on the dashboard) — disable lookups for it entirely.
+    {
+      matchManagers: ['gradle'],
+      matchPackageNames: ['dev.flutter.flutter-plugin-loader'],
+      enabled: false,
+    },
   ],
 
   // Keeps pubspec.lock's transitive deps current even between direct
