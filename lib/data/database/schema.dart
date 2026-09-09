@@ -1,9 +1,10 @@
+import 'package:inner_flare/models/tracked_symptom.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 
 /// Bumped whenever the schema changes; every bump needs a matching branch
 /// in [onUpgrade] so exported backups from older versions still import
 /// cleanly (see BRIEF.md §4.2).
-const int schemaVersion = 4;
+const int schemaVersion = 5;
 
 const String cycleDayLogsTable = 'cycle_day_logs';
 
@@ -64,11 +65,43 @@ CREATE TABLE $quickStatPreferencesTable (
 )
 ''';
 
+/// The user's configurable symptom catalog (docs/features/symptom_settings.
+/// feature) — built-in defaults plus anything they've added, each with its
+/// own enabled state. `cycle_day_logs.symptoms` stores a comma-separated
+/// list of `id`s from this table.
+const String symptomsTable = 'symptoms';
+
+const String _createSymptomsTable =
+    '''
+CREATE TABLE $symptomsTable (
+  id TEXT PRIMARY KEY,
+  label TEXT NOT NULL,
+  is_custom INTEGER NOT NULL DEFAULT 0,
+  enabled INTEGER NOT NULL DEFAULT 1,
+  sort_order INTEGER NOT NULL
+)
+''';
+
+Future<void> _seedBuiltInSymptoms(Database db) async {
+  for (var i = 0; i < builtInSymptoms.length; i++) {
+    final (id, label) = builtInSymptoms[i];
+    await db.insert(symptomsTable, {
+      'id': id,
+      'label': label,
+      'is_custom': 0,
+      'enabled': 1,
+      'sort_order': i,
+    });
+  }
+}
+
 Future<void> onCreate(Database db, int version) async {
   await db.execute(_createCycleDayLogsTable);
   await db.execute(_createDashboardCardPreferencesTable);
   await db.execute(_createSecuritySettingsTable);
   await db.execute(_createQuickStatPreferencesTable);
+  await db.execute(_createSymptomsTable);
+  await _seedBuiltInSymptoms(db);
 }
 
 /// Bump [schemaVersion] and add a branch here (keyed off [oldVersion])
@@ -82,5 +115,9 @@ Future<void> onUpgrade(Database db, int oldVersion, int newVersion) async {
   }
   if (oldVersion < 4) {
     await db.execute(_createQuickStatPreferencesTable);
+  }
+  if (oldVersion < 5) {
+    await db.execute(_createSymptomsTable);
+    await _seedBuiltInSymptoms(db);
   }
 }

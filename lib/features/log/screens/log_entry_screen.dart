@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inner_flare/core/providers/cycle_day_log_entry_provider.dart';
 import 'package:inner_flare/core/providers/now_provider.dart';
+import 'package:inner_flare/core/providers/tracked_symptoms_provider.dart';
 import 'package:inner_flare/features/log/widgets/flow_selector.dart';
 import 'package:inner_flare/features/log/widgets/symptom_selector.dart';
 import 'package:inner_flare/models/cycle_day_log.dart';
 import 'package:inner_flare/models/period_flow.dart';
-import 'package:inner_flare/models/symptom.dart';
 
 /// The single-screen log UI for [date] — today or any prior day
 /// (docs/features/log.feature). No field is required to save — flow,
@@ -37,7 +37,7 @@ class LogEntryScreen extends ConsumerStatefulWidget {
 
 class _LogEntryScreenState extends ConsumerState<LogEntryScreen> {
   late PeriodFlow? _flow;
-  late Set<Symptom> _symptoms;
+  late Set<String> _symptoms;
   late final TextEditingController _noteController;
   bool _saveFailed = false;
 
@@ -84,7 +84,7 @@ class _LogEntryScreenState extends ConsumerState<LogEntryScreen> {
     await _persist();
   }
 
-  Future<void> _onSymptomsChanged(Set<Symptom> symptoms) async {
+  Future<void> _onSymptomsChanged(Set<String> symptoms) async {
     setState(() => _symptoms = symptoms);
     await _persist();
   }
@@ -139,7 +139,7 @@ class _LogEntryScreenState extends ConsumerState<LogEntryScreen> {
             const SizedBox(height: 24),
             Text('Symptoms', style: Theme.of(context).textTheme.titleSmall),
             const SizedBox(height: 8),
-            SymptomSelector(selected: _symptoms, onChanged: _onSymptomsChanged),
+            _symptomSelector(),
             const SizedBox(height: 24),
             Text('Note', style: Theme.of(context).textTheme.titleSmall),
             const SizedBox(height: 8),
@@ -194,5 +194,29 @@ class _LogEntryScreenState extends ConsumerState<LogEntryScreen> {
   String _formatDate(DateTime date) {
     return '${_weekdays[date.weekday - 1]}, ${_months[date.month - 1]} '
         '${date.day}';
+  }
+
+  /// The chip list to offer: enabled tracked symptoms, plus any symptom
+  /// already selected on this day even if it's since been disabled — so
+  /// disabling one never silently hides it from a day it's already
+  /// logged on (docs/features/symptom_settings.feature, "Disabling a
+  /// symptom never touches days already logged with it").
+  Widget _symptomSelector() {
+    final trackedSymptomsAsync = ref.watch(trackedSymptomsProvider);
+    return trackedSymptomsAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, _) => Text("Couldn't load symptoms: $error"),
+      data: (all) {
+        final options = [
+          for (final symptom in all)
+            if (symptom.enabled || _symptoms.contains(symptom.id)) symptom,
+        ];
+        return SymptomSelector(
+          options: options,
+          selected: _symptoms,
+          onChanged: _onSymptomsChanged,
+        );
+      },
+    );
   }
 }
