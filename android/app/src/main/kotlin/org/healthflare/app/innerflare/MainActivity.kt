@@ -1,4 +1,4 @@
-package com.ahosking.inner_flare
+package org.healthflare.app.innerflare
 
 import io.flutter.embedding.android.FlutterFragmentActivity
 

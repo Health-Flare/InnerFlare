@@ -1,0 +1,49 @@
+# DRAFT — not yet submitted to fdroid/fdroid-data.
+#
+# Starting point only. Validate every field against F-Droid's current
+# Build Metadata Reference (https://f-droid.org/docs/Build_Metadata_Reference/)
+# before opening the actual merge request — this schema evolves, and the
+# Flutter build steps below are unverified against F-Droid's real build
+# sandbox (see docs/deployment/fdroid/README.md — the build spike has to
+# pass first).
+
+Categories:
+  - Health
+Summary: Offline, encrypted menstrual cycle tracker
+Description: |
+  InnerFlare is a menstrual cycle tracking companion. It works fully
+  offline: no network calls, no accounts, no cloud sync. All data stays
+  on-device in a SQLite database encrypted at rest, unlocked with
+  biometrics where the device supports it. Not a medical device; no
+  diagnostic claims.
+
+License: GPL-3.0-or-later
+SourceCode: https://github.com/Health-Flare/InnerFlare
+IssueTracker: https://github.com/Health-Flare/InnerFlare/issues
+
+AutoName: InnerFlare
+
+RepoType: git
+Repo: https://github.com/Health-Flare/InnerFlare.git
+
+Builds:
+  - versionName: '1.0.0'
+    versionCode: 1
+    commit: v1.0.0
+    subdir: android
+    sudo:
+      - apt-get update
+      - apt-get install -y curl git unzip xz-utils
+    # Flutter SDK provisioning: F-Droid has historically supported this via
+    # a pinned `srclibs` checkout of the Flutter SDK rather than a raw curl
+    # install. Replace this block once the build spike confirms the current
+    # supported approach — do not assume `flutter` is preinstalled.
+    init:
+      - flutter pub get
+      - flutter build apk --release
+    output: build/app/outputs/flutter-apk/app-release-unsigned.apk
+
+AutoUpdateMode: None
+UpdateCheckMode: Tags
+CurrentVersion: '1.0.0'
+CurrentVersionCode: 1

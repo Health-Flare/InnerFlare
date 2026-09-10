@@ -159,6 +159,18 @@ Use `pump(Duration(milliseconds: 500))` instead of `pumpAndSettle()` when provid
   release App Bundle + APK and attaches them to a GitHub Release — see
   `docs/deployment/android-release.md` for the one-time keystore/secrets
   setup and the pre-launch Play Store checklist.
+- **iOS build & release** (`.github/workflows/ios-release.yml`): an unsigned
+  iOS Simulator build on manual dispatch, no signing setup needed — a
+  smoke test, not something installable on a device. Pushing a `v*.*.*`
+  tag builds a signed IPA and uploads it to App Store Connect — see
+  `docs/deployment/ios-release.md` for the one-time Apple Developer/App
+  Store Connect setup, the repo secrets it needs, and the pre-launch App
+  Store checklist. As of writing this job can't actually run to completion
+  yet — the Apple secrets it depends on haven't been created.
+- **F-Droid**: no CI of ours — see `docs/deployment/fdroid/README.md` and
+  `docs/deployment/release-tasklist.md` for the submission plan; F-Droid
+  builds from a tagged commit on its own infrastructure via a metadata
+  file submitted to `fdroid/fdroid-data`, not a workflow in this repo.
 - **Dependency updates** (`renovate.json5`): weekly (Monday) batched PRs for
   `pubspec.yaml` and GitHub Actions versions, gated by the same CI checks as
   any other PR. Patch/minor dev-only tooling and GitHub Actions bumps

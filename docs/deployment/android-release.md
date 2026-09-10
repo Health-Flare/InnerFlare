@@ -96,8 +96,9 @@ Play Console will ask for and aren't set up yet:
       requires the form)
 - [ ] Content rating questionnaire
 - [ ] Target audience / ads declaration
-- [ ] Confirm `applicationId` in `android/app/build.gradle.kts`
-      (`com.ahosking.inner_flare`) is the one you want permanently — it
-      cannot be changed after the first Play Store upload
+- [x] Confirm `applicationId` in `android/app/build.gradle.kts` is the one
+      you want permanently, since it cannot be changed after the first
+      Play Store upload — set to `org.healthflare.app.innerflare`,
+      matching the app already created in Play Console
 - [ ] Decide on Play App Signing (Google-managed) vs. self-managed signing
       when you first upload the bundle

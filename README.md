@@ -147,9 +147,16 @@ deployment target" error.
 - **CI** (`.github/workflows/ci.yml`): format check, `flutter analyze`,
   offline-URL scan, and `flutter test` on every push to `main` and every PR.
 - **Android build & release** (`.github/workflows/android-release.yml`):
-  builds a debug APK you can sideload on every push to `main` or on demand;
-  pushing a `v*.*.*` tag builds a signed release bundle and attaches it to a
-  GitHub Release. See `docs/deployment/android-release.md`.
+  builds a debug APK you can sideload on demand (Actions tab → "Run
+  workflow"); pushing a `v*.*.*` tag builds a signed release bundle and
+  attaches it to a GitHub Release. See `docs/deployment/android-release.md`.
+- **iOS build & release** (`.github/workflows/ios-release.yml`): builds an
+  unsigned iOS Simulator build on demand; pushing a `v*.*.*` tag builds a
+  signed IPA and uploads it to App Store Connect (needs Apple signing
+  secrets configured first). See `docs/deployment/ios-release.md`.
+- **F-Droid**: not CI of ours — see `docs/deployment/fdroid/README.md`.
+- See `docs/deployment/release-tasklist.md` for the full Play
+  Store/App Store/F-Droid launch checklist.
 
 ## Contributing
 
