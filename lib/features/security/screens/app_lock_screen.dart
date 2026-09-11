@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inner_flare/core/providers/app_lock_provider.dart';
 import 'package:inner_flare/core/providers/biometric_gate_provider.dart';
+import 'package:inner_flare/core/providers/reauthenticating_provider.dart';
 import 'package:inner_flare/core/theme/app_theme.dart';
 
 /// Covers the app after it's been backgrounded past the idle timeout
@@ -21,7 +22,13 @@ class _AppLockScreenState extends ConsumerState<AppLockScreen> {
 
   Future<void> _unlock() async {
     setState(() => _authenticating = true);
+    // Flagged for the whole native-prompt round trip so AppLockGate can
+    // ignore the inactive/resumed transitions that prompt itself causes —
+    // see reauthenticating_provider.dart for why that matters.
+    final reauthFlag = ref.read(reauthenticationFlagProvider);
+    reauthFlag.inProgress = true;
     final authenticated = await ref.read(biometricGateProvider).authenticate();
+    reauthFlag.inProgress = false;
     if (!mounted) return;
     setState(() => _authenticating = false);
     if (authenticated) {
