@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inner_flare/core/providers/app_lock_provider.dart';
 import 'package:inner_flare/core/providers/lock_timeout_provider.dart';
 import 'package:inner_flare/core/providers/now_provider.dart';
+import 'package:inner_flare/core/providers/reauthenticating_provider.dart';
 import 'package:inner_flare/core/security/background_lock_policy.dart';
 import 'package:inner_flare/features/security/screens/app_lock_screen.dart';
 import 'package:inner_flare/models/lock_timeout.dart';
@@ -40,6 +41,15 @@ class _AppLockGateState extends ConsumerState<AppLockGate>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (ref.read(reauthenticationFlagProvider).inProgress) {
+      // AppLockScreen's own biometric/passcode prompt is what's causing
+      // this transition (system sheet, or Android's separate
+      // device-credential activity for a manual passcode) — not the user
+      // actually backgrounding the app. Treating it as a real
+      // backgrounding here would race with (and can undo) the unlock
+      // attempt already in flight — see reauthenticating_provider.dart.
+      return;
+    }
     final now = ref.read(nowProvider)();
     switch (state) {
       case AppLifecycleState.inactive:
