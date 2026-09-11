@@ -150,7 +150,7 @@ class DashboardScreen extends ConsumerWidget {
               height: 28,
             ),
             const SizedBox(width: 10),
-            const Text('InnerFlare'),
+            const Text('Inner Flare'),
           ],
         ),
         actions: [

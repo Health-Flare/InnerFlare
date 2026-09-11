@@ -1,6 +1,6 @@
-# Claude Code Project Guide — InnerFlare
+# Claude Code Project Guide — Inner Flare
 
-InnerFlare is a menstrual cycle tracking companion for iOS and Android. It's built with Flutter, uses Riverpod for state management, SQLite for local storage, and follows a feature-first architecture. The app is **fully offline** — no network calls, no cloud sync, all data stays on device unless the user explicitly exports it.
+Inner Flare is a menstrual cycle tracking companion for iOS and Android. It's built with Flutter, uses Riverpod for state management, SQLite for local storage, and follows a feature-first architecture. The app is **fully offline** — no network calls, no cloud sync, all data stays on device unless the user explicitly exports it.
 
 The database is encrypted at rest with SQLCipher (`sqflite_sqlcipher`, same API as `sqflite`), not plain `sqflite` — see "Encrypted, biometric-gated storage" under Key Design Decisions before touching `lib/data/database/` or `lib/core/security/`.
 

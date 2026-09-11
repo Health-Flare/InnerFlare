@@ -11,7 +11,7 @@ Categories:
   - Health
 Summary: Offline, encrypted menstrual cycle tracker
 Description: |
-  InnerFlare is a menstrual cycle tracking companion. It works fully
+  Inner Flare is a menstrual cycle tracking companion. It works fully
   offline: no network calls, no accounts, no cloud sync. All data stays
   on-device in a SQLite database encrypted at rest, unlocked with
   biometrics where the device supports it. Not a medical device; no
@@ -21,7 +21,7 @@ License: GPL-3.0-or-later
 SourceCode: https://github.com/Health-Flare/InnerFlare
 IssueTracker: https://github.com/Health-Flare/InnerFlare/issues
 
-AutoName: InnerFlare
+AutoName: Inner Flare
 
 RepoType: git
 Repo: https://github.com/Health-Flare/InnerFlare.git

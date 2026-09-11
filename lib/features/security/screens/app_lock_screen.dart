@@ -61,7 +61,7 @@ class _AppLockScreenState extends ConsumerState<AppLockScreen> {
                   ),
                   const SizedBox(height: 24),
                   const Text(
-                    'InnerFlare is locked',
+                    'Inner Flare is locked',
                     style: TextStyle(
                       color: AppColors.cream,
                       fontSize: 20,

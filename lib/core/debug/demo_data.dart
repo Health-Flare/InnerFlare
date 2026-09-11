@@ -14,7 +14,7 @@ import 'package:inner_flare/models/symptom.dart';
 /// The persona behind this dataset, for anyone reading a store
 /// screenshot or this file later, is "Jane Doe" — a placeholder name
 /// used only in our own screenshot tooling and its documentation.
-/// InnerFlare itself has no name/profile field anywhere (no accounts,
+/// Inner Flare itself has no name/profile field anywhere (no accounts,
 /// per CLAUDE.md's "Privacy-Centric" — see docs/features/onboarding.
 /// feature), so nothing here writes that name into the app or its data.
 ///

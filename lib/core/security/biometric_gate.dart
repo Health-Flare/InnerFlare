@@ -46,7 +46,7 @@ class LocalAuthBiometricGate implements BiometricGate {
       // prompt was treated as "can't tell, fail open" and granted access
       // without authenticating at all.
       return await _auth.authenticate(
-        localizedReason: 'Unlock InnerFlare to view your data',
+        localizedReason: 'Unlock Inner Flare to view your data',
         biometricOnly: false,
         persistAcrossBackgrounding: true,
       );

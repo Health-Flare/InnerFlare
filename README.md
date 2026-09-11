@@ -1,4 +1,4 @@
-# InnerFlare
+# Inner Flare
 
 A menstrual cycle tracking companion for iOS and Android. Fully offline — no
 network calls, no cloud sync, no accounts. All data stays on-device in a
@@ -166,7 +166,7 @@ See `CONTRIBUTING.md` for the development workflow and the ground rules
 
 ## License
 
-InnerFlare is free software: you can redistribute it and/or modify it
+Inner Flare is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License v3.0 or later — see
 `LICENSE`. Third-party dependencies are under their own (permissive)
 licenses — see `NOTICE.md`, or Settings → "Open source licenses" in the

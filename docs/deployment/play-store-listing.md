@@ -16,11 +16,11 @@ Private, offline cycle tracking. Encrypted on-device. No account, no cloud.
 ## Full description (max 4000 characters)
 
 ```
-InnerFlare is a menstrual cycle tracking app built around one idea: your cycle data is yours, and nobody else's. Not an app company's, not an advertiser's, not a data broker's.
+Inner Flare is a menstrual cycle tracking app built around one idea: your cycle data is yours, and nobody else's. Not an app company's, not an advertiser's, not a data broker's.
 
-WHY INNERFLARE IS DIFFERENT
+WHY INNER FLARE IS DIFFERENT
 
-Most cycle trackers ask you to create an account and sync to the cloud. InnerFlare doesn't have a cloud to sync to. There's no account, no login, no server anywhere in the picture. Every log, every note, every prediction is computed and stored entirely on your device.
+Most cycle trackers ask you to create an account and sync to the cloud. Inner Flare doesn't have a cloud to sync to. There's no account, no login, no server anywhere in the picture. Every log, every note, every prediction is computed and stored entirely on your device.
 
 - No account or sign-up, ever
 - No internet permission: the app cannot phone home even if it wanted to
@@ -41,16 +41,16 @@ Browse your history on a calendar with flow intensity visible at a glance. Build
 
 PREDICTIONS YOU CAN ACTUALLY CHECK
 
-Cycle length, variability, and predicted fertile/period windows are calculated from your own logged history using plain, transparent statistics, not an opaque model you have to trust blindly. If you haven't logged enough to predict from yet, InnerFlare tells you that honestly instead of guessing.
+Cycle length, variability, and predicted fertile/period windows are calculated from your own logged history using plain, transparent statistics, not an opaque model you have to trust blindly. If you haven't logged enough to predict from yet, Inner Flare tells you that honestly instead of guessing.
 
 YOUR DATA, PORTABLE ON YOUR TERMS
 
 Moving to a new phone? Export your full history to a single file whenever you choose, and import it on your next device. No cloud step in between, just you, moving your own file, over whatever method you trust: a cable, your own cloud storage, a file transfer app, however you prefer.
 
-InnerFlare is a tracking tool, not a diagnostic one, and it's not a substitute for medical advice. It simply shows you your own data, clearly, and keeps it private by default rather than by setting.
+Inner Flare is a tracking tool, not a diagnostic one, and it's not a substitute for medical advice. It simply shows you your own data, clearly, and keeps it private by default rather than by setting.
 ```
 
-(~2460/4000 characters)
+(~2470/4000 characters)
 
 ## Not yet written
 

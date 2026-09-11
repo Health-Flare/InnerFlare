@@ -31,7 +31,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500)); // page transition
     await tester.pumpAndSettle(); // flush the dashboard's async providers
 
-    expect(find.text('InnerFlare'), findsOneWidget);
+    expect(find.text('Inner Flare'), findsOneWidget);
     expect(find.text('Log today'), findsWidgets);
   });
 }

@@ -61,7 +61,7 @@ class SettingsScreen extends ConsumerWidget {
           const Padding(
             padding: EdgeInsets.fromLTRB(20, 0, 20, 8),
             child: Text(
-              'How long InnerFlare can sit in the background before you '
+              'How long Inner Flare can sit in the background before you '
               'need to unlock it again.',
             ),
           ),
@@ -102,7 +102,7 @@ class SettingsScreen extends ConsumerWidget {
             trailing: const Icon(Icons.chevron_right_rounded),
             onTap: () => showLicensePage(
               context: context,
-              applicationName: 'InnerFlare',
+              applicationName: 'Inner Flare',
             ),
           ),
           if (kDebugMode) ...[

@@ -9,7 +9,7 @@ metadata.
 
 ## Why this is more involved than it sounds
 
-InnerFlare is well-suited to F-Droid on paper — GPLv3, no analytics, no
+Inner Flare is well-suited to F-Droid on paper — GPLv3, no analytics, no
 network calls, no proprietary dependencies (see `NOTICE.md`: every direct
 dependency is MIT/BSD, and SQLCipher's own license is a permissive
 BSD-style license too). That's the easy part.

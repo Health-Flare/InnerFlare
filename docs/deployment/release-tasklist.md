@@ -1,6 +1,6 @@
 # Release task list: Google Play, F-Droid, Apple App Store
 
-Master checklist for getting InnerFlare live on all three stores, and the
+Master checklist for getting Inner Flare live on all three stores, and the
 CI needed to push subsequent versions out. Each platform has its own doc
 with detail; this file is the index and tracks cross-cutting work.
 
@@ -12,7 +12,7 @@ with detail; this file is the index and tracks cross-cutting work.
 
 ## Cross-cutting, before any store submission
 
-- [x] Decide the public app name shown to users (`InnerFlare`) and the package/bundle ID it's keyed off — `org.healthflare.app.innerflare` now, confirmed and set on both Android (`applicationId`/`namespace`) and iOS (`PRODUCT_BUNDLE_IDENTIFIER`), matching the app already created in Play Console. F-Droid's package id (see `docs/deployment/fdroid/`) is derived from the same value.
+- [x] Decide the public app name shown to users (`Inner Flare`) and the package/bundle ID it's keyed off — `org.healthflare.app.innerflare` now, confirmed and set on both Android (`applicationId`/`namespace`) and iOS (`PRODUCT_BUNDLE_IDENTIFIER`), matching the app already created in Play Console. F-Droid's package id (see `docs/deployment/fdroid/`) is derived from the same value.
 - [ ] Confirm `1.0.0+1` in `pubspec.yaml` is the intended v1 version/build number — Android's `versionCode`/`versionName` and iOS's `CFBundleVersion`/`CFBundleShortVersionString` both derive from it (`flutter.versionCode`/`flutter.versionName` in `android/app/build.gradle.kts`; Flutter's Xcode build phase does the equivalent for iOS).
 - [x] Write (or confirm final) app description / "what this app does" copy — Play Store short/full description written, see `docs/deployment/play-store-listing.md`. Still needed verbatim for the App Store listing and the F-Droid summary/description fields — reuse the same copy rather than writing three different versions.
 - [ ] Publish a privacy policy and host it somewhere stable (e.g. GitHub Pages from this repo, or a plain page in `docs/`). Required by Play (non-negotiable for health data) and by Apple; F-Droid doesn't require one but it's good practice to link it from the metadata anyway.

@@ -14,7 +14,7 @@ class InnerFlareApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'InnerFlare',
+      title: 'Inner Flare',
       theme: AppTheme.light,
       home: const LoadingScreen(),
       // Covers whatever screen is on top with a lock screen after the app

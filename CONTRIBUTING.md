@@ -1,6 +1,6 @@
-# Contributing to InnerFlare
+# Contributing to Inner Flare
 
-Thanks for taking a look at InnerFlare. This is a small, offline-only,
+Thanks for taking a look at Inner Flare. This is a small, offline-only,
 privacy-first project — contributions are welcome, but a few things about
 how it's built are non-negotiable (see "Ground rules" below) precisely
 because they protect that.

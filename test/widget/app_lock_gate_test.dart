@@ -68,7 +68,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('InnerFlare is locked'), findsNothing);
+      expect(find.text('Inner Flare is locked'), findsNothing);
       expect(find.text('dashboard content'), findsOneWidget);
     });
 
@@ -94,7 +94,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('InnerFlare is locked'), findsOneWidget);
+      expect(find.text('Inner Flare is locked'), findsOneWidget);
       // The underlying content is still there — just covered — so
       // nothing downstream needs to know it might be locked.
       expect(find.text('dashboard content'), findsOneWidget);
@@ -129,7 +129,7 @@ void main() {
       await tester.tap(find.text('Unlock'));
       await tester.pump(const Duration(milliseconds: 100));
 
-      expect(find.text('InnerFlare is locked'), findsOneWidget);
+      expect(find.text('Inner Flare is locked'), findsOneWidget);
     });
 
     testWidgets('successful re-authentication dismisses the lock screen', (
@@ -161,7 +161,7 @@ void main() {
       await tester.tap(find.text('Unlock'));
       await tester.pump(const Duration(milliseconds: 100));
 
-      expect(find.text('InnerFlare is locked'), findsNothing);
+      expect(find.text('Inner Flare is locked'), findsNothing);
       expect(find.text('dashboard content'), findsOneWidget);
     });
 
@@ -196,7 +196,7 @@ void main() {
           AppLifecycleState.resumed,
         );
         await tester.pump();
-        expect(find.text('InnerFlare is locked'), findsOneWidget);
+        expect(find.text('Inner Flare is locked'), findsOneWidget);
 
         // Tapping Unlock starts an authentication attempt that won't
         // resolve until we complete it below — standing in for the native
@@ -215,7 +215,7 @@ void main() {
         // The authentication succeeds and AppLockScreen unlocks the app...
         gate.complete(true);
         await tester.pump();
-        expect(find.text('InnerFlare is locked'), findsNothing);
+        expect(find.text('Inner Flare is locked'), findsNothing);
 
         // ...but the prompt's own dismissal resolves to `resumed` on the
         // app's lifecycle independently of (and here, after) that result.
@@ -227,7 +227,7 @@ void main() {
         );
         await tester.pump();
 
-        expect(find.text('InnerFlare is locked'), findsNothing);
+        expect(find.text('Inner Flare is locked'), findsNothing);
         expect(find.text('dashboard content'), findsOneWidget);
       },
     );

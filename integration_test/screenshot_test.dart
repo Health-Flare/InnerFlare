@@ -113,7 +113,7 @@ Future<void> _showScreen(
     UncontrolledProviderScope(
       container: container,
       child: MaterialApp(
-        title: 'InnerFlare',
+        title: 'Inner Flare',
         theme: AppTheme.light,
         debugShowCheckedModeBanner: false,
         home: screen,

@@ -1,6 +1,6 @@
 # Third-party notices
 
-InnerFlare is licensed under the GNU General Public License v3.0 or later
+Inner Flare is licensed under the GNU General Public License v3.0 or later
 (see `LICENSE`). It's built on the Flutter/Dart SDK and a number of
 third-party packages, each under its own license. This file lists what's
 bundled in a release build and the license each is under.
