@@ -86,9 +86,14 @@ setup.
 The pipeline above gets you a signed bundle; these are the non-CI things
 Play Console will ask for and aren't set up yet:
 
-- [ ] Play Console developer account (one-time $25 registration)
-- [ ] App listing: title, short/full description, icon, feature graphic,
-      phone screenshots
+- [x] Play Console developer account (one-time $25 registration)
+- [ ] App listing: title (done — "Inner Flare"), short/full description
+      (done, see `docs/deployment/play-store-listing.md` — paste directly
+      into Play Console), icon (launcher icon exists;
+      `assets/images/Inner Flare Logo 512.png` may also be the source for
+      it), feature graphic (1024×500 banner — **not done**, Play requires
+      this separately from the launcher icon and it doesn't exist yet),
+      phone screenshots (done, `screenshots/play_store/phone/`)
 - [ ] Privacy policy URL — required, and non-negotiable for an app that
       logs health data even though it's fully offline/on-device
 - [ ] Data safety form — declare what's collected (should be "no data
