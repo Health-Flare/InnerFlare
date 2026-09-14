@@ -1,23 +1,16 @@
 {
   $schema: 'https://docs.renovatebot.com/renovate-schema.json',
-  extends: ['config:recommended'],
+  extends: ['github>Health-Flare/renovate-configs//flutter-app.json5'],
 
   // This is a low-maintenance side project (see CLAUDE.md "Lightweight by
-  // Default") — batch updates into one weekly run instead of a steady drip
-  // of individual PRs.
-  schedule: ['before 6am on monday'],
-  timezone: 'UTC',
-
-  dependencyDashboard: true,
-  labels: ['dependencies'],
-
-  // Only major-version bumps are proposed at all. This repo's history is
-  // the reverse of the usual assumption: "routine" patch/minor bumps are
-  // exactly what broke the build before (see CLAUDE.md's biometric-gate and
-  // riverpod migration notes) because they went in with the least scrutiny,
-  // while majors already get a changelog read and manual review. So rather
-  // than triage patch/minor vs. major, skip patch/minor/pin/digest PRs
-  // entirely and put all the attention on majors.
+  // Default"). Only major-version bumps are proposed at all. This repo's
+  // history is the reverse of the usual assumption: "routine" patch/minor
+  // bumps are exactly what broke the build before (see CLAUDE.md's
+  // biometric-gate and riverpod migration notes) because they went in with
+  // the least scrutiny, while majors already get a changelog read and
+  // manual review. So rather than triage patch/minor vs. major, skip
+  // patch/minor/pin/digest PRs entirely and put all the attention on
+  // majors.
   major: { enabled: true },
   minor: { enabled: false },
   patch: { enabled: false },
@@ -28,16 +21,6 @@
   minimumReleaseAge: '7 days',
 
   packageRules: [
-    // No major version bump, from any manager, ever auto-merges. This repo
-    // has had to migrate provider APIs, renamed AsyncValue members, and a
-    // Flutter framework deprecation (onReorder -> onReorderItem) from
-    // majors that looked routine going in.
-    {
-      matchUpdateTypes: ['major'],
-      automerge: false,
-      labels: ['dependencies', 'major-update'],
-    },
-
     // riverpod / flutter_riverpod / riverpod_annotation / riverpod_generator
     // must move together (they span both dependencies: and
     // dev_dependencies:, and a partial bump doesn't build — see the
@@ -65,43 +48,5 @@
       matchUpdateTypes: ['major'],
       automerge: false,
     },
-
-    // android/settings.gradle.kts declares the standard `flutter create`
-    // boilerplate plugin `dev.flutter.flutter-plugin-loader` version
-    // "1.0.0". It isn't fetched from Maven/Gradle Plugin Portal at all —
-    // pluginManagement's includeBuild("$flutterSdkPath/packages/flutter_tools/gradle")
-    // supplies it locally from the bundled Flutter SDK, and its version
-    // tracks the Flutter SDK rather than an independent release train.
-    // Renovate doesn't know that; since the plugin isn't in its registry of
-    // known Gradle plugins, it guesses the standard marker artifact
-    // coordinate (`<pluginId>:<pluginId>.gradle.plugin`) and repeatedly
-    // fails resolving *that* against the configured repositories (see the
-    // "Package lookup failures" / "Dependency Lookup Warnings" repository
-    // problems on the dashboard) — match on the marker coordinate, not the
-    // bare plugin id, to actually disable the lookup.
-    {
-      matchManagers: ['gradle'],
-      matchPackageNames: [
-        'dev.flutter.flutter-plugin-loader',
-        'dev.flutter.flutter-plugin-loader:dev.flutter.flutter-plugin-loader.gradle.plugin',
-      ],
-      enabled: false,
-    },
   ],
-
-  // Keeps pubspec.lock's transitive deps current within existing version
-  // constraints even between direct version bumps in pubspec.yaml — this is
-  // routine lockfile hygiene, not a version bump, so it's unaffected by the
-  // major-only policy above.
-  lockFileMaintenance: {
-    enabled: true,
-    schedule: ['before 6am on monday'],
-  },
-
-  // Security patches bypass the major-only/release-age policy above by
-  // design — waiting a week (or for a major) to fix a known vulnerability
-  // defeats the point.
-  vulnerabilityAlerts: {
-    labels: ['dependencies', 'security'],
-  },
 }
