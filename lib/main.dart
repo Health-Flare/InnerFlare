@@ -19,7 +19,13 @@ class InnerFlareApp extends StatelessWidget {
       home: const LoadingScreen(),
       // Covers whatever screen is on top with a lock screen after the app
       // has spent too long backgrounded (docs/features/app_lock.feature),
-      // regardless of navigation depth.
+      // regardless of navigation depth. Deliberately does NOT also wrap
+      // AppUnlockGate here: that would start watching appDatabaseProvider
+      // — and so trigger the biometric/passcode prompt — the instant the
+      // app boots, before LoadingScreen's own splash has painted a single
+      // frame. AppUnlockGate is applied to the screen LoadingScreen hands
+      // off to instead, so the prompt only fires once the splash has had
+      // its moment (see loading_screen.dart).
       builder: (context, child) => AppLockGate(child: child!),
     );
   }

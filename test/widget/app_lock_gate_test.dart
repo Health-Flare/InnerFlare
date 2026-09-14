@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:inner_flare/core/providers/biometric_gate_provider.dart';
+import 'package:inner_flare/core/providers/database_unlocked_provider.dart';
 import 'package:inner_flare/core/providers/lock_timeout_provider.dart';
 import 'package:inner_flare/core/providers/now_provider.dart';
 import 'package:inner_flare/core/security/app_lock_gate.dart';
@@ -41,6 +42,17 @@ class _FixedLockTimeoutNotifier extends LockTimeoutNotifier {
   final LockTimeout value;
   @override
   Future<LockTimeout> build() async => value;
+}
+
+/// AppLockGate only eagerly warms lockTimeoutProvider once
+/// databaseUnlockedProvider is true (database_unlocked_provider.dart) —
+/// which in the real app is only ever the case once the user has already
+/// unlocked once via AppUnlockGate. Tests that exercise idle re-lock
+/// (rather than the unlock gating itself) need to represent that
+/// already-unlocked precondition explicitly.
+class _AlreadyUnlocked extends DatabaseUnlocked {
+  @override
+  bool build() => true;
 }
 
 void main() {
@@ -176,6 +188,7 @@ void main() {
             overrides: [
               nowProvider.overrideWithValue(clock.call),
               biometricGateProvider.overrideWithValue(gate),
+              databaseUnlockedProvider.overrideWith(_AlreadyUnlocked.new),
               lockTimeoutProvider.overrideWith(
                 () => _FixedLockTimeoutNotifier(LockTimeout.immediately),
               ),

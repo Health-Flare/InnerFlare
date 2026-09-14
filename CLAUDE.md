@@ -81,6 +81,7 @@ Cycle-math logic (average cycle length, variability, next-period/fertile-window 
 | Feature | File |
 |---------|------|
 | Onboarding | `docs/features/onboarding.feature` |
+| Unlocking the app (first open + recurring) | `docs/features/unlock.feature` |
 | Daily logging | `docs/features/log.feature` |
 | Calendar/history | `docs/features/calendar.feature` |
 | Cycle insights/predictions | `docs/features/insights.feature` |
