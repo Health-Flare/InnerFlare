@@ -85,6 +85,7 @@ Cycle-math logic (average cycle length, variability, next-period/fertile-window 
 | Daily logging | `docs/features/log.feature` |
 | Calendar/history | `docs/features/calendar.feature` |
 | Cycle insights/predictions | `docs/features/insights.feature` |
+| Perimenopause/menopause tracking | `docs/features/perimenopause.feature` |
 | Dashboard customization | `docs/features/dashboard.feature` |
 | Dashboard quick stats | `docs/features/quick_stats.feature` |
 | Export/import | `docs/features/export.feature` |
