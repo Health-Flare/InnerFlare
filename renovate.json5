@@ -11,36 +11,38 @@
   dependencyDashboard: true,
   labels: ['dependencies'],
 
-  packageRules: [
-    // Runtime app dependencies (pubspec.yaml `dependencies:`) sit on top of
-    // platform channels — biometrics, secure storage, encrypted SQLite —
-    // where this repo has already hit real breakage from routine-looking
-    // bumps (see CLAUDE.md's biometric-gate notes). Never auto-merge these;
-    // always read the changelog first.
-    {
-      matchManagers: ['pub'],
-      matchDepTypes: ['dependencies'],
-      automerge: false,
-    },
+  // Only major-version bumps are proposed at all. This repo's history is
+  // the reverse of the usual assumption: "routine" patch/minor bumps are
+  // exactly what broke the build before (see CLAUDE.md's biometric-gate and
+  // riverpod migration notes) because they went in with the least scrutiny,
+  // while majors already get a changelog read and manual review. So rather
+  // than triage patch/minor vs. major, skip patch/minor/pin/digest PRs
+  // entirely and put all the attention on majors.
+  major: { enabled: true },
+  minor: { enabled: false },
+  patch: { enabled: false },
+  pin: { enabled: false },
+  digest: { enabled: false },
 
-    // Dev-only tooling (lints, build_runner, test helpers): lower risk than
-    // runtime deps. Patch/minor can merge on their own once CI — analyze,
-    // format, the offline-URL scan, and the test suite — is green.
+  // Give a release a week to get yanked or hotfixed before it reaches a PR.
+  minimumReleaseAge: '7 days',
+
+  packageRules: [
+    // No major version bump, from any manager, ever auto-merges. This repo
+    // has had to migrate provider APIs, renamed AsyncValue members, and a
+    // Flutter framework deprecation (onReorder -> onReorderItem) from
+    // majors that looked routine going in.
     {
-      groupName: 'dev tooling (non-major)',
-      matchManagers: ['pub'],
-      matchDepTypes: ['dev_dependencies'],
-      matchUpdateTypes: ['patch', 'minor'],
-      automerge: true,
-      automergeType: 'pr',
+      matchUpdateTypes: ['major'],
+      automerge: false,
+      labels: ['dependencies', 'major-update'],
     },
 
     // riverpod / flutter_riverpod / riverpod_annotation / riverpod_generator
     // must move together (they span both dependencies: and
     // dev_dependencies:, and a partial bump doesn't build — see the
     // riverpod_generator 2.x -> 4.x migration in git history). Group into
-    // one PR; comes after the dev-tooling rule above so it overrides
-    // auto-merge for riverpod_generator specifically.
+    // one PR.
     {
       groupName: 'riverpod',
       matchManagers: ['pub'],
@@ -54,25 +56,14 @@
       automerge: false,
     },
 
-    // GitHub Actions patch/minor bumps (actions/checkout,
-    // subosito/flutter-action, etc.) don't touch app code and are low-risk.
+    // GitHub Actions majors (actions/checkout, subosito/flutter-action,
+    // etc.) don't interact with each other — batch them into one PR instead
+    // of one-per-action.
     {
-      groupName: 'github actions (non-major)',
+      groupName: 'github actions',
       matchManagers: ['github-actions'],
-      matchUpdateTypes: ['patch', 'minor'],
-      automerge: true,
-      automergeType: 'pr',
-    },
-
-    // Belt and suspenders: no major version bump, from any manager, ever
-    // auto-merges. This repo has had to migrate provider APIs, renamed
-    // AsyncValue members, and a Flutter framework deprecation
-    // (onReorder -> onReorderItem) from majors that looked routine going in.
-    {
-      matchManagers: ['pub', 'github-actions'],
       matchUpdateTypes: ['major'],
       automerge: false,
-      labels: ['dependencies', 'major-update'],
     },
 
     // android/settings.gradle.kts declares the standard `flutter create`
@@ -98,14 +89,18 @@
     },
   ],
 
-  // Keeps pubspec.lock's transitive deps current even between direct
-  // version bumps in pubspec.yaml — exactly the kind of drift that let
-  // analyzer/build_runner fall out of sync with the Dart SDK before.
+  // Keeps pubspec.lock's transitive deps current within existing version
+  // constraints even between direct version bumps in pubspec.yaml — this is
+  // routine lockfile hygiene, not a version bump, so it's unaffected by the
+  // major-only policy above.
   lockFileMaintenance: {
     enabled: true,
     schedule: ['before 6am on monday'],
   },
 
+  // Security patches bypass the major-only/release-age policy above by
+  // design — waiting a week (or for a major) to fix a known vulnerability
+  // defeats the point.
   vulnerabilityAlerts: {
     labels: ['dependencies', 'security'],
   },
