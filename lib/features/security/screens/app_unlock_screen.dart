@@ -1,29 +1,40 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:inner_flare/core/providers/database_provider.dart';
 import 'package:inner_flare/core/theme/app_theme.dart';
-import 'package:inner_flare/features/dashboard/widgets/database_status_indicator.dart';
 
-/// The dedicated, full-screen unlock prompt shown while the encrypted
-/// database is opening or has failed to open — first open of a session and
-/// any later re-open alike (docs/features/unlock.feature). Deliberately
-/// uses the same layout, colors, and wording as [AppLockScreen] so the two
-/// moments read as one unlock experience rather than two.
+/// The dedicated, full-screen unlock prompt shown whenever the encrypted
+/// database isn't open — first open of a session and any later re-open
+/// alike (docs/features/unlock.feature). Deliberately uses the same
+/// layout, colors, and wording as `AppLockScreen` so the two moments read
+/// as one unlock experience rather than two.
 ///
-/// The biometric/passcode prompt itself is already triggered automatically
-/// here, with no tap needed: `appDatabaseProvider` starts `AppDatabase`'s
-/// `open()` — which authenticates before it does anything else — the
-/// moment it's first watched, which is what showing this screen does.
-/// Retrying after a failure is the only thing that needs a tap, via
-/// [retryDatabaseUnlock].
-class AppUnlockScreen extends ConsumerWidget {
-  const AppUnlockScreen({super.key});
+/// Never triggers the biometric/passcode prompt on its own: [onUnlock] is
+/// only ever wired up to something when a tap should do that, so the
+/// system prompt only ever appears in direct response to the user tapping
+/// "Unlock" — see [AppUnlockGate] for why (an automatically-fired prompt
+/// can visually race a page transition and appear before the app has
+/// shown any of its own branding).
+class AppUnlockScreen extends StatelessWidget {
+  const AppUnlockScreen({
+    super.key,
+    required this.busy,
+    required this.failed,
+    this.onUnlock,
+  });
+
+  /// Whether an attempt is currently in flight — disables the button and
+  /// relabels it, same as `AppLockScreen`.
+  final bool busy;
+
+  /// Whether the most recent attempt failed — shows an explanation instead
+  /// of the "why this screen exists" copy shown before any attempt.
+  final bool failed;
+
+  /// Called when the user taps "Unlock". Null (button disabled) exactly
+  /// while [busy] is true.
+  final VoidCallback? onUnlock;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final dbAsync = ref.watch(appDatabaseProvider);
-    final failed = dbAsync.hasError;
-
+  Widget build(BuildContext context) {
     return Scaffold(
       body: DecoratedBox(
         decoration: const BoxDecoration(
@@ -60,31 +71,31 @@ class AppUnlockScreen extends ConsumerWidget {
                     failed
                         ? "That didn't go through, so your data stays "
                               'hidden until you try again.'
-                        : 'Authenticate to view your data.',
+                        : 'Your cycle data is encrypted on this device. '
+                              'Unlock with Face ID, Touch ID, or your '
+                              'passcode to continue.',
                     style: const TextStyle(
                       color: Color(0xFFB7C4C7),
                       fontSize: 14,
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  if (failed) ...[
-                    const SizedBox(height: 32),
-                    FilledButton(
-                      onPressed: () => retryDatabaseUnlock(ref),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: AppColors.emberOrange,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 32,
-                          vertical: 14,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
+                  const SizedBox(height: 32),
+                  FilledButton(
+                    onPressed: onUnlock,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppColors.emberOrange,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 14,
                       ),
-                      child: const Text('Unlock'),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
-                  ],
+                    child: Text(busy ? 'Unlocking…' : 'Unlock'),
+                  ),
                 ],
               ),
             ),

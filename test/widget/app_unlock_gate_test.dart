@@ -13,9 +13,10 @@ import '../helpers/test_database.dart';
 
 /// Covers docs/features/unlock.feature's first-open scenarios: a single
 /// dedicated unlock screen instead of a flash of partially-loaded content,
-/// no tap needed for the first attempt, a clear in-place explanation and
-/// single retry on failure, and the same visual language as the idle
-/// re-lock screen (see test/widget/app_lock_gate_test.dart).
+/// nothing about the database touched until the user taps "Unlock", a
+/// clear in-place explanation and single retry on failure, and the same
+/// visual language as the idle re-lock screen (see
+/// test/widget/app_lock_gate_test.dart).
 void main() {
   setUpAll(useInMemoryTestDatabaseFactory);
 
@@ -24,27 +25,37 @@ void main() {
   }
 
   testWidgets(
-    'shows a dedicated unlock screen — not the wrapped screen — while the '
-    'database is still opening, with no tap needed for this first attempt',
+    'shows a dedicated unlock screen with an enabled "Unlock" button, '
+    'without touching the database at all',
     (tester) async {
-      final completer = Completer<Database>();
+      var openAttempts = 0;
       await pumpTestApp(
         tester,
         AppUnlockGate(child: wrapped()),
         overrides: [
-          appDatabaseProvider.overrideWith((ref) => completer.future),
+          appDatabaseProvider.overrideWith((ref) async {
+            openAttempts++;
+            return Completer<Database>().future;
+          }),
         ],
       );
       await tester.pump();
 
       expect(find.text('Inner Flare is locked'), findsOneWidget);
-      expect(find.text('Unlock'), findsNothing);
+      final button = tester.widget<FilledButton>(find.byType(FilledButton));
+      expect(button.onPressed, isNotNull);
+      expect(find.text('Unlock'), findsOneWidget);
 
       // Same visual language as the idle re-lock screen
       // (AppLockScreen) — this shouldn't feel like a second, different
       // mechanism.
       final icon = tester.widget<Icon>(find.byIcon(Icons.lock_rounded));
       expect(icon.color, AppColors.softOrange);
+
+      // Sitting on this screen must never touch the database on its own —
+      // only a tap should.
+      await tester.pump(const Duration(seconds: 5));
+      expect(openAttempts, 0);
     },
   );
 
@@ -52,19 +63,56 @@ void main() {
       'onboarding on a first-ever launch just as much as the dashboard', (
     tester,
   ) async {
-    final completer = Completer<Database>();
+    final db = await openInMemoryTestDatabase(onCreate: onCreate);
+    addTearDown(db.close);
+
     await pumpTestApp(
       tester,
       AppUnlockGate(child: wrapped(text: 'onboarding step 1')),
-      overrides: [appDatabaseProvider.overrideWith((ref) => completer.future)],
+      overrides: [appDatabaseProvider.overrideWith((ref) async => db)],
     );
     await tester.pump();
 
     expect(find.text('Inner Flare is locked'), findsOneWidget);
-    // Covered, not removed — same as AppLockGate — so nothing downstream
-    // needs to know it might be locked.
+    expect(find.text('onboarding step 1'), findsNothing);
+
+    await tester.tap(find.text('Unlock'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Inner Flare is locked'), findsNothing);
     expect(find.text('onboarding step 1'), findsOneWidget);
   });
+
+  testWidgets(
+    'tapping "Unlock" is what starts opening the database — exactly once',
+    (tester) async {
+      var openAttempts = 0;
+      final completer = Completer<Database>();
+      await pumpTestApp(
+        tester,
+        AppUnlockGate(child: wrapped()),
+        overrides: [
+          appDatabaseProvider.overrideWith((ref) {
+            openAttempts++;
+            return completer.future;
+          }),
+        ],
+      );
+      await tester.pump();
+      expect(openAttempts, 0);
+
+      await tester.tap(find.text('Unlock'));
+      await tester.pump();
+
+      expect(openAttempts, 1);
+      // While the attempt is in flight, the button is disabled and
+      // relabelled — same pattern as AppLockScreen — so it can't be
+      // tapped again to fire a second, overlapping attempt.
+      expect(find.text('Unlocking…'), findsOneWidget);
+      final button = tester.widget<FilledButton>(find.byType(FilledButton));
+      expect(button.onPressed, isNull);
+    },
+  );
 
   testWidgets(
     'successful open dismisses the unlock screen, with the wrapped screen '
@@ -78,6 +126,9 @@ void main() {
         AppUnlockGate(child: wrapped()),
         overrides: [appDatabaseProvider.overrideWith((ref) async => db)],
       );
+      await tester.pump();
+
+      await tester.tap(find.text('Unlock'));
       await tester.pumpAndSettle();
 
       expect(find.text('Inner Flare is locked'), findsNothing);
@@ -86,9 +137,7 @@ void main() {
   );
 
   testWidgets('a failure explains itself directly on the unlock screen, with a '
-      'single "Unlock" retry action — not a stray icon or banner elsewhere', (
-    tester,
-  ) async {
+      'single "Unlock" retry action', (tester) async {
     await pumpTestApp(
       tester,
       AppUnlockGate(child: wrapped()),
@@ -98,10 +147,15 @@ void main() {
         }),
       ],
     );
+    await tester.pump();
+
+    await tester.tap(find.text('Unlock'));
     await tester.pumpAndSettle();
 
     expect(find.text('Inner Flare is locked'), findsOneWidget);
     expect(find.text('Unlock'), findsOneWidget);
+    final button = tester.widget<FilledButton>(find.byType(FilledButton));
+    expect(button.onPressed, isNotNull);
   });
 
   testWidgets('tapping "Unlock" after a failure retries exactly once', (
@@ -118,6 +172,9 @@ void main() {
         }),
       ],
     );
+    await tester.pump();
+
+    await tester.tap(find.text('Unlock'));
     await tester.pumpAndSettle();
     expect(openAttempts, 1);
 
@@ -142,6 +199,8 @@ void main() {
       AppUnlockGate(child: wrapped()),
       overrides: [appDatabaseProvider.overrideWith((ref) async => db)],
     );
+    await tester.pump();
+    await tester.tap(find.text('Unlock'));
     await tester.pumpAndSettle();
     expect(find.text('Inner Flare is locked'), findsNothing);
 

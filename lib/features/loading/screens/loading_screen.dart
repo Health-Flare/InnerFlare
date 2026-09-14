@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:inner_flare/core/security/app_unlock_gate.dart';
 import 'package:inner_flare/features/dashboard/screens/dashboard_screen.dart';
 import 'package:inner_flare/features/loading/loading_quotes.dart';
 
@@ -32,8 +33,12 @@ class LoadingScreen extends StatefulWidget {
   /// dashboard, per docs/features/loading.feature.
   final WidgetBuilder nextScreenBuilder;
 
+  /// Wrapped in [AppUnlockGate] — not any earlier — so the encrypted
+  /// database's biometric/passcode prompt (docs/features/unlock.feature)
+  /// only starts once this splash has had its own moment on screen,
+  /// rather than firing before the app has shown any of its own branding.
   static Widget _defaultNextScreen(BuildContext context) =>
-      const DashboardScreen();
+      const AppUnlockGate(child: DashboardScreen());
 
   @override
   State<LoadingScreen> createState() => _LoadingScreenState();

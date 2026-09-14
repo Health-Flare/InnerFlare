@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inner_flare/core/providers/app_lock_provider.dart';
+import 'package:inner_flare/core/providers/database_unlocked_provider.dart';
 import 'package:inner_flare/core/providers/lock_timeout_provider.dart';
 import 'package:inner_flare/core/providers/now_provider.dart';
 import 'package:inner_flare/core/providers/reauthenticating_provider.dart';
@@ -89,8 +90,16 @@ class _AppLockGateState extends ConsumerState<AppLockGate>
     // Watched (not just read) so the setting is already loaded by the
     // time didChangeAppLifecycleState needs it — this widget stays
     // mounted for the app's whole lifetime, so watching here keeps the
-    // otherwise-autoDispose provider alive throughout.
-    ref.watch(lockTimeoutProvider);
+    // otherwise-autoDispose provider alive throughout. Gated on
+    // databaseUnlockedProvider (a plain in-memory flag, not anything
+    // database-backed): lockTimeoutProvider reads from the database, and
+    // this widget mounts on the very first frame — watching it
+    // unconditionally used to open the database itself, before the user
+    // had even seen the unlock screen, let alone tapped it (see
+    // database_unlocked_provider.dart).
+    if (ref.watch(databaseUnlockedProvider)) {
+      ref.watch(lockTimeoutProvider);
+    }
     return Stack(children: [widget.child, if (isLocked) const AppLockScreen()]);
   }
 }
