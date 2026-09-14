@@ -3,7 +3,7 @@ import 'package:sqflite_common/sqlite_api.dart';
 /// Bumped whenever the schema changes; every bump needs a matching branch
 /// in [onUpgrade] so exported backups from older versions still import
 /// cleanly (see BRIEF.md §4.2).
-const int schemaVersion = 3;
+const int schemaVersion = 4;
 
 const String cycleDayLogsTable = 'cycle_day_logs';
 
@@ -50,10 +50,25 @@ CREATE TABLE $securitySettingsTable (
 )
 ''';
 
+/// Per-device quick stat slot configuration (docs/features/quick_stats.
+/// feature). Exactly two slots (`slot` 0 and 1), each an independent stat
+/// type + optional reference point. Never synced.
+const String quickStatPreferencesTable = 'quick_stat_preferences';
+
+const String _createQuickStatPreferencesTable =
+    '''
+CREATE TABLE $quickStatPreferencesTable (
+  slot INTEGER PRIMARY KEY,
+  stat_type TEXT NOT NULL,
+  reference_point TEXT NOT NULL
+)
+''';
+
 Future<void> onCreate(Database db, int version) async {
   await db.execute(_createCycleDayLogsTable);
   await db.execute(_createDashboardCardPreferencesTable);
   await db.execute(_createSecuritySettingsTable);
+  await db.execute(_createQuickStatPreferencesTable);
 }
 
 /// Bump [schemaVersion] and add a branch here (keyed off [oldVersion])
@@ -64,5 +79,8 @@ Future<void> onUpgrade(Database db, int oldVersion, int newVersion) async {
   }
   if (oldVersion < 3) {
     await db.execute(_createSecuritySettingsTable);
+  }
+  if (oldVersion < 4) {
+    await db.execute(_createQuickStatPreferencesTable);
   }
 }

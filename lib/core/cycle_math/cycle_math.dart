@@ -150,6 +150,68 @@ bool cycleLengthsAreIrregular(
   return spread > thresholdDays;
 }
 
+/// Which point in a period `daysSinceLastPeriod` measures from — see
+/// docs/features/quick_stats.feature.
+enum PeriodReferencePoint { start, end }
+
+/// The last consecutive day of period flow, walking forward day-by-day
+/// from [lastPeriodStart] through [datesWithPeriodFlow]. Stops at the
+/// first day without flow, so an unrelated later logged day (e.g. the
+/// start of a *different* period) is never swept in.
+///
+/// A period still being logged today has no fixed "end" yet — flow logged
+/// for today keeps this walking forward one more day, landing on today
+/// itself (see "A period still being logged counts as ongoing, not yet
+/// ended").
+DateTime lastLoggedPeriodEndDate({
+  required DateTime lastPeriodStart,
+  required Set<DateTime> datesWithPeriodFlow,
+}) {
+  final flowDates = datesWithPeriodFlow.map(dateOnly).toSet();
+  var end = dateOnly(lastPeriodStart);
+  var cursor = end;
+  while (flowDates.contains(cursor)) {
+    end = cursor;
+    cursor = cursor.add(const Duration(days: 1));
+  }
+  return end;
+}
+
+/// Days between [now] and either the start or the (possibly still
+/// extending) end of the last logged period, per [referencePoint].
+int daysSinceLastPeriod({
+  required DateTime lastPeriodStart,
+  required Set<DateTime> datesWithPeriodFlow,
+  required DateTime now,
+  PeriodReferencePoint referencePoint = PeriodReferencePoint.end,
+}) {
+  final reference = referencePoint == PeriodReferencePoint.start
+      ? dateOnly(lastPeriodStart)
+      : lastLoggedPeriodEndDate(
+          lastPeriodStart: lastPeriodStart,
+          datesWithPeriodFlow: datesWithPeriodFlow,
+        );
+  return daysBetween(reference, now);
+}
+
+/// Days from [now] to the predicted next period start. Negative once the
+/// predicted date has passed rather than clamping to zero — the caller
+/// decides how to present an overdue period. Null with no average cycle
+/// length to draw on yet (docs/features/quick_stats.feature, "Estimated
+/// days to next period needs at least one complete cycle").
+int? estimatedDaysToNextPeriod({
+  required DateTime lastPeriodStart,
+  required double? averageCycleLength,
+  required DateTime now,
+}) {
+  final predicted = predictNextPeriodStart(
+    lastPeriodStart: lastPeriodStart,
+    averageCycleLength: averageCycleLength,
+  );
+  if (predicted == null) return null;
+  return daysBetween(now, predicted);
+}
+
 List<int> _lastN(List<int> values, int n) {
   if (values.length <= n) return values;
   return values.sublist(values.length - n);
