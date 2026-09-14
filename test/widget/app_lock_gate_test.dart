@@ -43,6 +43,32 @@ class _FixedLockTimeoutNotifier extends LockTimeoutNotifier {
   Future<LockTimeout> build() async => value;
 }
 
+/// Records every authenticate() call and lets each be resolved
+/// individually, in order — so a test can tell an automatically-triggered
+/// first attempt apart from a manually-retried one (docs/features/unlock.feature).
+class _CountingGate implements BiometricGate {
+  int callCount = 0;
+  final _pending = <Completer<bool>>[];
+
+  @override
+  Future<bool> authenticate() {
+    callCount++;
+    final completer = Completer<bool>();
+    _pending.add(completer);
+    return completer.future;
+  }
+
+  void completeNext(bool result) {
+    if (_pending.isEmpty) {
+      throw StateError(
+        'No authenticate() call is pending — the lock screen never '
+        'triggered one automatically.',
+      );
+    }
+    _pending.removeAt(0).complete(result);
+  }
+}
+
 void main() {
   group('AppLockGate', () {
     testWidgets('a brief background does not show the lock screen', (
@@ -226,6 +252,139 @@ void main() {
           AppLifecycleState.resumed,
         );
         await tester.pump();
+
+        expect(find.text('Inner Flare is locked'), findsNothing);
+        expect(find.text('dashboard content'), findsOneWidget);
+      },
+    );
+
+    // --- docs/features/unlock.feature: the lock screen should prompt for
+    // itself, and only itself — no tap for the first attempt, no
+    // auto-retry after a cancel, no double prompt on a retry tap. ---
+
+    testWidgets(
+      'the unlock prompt fires automatically as soon as the lock screen '
+      'appears, with no tap',
+      (tester) async {
+        final clock = _FakeClock(DateTime(2026, 1, 1, 12));
+        final gate = _CountingGate();
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              nowProvider.overrideWithValue(clock.call),
+              biometricGateProvider.overrideWithValue(gate),
+            ],
+            child: MaterialApp(
+              builder: (context, child) => AppLockGate(child: child!),
+              home: const Scaffold(body: Text('dashboard content')),
+            ),
+          ),
+        );
+
+        WidgetsBinding.instance.handleAppLifecycleStateChanged(
+          AppLifecycleState.paused,
+        );
+        clock.advanceBy(const Duration(minutes: 15));
+        WidgetsBinding.instance.handleAppLifecycleStateChanged(
+          AppLifecycleState.resumed,
+        );
+        await tester.pump();
+        // Give any auto-triggered authentication a moment to start —
+        // note there is no tester.tap() anywhere in this test.
+        await tester.pump(const Duration(milliseconds: 50));
+
+        expect(
+          gate.callCount,
+          1,
+          reason:
+              'the lock screen should trigger authentication itself as '
+              'soon as it appears, not wait for a tap on "Unlock"',
+        );
+      },
+    );
+
+    testWidgets('cancelling the automatic prompt leaves a single manual retry, '
+        'without auto-retrying on its own', (tester) async {
+      final clock = _FakeClock(DateTime(2026, 1, 1, 12));
+      final gate = _CountingGate();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            nowProvider.overrideWithValue(clock.call),
+            biometricGateProvider.overrideWithValue(gate),
+          ],
+          child: MaterialApp(
+            builder: (context, child) => AppLockGate(child: child!),
+            home: const Scaffold(body: Text('dashboard content')),
+          ),
+        ),
+      );
+
+      WidgetsBinding.instance.handleAppLifecycleStateChanged(
+        AppLifecycleState.paused,
+      );
+      clock.advanceBy(const Duration(minutes: 15));
+      WidgetsBinding.instance.handleAppLifecycleStateChanged(
+        AppLifecycleState.resumed,
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+
+      // The automatically-triggered attempt is cancelled.
+      gate.completeNext(false);
+      await tester.pump(const Duration(milliseconds: 50));
+
+      expect(find.text('Inner Flare is locked'), findsOneWidget);
+      expect(find.text('Unlock'), findsOneWidget);
+
+      // Sitting on the cancelled screen must never spontaneously trigger
+      // a second prompt — only a tap on "Unlock" should.
+      await tester.pump(const Duration(seconds: 5));
+      expect(gate.callCount, 1);
+    });
+
+    testWidgets(
+      'retrying after a cancelled automatic prompt is a single tap, not '
+      'a stack of prompts',
+      (tester) async {
+        final clock = _FakeClock(DateTime(2026, 1, 1, 12));
+        final gate = _CountingGate();
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              nowProvider.overrideWithValue(clock.call),
+              biometricGateProvider.overrideWithValue(gate),
+            ],
+            child: MaterialApp(
+              builder: (context, child) => AppLockGate(child: child!),
+              home: const Scaffold(body: Text('dashboard content')),
+            ),
+          ),
+        );
+
+        WidgetsBinding.instance.handleAppLifecycleStateChanged(
+          AppLifecycleState.paused,
+        );
+        clock.advanceBy(const Duration(minutes: 15));
+        WidgetsBinding.instance.handleAppLifecycleStateChanged(
+          AppLifecycleState.resumed,
+        );
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 50));
+        gate.completeNext(false);
+        await tester.pump(const Duration(milliseconds: 50));
+
+        await tester.tap(find.text('Unlock'));
+        await tester.pump();
+
+        expect(
+          gate.callCount,
+          2,
+          reason: 'one tap on "Unlock" should trigger exactly one new prompt',
+        );
+
+        gate.completeNext(true);
+        await tester.pump(const Duration(milliseconds: 50));
 
         expect(find.text('Inner Flare is locked'), findsNothing);
         expect(find.text('dashboard content'), findsOneWidget);
