@@ -182,9 +182,12 @@ Feature: Backup export and import
   Scenario: Malformed rows are reported, not silently skipped
     Given a CSV file has rows that don't parse under the chosen mappings
       (e.g. an unparseable date)
-    When the import runs
-    Then those rows are listed to the user as not imported, with the reason
-    And every row that did parse is still imported normally
+    When the user reaches the preview step
+    Then those rows are already listed as unparseable, with the reason,
+      before the user is asked to confirm anything
+    When the user confirms the import
+    Then only the rows that did parse are written to the database
+    And the malformed rows still appear in the post-import summary as not imported
     And the app never guesses a value to make a malformed row fit
 
   Scenario: Column mappings can be reused on a later import from the same source

@@ -532,8 +532,8 @@ Feature: Perimenopause and menopause tracking
     When the user views insights or the dashboard
     Then predictions resume using the same cycle-math logic as any other
       user at that life stage
-    And the perimenopause variability nudge resumes evaluating its normal
-      trigger conditions
+    And the perimenopause age and variability nudges resume evaluating
+      their normal trigger conditions
 
   # --- Not a diagnosis, always --------------------------------------------
 
