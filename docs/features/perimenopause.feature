@@ -199,7 +199,7 @@ Feature: Perimenopause and menopause tracking
   Scenario: 12 months without a logged period is surfaced as a question, never set automatically
     Given the user's life stage is "perimenopause"
     And the user has logged at least one cycle day (of any kind — flow,
-      symptoms, or note) in each of the last 12 months
+      symptoms, or note) in at least 9 of the last 12 months
     And no period start has been logged in that same 12-month span
     When the user views insights or the dashboard
     Then the app shows an observation that it's been 12 months since the
@@ -209,8 +209,7 @@ Feature: Perimenopause and menopause tracking
 
   Scenario: A logging gap is never mistaken for a menopause milestone
     Given no period start has been logged in the last 12 months
-    But the user also has no other cycle day logs of any kind across at
-      least 3 of those months
+    And the user has logged on fewer than 9 of those 12 months
     When the user views insights or the dashboard
     Then the app does not suggest that menopause may have been reached
     And any period-related "not enough data" or "no recent logs" messaging
@@ -382,18 +381,34 @@ Feature: Perimenopause and menopause tracking
       period, or not) speak for themselves
 
   Scenario: Pregnancy takes precedence over IUD or HRT status when both are recorded
-    Given the user has both a recorded IUD and a recorded pregnancy (rare,
-      but not impossible — device failure happens)
+    Given the user has a recorded pregnancy alongside a recorded IUD, a
+      hormonal medication flag, or both (rare, but not impossible — device
+      failure happens, and some medication use continues into early
+      pregnancy under clinical guidance)
     When the user views insights
-    Then the pregnancy-suppression explanation is shown, not the IUD one
-    And the IUD record itself is left untouched, only the displayed reason changes
+    Then the pregnancy-suppression explanation is shown, not the IUD or
+      medication one
+    And the IUD and medication records themselves are left untouched, only
+      the displayed reason changes
 
-  Scenario: Turning off any reproductive context flag restores normal prediction behavior
+  Scenario: Reproductive context suppression takes precedence over variability-based low-confidence labeling
+    Given the user's life stage is "perimenopause" and cycle variability
+      meets the low-confidence threshold described above
+    And a reproductive context flag (hormonal medication, hormonal IUD, or
+      pregnancy) is also set
+    When the user views insights
+    Then predictions are hidden per the reproductive context reason
+    And no low-confidence prediction is shown instead — the two explanations
+      never compete for the same space on screen
+
+  Scenario: Turning off any reproductive context flag restores normal prediction and nudge behavior
     Given a hormonal medication flag, hormonal IUD, or pregnancy record was
       set and is now cleared
-    When the user views insights
+    When the user views insights or the dashboard
     Then predictions resume using the same cycle-math logic as any other
       user at that life stage
+    And the perimenopause age and variability nudges resume evaluating
+      their normal trigger conditions
 
   # --- Not a diagnosis, always --------------------------------------------
 
