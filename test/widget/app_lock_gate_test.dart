@@ -151,8 +151,8 @@ void main() {
         AppLifecycleState.resumed,
       );
       await tester.pump();
-
-      await tester.tap(find.text('Unlock'));
+      // The lock screen triggers authentication itself as soon as it
+      // appears — no tap needed for this first attempt (docs/features/unlock.feature).
       await tester.pump(const Duration(milliseconds: 100));
 
       expect(find.text('Inner Flare is locked'), findsOneWidget);
@@ -183,8 +183,7 @@ void main() {
         AppLifecycleState.resumed,
       );
       await tester.pump();
-
-      await tester.tap(find.text('Unlock'));
+      // Auto-triggered, no tap needed (docs/features/unlock.feature).
       await tester.pump(const Duration(milliseconds: 100));
 
       expect(find.text('Inner Flare is locked'), findsNothing);
@@ -224,11 +223,11 @@ void main() {
         await tester.pump();
         expect(find.text('Inner Flare is locked'), findsOneWidget);
 
-        // Tapping Unlock starts an authentication attempt that won't
-        // resolve until we complete it below — standing in for the native
-        // prompt being on screen.
-        await tester.tap(find.text('Unlock'));
-        await tester.pump();
+        // The lock screen has already triggered authentication itself, as
+        // soon as it appeared — no tap needed. It won't resolve until we
+        // complete it below, standing in for the native prompt being on
+        // screen.
+        await tester.pump(const Duration(milliseconds: 50));
 
         // Presenting that prompt itself takes the app through `inactive` —
         // exactly what Face ID's system sheet (or Android's separate

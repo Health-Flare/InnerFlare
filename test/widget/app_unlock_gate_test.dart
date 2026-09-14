@@ -61,7 +61,9 @@ void main() {
     await tester.pump();
 
     expect(find.text('Inner Flare is locked'), findsOneWidget);
-    expect(find.text('onboarding step 1'), findsNothing);
+    // Covered, not removed — same as AppLockGate — so nothing downstream
+    // needs to know it might be locked.
+    expect(find.text('onboarding step 1'), findsOneWidget);
   });
 
   testWidgets(

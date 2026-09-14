@@ -20,6 +20,18 @@ class AppLockScreen extends ConsumerStatefulWidget {
 class _AppLockScreenState extends ConsumerState<AppLockScreen> {
   bool _authenticating = false;
 
+  @override
+  void initState() {
+    super.initState();
+    // Fire the prompt for the user as soon as this screen appears — see
+    // docs/features/unlock.feature. Scheduled for after the first frame
+    // (rather than called straight from initState) since it calls
+    // setState; not repeated on rebuilds because initState only runs
+    // once per mount, and a still-locked rebuild reuses this same State
+    // (see AppLockGate's `if (isLocked) const AppLockScreen()`).
+    WidgetsBinding.instance.addPostFrameCallback((_) => _unlock());
+  }
+
   Future<void> _unlock() async {
     setState(() => _authenticating = true);
     // Flagged for the whole native-prompt round trip so AppLockGate can

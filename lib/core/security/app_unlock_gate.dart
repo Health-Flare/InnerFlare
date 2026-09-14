@@ -1,17 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:inner_flare/core/providers/database_provider.dart';
+import 'package:inner_flare/features/security/screens/app_unlock_screen.dart';
 
-/// TODO(unlock.feature): will cover [child] with a dedicated unlock screen
-/// while `appDatabaseProvider` is opening or has failed, instead of the
-/// dashboard flashing partially-loaded content behind the diagnostic
-/// AppBar icon/banner it shows today. See docs/features/unlock.feature and
-/// test/widget/app_unlock_gate_test.dart for the target behavior.
+/// Covers [child] with [AppUnlockScreen] whenever `appDatabaseProvider`
+/// isn't open yet — opening for the first time this session, or retrying
+/// after a failure — instead of letting the dashboard flash partially
+/// loaded behind a diagnostic AppBar icon/banner (docs/features/unlock.feature).
 ///
-/// Currently a pass-through — deliberately not wired into `main.dart` yet.
-class AppUnlockGate extends StatelessWidget {
+/// The wrapped [child] keeps running underneath, same as [AppLockGate]:
+/// nothing downstream needs to know it might be covered.
+class AppUnlockGate extends ConsumerWidget {
   const AppUnlockGate({super.key, required this.child});
 
   final Widget child;
 
   @override
-  Widget build(BuildContext context) => child;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isOpen = ref.watch(appDatabaseProvider).hasValue;
+    return Stack(children: [child, if (!isOpen) const AppUnlockScreen()]);
+  }
 }
