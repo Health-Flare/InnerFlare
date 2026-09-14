@@ -55,6 +55,21 @@
 #    see "Reproductive context: HRT, IUD, and pregnancy". A copper IUD is
 #    explicitly excluded from this suppression since it doesn't affect
 #    hormones or ovulation.
+#
+# 8. Two gaps surfaced by walking the spec against docs/personas.md rather
+#    than just re-reading it: (a) the variability nudge had no way to catch
+#    a user whose irregularity has an unrelated cause (an IUD, HRT,
+#    pregnancy) she hasn't told the app about yet — it would have read a
+#    29-year-old's IUD side effect as a perimenopause signal. The nudge now
+#    offers "something else explain this?" alongside the perimenopause
+#    option, linking straight to reproductive context settings, rather than
+#    assuming perimenopause is the only possible cause. (b) The neutral,
+#    no-assumed-emotion copy standard was specified for *ending* a recorded
+#    pregnancy but not for recording a new one — asymmetric, and wrong in
+#    the same direction (assuming congratulations are always welcome).
+#    Fixed to apply symmetrically. See "The variability nudge offers
+#    another explanation before assuming perimenopause" and "Recording a
+#    new pregnancy is copy-neutral, the same as ending one".
 
 Feature: Perimenopause and menopause tracking
   As a user whose cycle patterns may be changing with age
@@ -91,6 +106,20 @@ Feature: Perimenopause and menopause tracking
     When the user views the dashboard
     Then the same dismissible nudge is shown
     And the nudge cites the variability pattern as its reason, not age
+
+  Scenario: The variability nudge offers another explanation before assuming perimenopause
+    Given the sustained cycle variability nudge is triggered
+    And the user has not recorded any reproductive context (hormonal
+      medication, an IUD, or pregnancy)
+    When the user opens the nudge
+    Then alongside the option to enable perimenopause symptom tracking, the
+      nudge asks whether something else explains the pattern — hormonal
+      medication, an IUD, or pregnancy — and links directly to reproductive
+      context settings
+    And choosing one of those reasons there suppresses the variability
+      nudge going forward, the same as recording it from Settings would
+    And the nudge never assumes perimenopause is the only possible
+      explanation for cycle variability
 
   Scenario: The nudge itself is where age is first asked, and it's optional
     Given the nudge is shown for either age or variability reasons
@@ -358,6 +387,16 @@ Feature: Perimenopause and menopause tracking
     Then next-period and fertile-window predictions are hidden
     And insights explains that predictions are off because a period isn't
       expected during pregnancy, distinct from the medication-suppression wording
+
+  Scenario: Recording a new pregnancy is copy-neutral, the same as ending one
+    Given the user is recording a pregnancy for the first time
+    When the confirmation screen is shown
+    Then no congratulations, celebratory language, or assumption about
+      whether this is welcome news is shown
+    And the screen states plainly what changes (predictions and nudges are
+      suppressed) without commenting on the pregnancy itself
+    And this matches the same neutral standard "Ending a recorded
+      pregnancy" already holds, applied symmetrically on the way in
 
   Scenario: Recording pregnancy also suppresses the perimenopause nudges
     Given the user has recorded a pregnancy
