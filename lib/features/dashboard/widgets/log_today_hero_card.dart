@@ -66,8 +66,7 @@ class LogTodayHeroCard extends StatelessWidget {
             isLoggedToday
                 ? 'Nice work. You can come back and add more detail to '
                       'today whenever you want.'
-                : 'Logging today takes one tap. Nothing is required — add '
-                      'as much or as little as you want.',
+                : 'Logging today takes one tap. Nothing is required.',
             style: Theme.of(
               context,
             ).textTheme.bodyMedium?.copyWith(color: Colors.white),

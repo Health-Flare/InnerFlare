@@ -4,12 +4,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:inner_flare/core/providers/cycle_day_log_repository_provider.dart';
 import 'package:inner_flare/core/providers/dashboard_card_preferences_repository_provider.dart';
 import 'package:inner_flare/core/providers/now_provider.dart';
+import 'package:inner_flare/core/providers/quick_stat_preferences_repository_provider.dart';
 import 'package:inner_flare/data/database/schema.dart';
 import 'package:inner_flare/data/repositories/cycle_day_log_repository.dart';
 import 'package:inner_flare/data/repositories/dashboard_card_preferences_repository.dart';
+import 'package:inner_flare/data/repositories/quick_stat_preferences_repository.dart';
 import 'package:inner_flare/features/dashboard/screens/dashboard_screen.dart';
 import 'package:inner_flare/models/cycle_day_log.dart';
 import 'package:inner_flare/models/period_flow.dart';
+import 'package:inner_flare/models/quick_stat.dart';
 import 'package:inner_flare/models/symptom.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 
@@ -41,6 +44,16 @@ void main() {
     });
   }
 
+  // Dashboard screen also reads the quick stat slot preferences; every
+  // override list needs this for the same reason as dashboardPrefsOverride
+  // above.
+  Override quickStatPrefsOverride() {
+    return quickStatPreferencesRepositoryProvider.overrideWith((ref) async {
+      final db = await openInMemoryTestDatabase(onCreate: onCreate);
+      return QuickStatPreferencesRepository(db);
+    });
+  }
+
   List<Override> overridesFor(DateTime Function() now) {
     return [
       nowProvider.overrideWithValue(now),
@@ -50,7 +63,28 @@ void main() {
         return CycleDayLogRepository(db);
       }),
       dashboardPrefsOverride(),
+      quickStatPrefsOverride(),
     ];
+  }
+
+  /// Saves a period that started on [start] and logged period flow for
+  /// each of [flowDays] consecutive days from there (default: just the
+  /// start day itself).
+  Future<void> savePeriod(
+    CycleDayLogRepository repository,
+    DateTime start, {
+    int flowDays = 1,
+  }) async {
+    for (var i = 0; i < flowDays; i++) {
+      final date = start.add(Duration(days: i));
+      await repository.save(
+        CycleDayLog(
+          date: date,
+          periodFlow: PeriodFlow.medium,
+          isPeriodStart: i == 0,
+        ),
+      );
+    }
   }
 
   testWidgets('shows a greeting, the log-today entry point, and honest '
@@ -64,6 +98,8 @@ void main() {
 
     expect(find.text('Good morning'), findsOneWidget);
     expect(find.text('Log today'), findsWidgets);
+
+    await tester.scrollUntilVisible(find.text('Calendar'), 200);
     expect(find.text('Calendar'), findsOneWidget);
 
     await tester.scrollUntilVisible(find.text('Insights'), 200);
@@ -394,4 +430,227 @@ void main() {
       expect(find.text('Calendar'), findsOneWidget);
     },
   );
+
+  group('quick stats (docs/features/quick_stats.feature)', () {
+    testWidgets('both default quick stats appear below the log-today area and '
+        'above "Your data, at a glance"', (tester) async {
+      final db = await openInMemoryTestDatabase(onCreate: onCreate);
+      openDb = db;
+      final repository = CycleDayLogRepository(db);
+      await savePeriod(repository, DateTime(2026, 7, 27), flowDays: 5);
+      await savePeriod(repository, DateTime(2026, 8, 24), flowDays: 3);
+
+      await pumpTestApp(
+        tester,
+        const DashboardScreen(),
+        overrides: [
+          nowProvider.overrideWithValue(() => DateTime(2026, 9, 3, 9)),
+          cycleDayLogRepositoryProvider.overrideWith((ref) async {
+            return repository;
+          }),
+          dashboardPrefsOverride(),
+          quickStatPrefsOverride(),
+        ],
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Log a previous day'), findsOneWidget);
+      expect(find.text('Days since last period'), findsOneWidget);
+      expect(find.text('Est. days to next period'), findsOneWidget);
+
+      await tester.scrollUntilVisible(find.text('Your data, at a glance'), 200);
+      expect(find.text('Your data, at a glance'), findsOneWidget);
+    });
+
+    testWidgets(
+      'computes both defaults from real logged history: end-of-period '
+      'days-since and an average-based estimate',
+      (tester) async {
+        final db = await openInMemoryTestDatabase(onCreate: onCreate);
+        openDb = db;
+        final repository = CycleDayLogRepository(db);
+        // Two period starts 28 days apart; the most recent one logged
+        // flow for 3 days (24th-26th), then stopped.
+        await savePeriod(repository, DateTime(2026, 7, 27), flowDays: 5);
+        await savePeriod(repository, DateTime(2026, 8, 24), flowDays: 3);
+
+        await pumpTestApp(
+          tester,
+          const DashboardScreen(),
+          overrides: [
+            nowProvider.overrideWithValue(() => DateTime(2026, 9, 3, 9)),
+            cycleDayLogRepositoryProvider.overrideWith((ref) async {
+              return repository;
+            }),
+            dashboardPrefsOverride(),
+            quickStatPrefsOverride(),
+          ],
+        );
+        await tester.pumpAndSettle();
+
+        // Default reference point is the end of the last period (the
+        // 26th) — 8 days before "now" (Sept 3rd).
+        expect(find.text('8'), findsOneWidget);
+        expect(find.text('since it ended'), findsOneWidget);
+        // Average cycle length is 28 days; 10 days after the last start
+        // (the 24th) leaves 18 estimated days to go.
+        expect(find.text('18'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'a period still being logged today shows 0 days since it ended, '
+      'not a stale count',
+      (tester) async {
+        final db = await openInMemoryTestDatabase(onCreate: onCreate);
+        openDb = db;
+        final repository = CycleDayLogRepository(db);
+        await savePeriod(repository, DateTime(2026, 7, 27), flowDays: 5);
+        // Flow logged every day from the last start through today.
+        await savePeriod(repository, DateTime(2026, 8, 24), flowDays: 4);
+
+        await pumpTestApp(
+          tester,
+          const DashboardScreen(),
+          overrides: [
+            nowProvider.overrideWithValue(() => DateTime(2026, 8, 27, 9)),
+            cycleDayLogRepositoryProvider.overrideWith((ref) async {
+              return repository;
+            }),
+            dashboardPrefsOverride(),
+            quickStatPrefsOverride(),
+          ],
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('0'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'no period ever logged shows an honest empty state on both stats, '
+      'never a fabricated number',
+      (tester) async {
+        await pumpTestApp(
+          tester,
+          const DashboardScreen(),
+          overrides: overridesFor(() => DateTime(2026, 1, 1, 9)),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('Not enough data yet'), findsNWidgets(2));
+      },
+    );
+
+    testWidgets(
+      'a first-ever period has no prior cycle to average, so only the '
+      'estimate is "not enough data yet"',
+      (tester) async {
+        final db = await openInMemoryTestDatabase(onCreate: onCreate);
+        openDb = db;
+        final repository = CycleDayLogRepository(db);
+        await savePeriod(repository, DateTime(2026, 8, 24), flowDays: 3);
+
+        await pumpTestApp(
+          tester,
+          const DashboardScreen(),
+          overrides: [
+            nowProvider.overrideWithValue(() => DateTime(2026, 9, 3, 9)),
+            cycleDayLogRepositoryProvider.overrideWith((ref) async {
+              return repository;
+            }),
+            dashboardPrefsOverride(),
+            quickStatPrefsOverride(),
+          ],
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('8'), findsOneWidget); // days since it ended
+        expect(find.text('Not enough data yet'), findsOneWidget);
+      },
+    );
+
+    testWidgets('an overdue period is labeled as overdue, not shown as a bare '
+        'negative number', (tester) async {
+      final db = await openInMemoryTestDatabase(onCreate: onCreate);
+      openDb = db;
+      final repository = CycleDayLogRepository(db);
+      // 28-day average; last start was 31 days before "now" — 3 days
+      // overdue.
+      await savePeriod(repository, DateTime(2026, 7, 27), flowDays: 5);
+      await savePeriod(repository, DateTime(2026, 8, 24), flowDays: 3);
+
+      await pumpTestApp(
+        tester,
+        const DashboardScreen(),
+        overrides: [
+          nowProvider.overrideWithValue(() => DateTime(2026, 9, 24, 9)),
+          cycleDayLogRepositoryProvider.overrideWith((ref) async {
+            return repository;
+          }),
+          dashboardPrefsOverride(),
+          quickStatPrefsOverride(),
+        ],
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('-3'), findsNothing);
+      expect(find.text('3 days overdue'), findsOneWidget);
+    });
+
+    testWidgets(
+      'the quick stat customization entry point is discoverable from the '
+      'dashboard',
+      (tester) async {
+        await pumpTestApp(
+          tester,
+          const DashboardScreen(),
+          overrides: overridesFor(() => DateTime(2026, 1, 1, 9)),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.byTooltip('Customize quick stats'), findsOneWidget);
+
+        await tester.tap(find.byTooltip('Customize quick stats'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Customize quick stats'), findsWidgets);
+      },
+    );
+
+    testWidgets(
+      'reconfiguring a quick stat slot persists after the app is reopened',
+      (tester) async {
+        final overrides = overridesFor(() => DateTime(2026, 9, 3, 9));
+        await pumpTestApp(
+          tester,
+          const DashboardScreen(),
+          overrides: overrides,
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byTooltip('Customize quick stats'));
+        await tester.pumpAndSettle();
+
+        await tester.tap(
+          find.byKey(const ValueKey('quick-stat-slot-0-refpoint-periodStart')),
+        );
+        await tester.pumpAndSettle();
+
+        // "Reopening the app": rebuild fresh, reusing the same overrides
+        // (and therefore the same in-memory db) so the saved preference
+        // is read back rather than recreated.
+        await pumpTestApp(
+          tester,
+          const DashboardScreen(),
+          overrides: overrides,
+        );
+        await tester.pumpAndSettle();
+
+        final saved = await QuickStatPreferencesRepository(openDb!).getAll();
+        final slot0 = saved.firstWhere((p) => p.slot == 0);
+        expect(slot0.referencePoint, QuickStatReferencePoint.periodStart);
+      },
+    );
+  });
 }

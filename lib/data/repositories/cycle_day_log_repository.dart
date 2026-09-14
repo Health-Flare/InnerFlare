@@ -46,6 +46,17 @@ class CycleDayLogRepository {
     return rows.map((row) => DateTime.parse(row['date'] as String)).toList();
   }
 
+  /// Every date with a period flow logged — the raw input to
+  /// `lastLoggedPeriodEndDate` in cycle_math.dart.
+  Future<Set<DateTime>> getDatesWithPeriodFlow() async {
+    final rows = await _db.query(
+      cycleDayLogsTable,
+      columns: ['date'],
+      where: 'period_flow IS NOT NULL',
+    );
+    return rows.map((row) => DateTime.parse(row['date'] as String)).toSet();
+  }
+
   /// Whether the user has logged anything at all — distinguishes "no data
   /// yet" from "nothing in this particular month" for the calendar's empty
   /// state (docs/features/calendar.feature, "Empty calendar before any

@@ -130,6 +130,134 @@ void main() {
     });
   });
 
+  group('lastLoggedPeriodEndDate', () {
+    test('a single logged day is its own end', () {
+      final end = lastLoggedPeriodEndDate(
+        lastPeriodStart: DateTime.utc(2026, 8, 24),
+        datesWithPeriodFlow: {DateTime.utc(2026, 8, 24)},
+      );
+      expect(end, DateTime.utc(2026, 8, 24));
+    });
+
+    test('walks forward through consecutive logged days', () {
+      final end = lastLoggedPeriodEndDate(
+        lastPeriodStart: DateTime.utc(2026, 8, 24),
+        datesWithPeriodFlow: {
+          DateTime.utc(2026, 8, 24),
+          DateTime.utc(2026, 8, 25),
+          DateTime.utc(2026, 8, 26),
+        },
+      );
+      expect(end, DateTime.utc(2026, 8, 26));
+    });
+
+    test('stops at the first gap, ignoring unrelated later logged days', () {
+      final end = lastLoggedPeriodEndDate(
+        lastPeriodStart: DateTime.utc(2026, 8, 24),
+        datesWithPeriodFlow: {
+          DateTime.utc(2026, 8, 24),
+          DateTime.utc(2026, 8, 25),
+          // Gap on the 26th, then an unrelated later logged day — should
+          // not be swept in as part of this period.
+          DateTime.utc(2026, 9, 10),
+        },
+      );
+      expect(end, DateTime.utc(2026, 8, 25));
+    });
+
+    test('flow still logged for today keeps extending the end date', () {
+      // A period still being logged has no fixed "end" yet — see
+      // docs/features/quick_stats.feature, "A period still being logged
+      // counts as ongoing, not yet ended".
+      final end = lastLoggedPeriodEndDate(
+        lastPeriodStart: DateTime.utc(2026, 8, 24),
+        datesWithPeriodFlow: {
+          DateTime.utc(2026, 8, 24),
+          DateTime.utc(2026, 8, 25),
+          DateTime.utc(2026, 8, 26),
+          DateTime.utc(2026, 8, 27),
+        },
+      );
+      expect(end, DateTime.utc(2026, 8, 27));
+    });
+  });
+
+  group('daysSinceLastPeriod', () {
+    test('defaults to measuring from the end of the last period', () {
+      final days = daysSinceLastPeriod(
+        lastPeriodStart: DateTime.utc(2026, 8, 24),
+        datesWithPeriodFlow: {
+          DateTime.utc(2026, 8, 24),
+          DateTime.utc(2026, 8, 25),
+          DateTime.utc(2026, 8, 26),
+        },
+        now: DateTime.utc(2026, 9, 3),
+      );
+      // Last logged flow day is the 26th, 8 days before the 3rd.
+      expect(days, 8);
+    });
+
+    test('measures from the start when referencePoint is start', () {
+      final days = daysSinceLastPeriod(
+        lastPeriodStart: DateTime.utc(2026, 8, 24),
+        datesWithPeriodFlow: {
+          DateTime.utc(2026, 8, 24),
+          DateTime.utc(2026, 8, 25),
+          DateTime.utc(2026, 8, 26),
+        },
+        now: DateTime.utc(2026, 9, 3),
+        referencePoint: PeriodReferencePoint.start,
+      );
+      // 10 days between the 24th and the 3rd.
+      expect(days, 10);
+    });
+
+    test('a period still being logged today reads as 0 days since it '
+        'ended, not a stale count', () {
+      final days = daysSinceLastPeriod(
+        lastPeriodStart: DateTime.utc(2026, 8, 24),
+        datesWithPeriodFlow: {
+          DateTime.utc(2026, 8, 24),
+          DateTime.utc(2026, 8, 25),
+          DateTime.utc(2026, 8, 26),
+          DateTime.utc(2026, 8, 27),
+        },
+        now: DateTime.utc(2026, 8, 27),
+      );
+      expect(days, 0);
+    });
+  });
+
+  group('estimatedDaysToNextPeriod', () {
+    test('no average cycle length yields no estimate', () {
+      final estimate = estimatedDaysToNextPeriod(
+        lastPeriodStart: DateTime.utc(2026, 8, 24),
+        averageCycleLength: null,
+        now: DateTime.utc(2026, 9, 3),
+      );
+      expect(estimate, isNull);
+    });
+
+    test('counts down from the predicted next period start', () {
+      final estimate = estimatedDaysToNextPeriod(
+        lastPeriodStart: DateTime.utc(2026, 8, 24),
+        averageCycleLength: 28,
+        now: DateTime.utc(2026, 9, 3), // 10 days after the last start
+      );
+      expect(estimate, 18);
+    });
+
+    test('goes negative once the predicted date has passed, rather than '
+        'clamping to zero', () {
+      final estimate = estimatedDaysToNextPeriod(
+        lastPeriodStart: DateTime.utc(2026, 8, 24),
+        averageCycleLength: 28,
+        now: DateTime.utc(2026, 9, 24), // 31 days after the last start
+      );
+      expect(estimate, -3);
+    });
+  });
+
   group('daysBetween — date/timezone edge cases', () {
     final cases = <(DateTime, DateTime, int)>[
       // Crosses US spring-forward DST transition (2026-03-08).

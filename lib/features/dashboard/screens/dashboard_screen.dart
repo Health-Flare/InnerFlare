@@ -8,10 +8,12 @@ import 'package:inner_flare/core/providers/today_log_provider.dart';
 import 'package:inner_flare/features/calendar/screens/calendar_screen.dart';
 import 'package:inner_flare/features/dashboard/greeting.dart';
 import 'package:inner_flare/features/dashboard/screens/dashboard_customize_screen.dart';
+import 'package:inner_flare/features/dashboard/screens/quick_stat_customize_screen.dart';
 import 'package:inner_flare/features/dashboard/widgets/data_preview_card.dart';
 import 'package:inner_flare/features/dashboard/widgets/database_status_indicator.dart';
 import 'package:inner_flare/features/dashboard/widgets/log_today_hero_card.dart';
 import 'package:inner_flare/features/dashboard/widgets/privacy_reassurance_card.dart';
+import 'package:inner_flare/features/dashboard/widgets/quick_stats_row.dart';
 import 'package:inner_flare/features/dashboard/widgets/unlock_error_banner.dart';
 import 'package:inner_flare/features/insights/screens/insights_screen.dart';
 import 'package:inner_flare/features/log/screens/log_entry_screen.dart';
@@ -31,6 +33,12 @@ class DashboardScreen extends ConsumerWidget {
     Navigator.of(
       context,
     ).push(MaterialPageRoute(builder: (_) => const DashboardCustomizeScreen()));
+  }
+
+  void _openQuickStatCustomize(BuildContext context) {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const QuickStatCustomizeScreen()));
   }
 
   void _openSettings(BuildContext context) {
@@ -179,7 +187,7 @@ class DashboardScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              'This is your space — track as much or as little as feels right.',
+              'This is your space, track only what you want.',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 24),
@@ -203,6 +211,24 @@ class DashboardScreen extends ConsumerWidget {
                 detail: todayLog.error?.toString(),
               ),
             ],
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Quick stats',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                IconButton(
+                  tooltip: 'Customize quick stats',
+                  icon: const Icon(Icons.tune_rounded),
+                  onPressed: () => _openQuickStatCustomize(context),
+                ),
+              ],
+            ),
+            const QuickStatsRow(),
             if (visibleCards.isNotEmpty) ...[
               const SizedBox(height: 28),
               Text(
