@@ -56,6 +56,18 @@ class CycleDayLogRepository {
     return rows.map((row) => DateTime.parse(row['date'] as String)).toSet();
   }
 
+  /// Every logged day on record, oldest first — the full-history read
+  /// export uses to build a backup file (docs/features/export.feature).
+  Future<List<CycleDayLog>> getAll() async {
+    final rows = await _db.query(cycleDayLogsTable, orderBy: 'date ASC');
+    return rows.map(_fromRow).toList();
+  }
+
+  /// Deletes every row — only used by import's "replace" strategy
+  /// (docs/features/export.feature), immediately before re-inserting the
+  /// imported set.
+  Future<void> deleteAll() => _db.delete(cycleDayLogsTable);
+
   /// Whether the user has logged anything at all — distinguishes "no data
   /// yet" from "nothing in this particular month" for the calendar's empty
   /// state (docs/features/calendar.feature, "Empty calendar before any

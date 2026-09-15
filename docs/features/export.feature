@@ -30,7 +30,24 @@
 #    third-party source is confirmed to produce something this app can
 #    honestly claim to read.
 #
-# 3. Platform health stores (Apple Health on iOS, Health Connect on
+# 3. "All cycle_day_logs and settings" in the first scenario below means
+#    portable data, not every row in the database. dashboard_card_preferences,
+#    quick_stat_preferences, and security_settings (the idle-lock timeout)
+#    are each documented elsewhere as per-device state — see "Card
+#    preferences are stored per-device in settings, not synced"
+#    (dashboard.feature), "Quick stat preferences are stored per-device, not
+#    synced" (quick_stats.feature), and app_lock.feature's idle-lock timeout
+#    scenario — and perimenopause.feature's "Nudge deferral state is
+#    device-local and deliberately not exported" scenario confirms the same
+#    is true of dashboard layout by direct analogy. None of the three round-
+#    trip through export/import; a device keeps its own layout, quick-stat
+#    choices, and lock timeout regardless of what's imported onto it. The
+#    `symptoms` catalog is the one settings table that *does* travel with
+#    the data, since `cycle_day_logs.symptoms` entries are meaningless
+#    without the labels (and custom entries) they reference — see "The
+#    symptom catalog travels with the data" below.
+#
+# 4. Platform health stores (Apple Health on iOS, Health Connect on
 #    Android) are a materially bigger lift than file-based CSV import ever
 #    was — native permission grants, platform-specific APIs, and (Health
 #    Connect especially) a live on-device read rather than a picked file.
@@ -51,9 +68,20 @@ Feature: Backup export and import
   Scenario: Export produces a single portable file
     Given the user has logged data across multiple cycles
     When the user chooses "export" in settings
-    Then a single file is produced containing all cycle_day_logs and settings
+    Then a single file is produced containing all cycle_day_logs and the
+      symptom catalog
     And the file includes the current schema_version
     And the OS share sheet is presented so the user can save or send the file
+
+  Scenario: The symptom catalog travels with the data, per-device settings do not
+    Given the user has renamed a built-in symptom and added a custom one
+    And the user has also customized their dashboard layout, quick stats,
+      and idle-lock timeout
+    When the user exports and imports that backup onto another device
+    Then the renamed and custom symptoms are restored on the other device
+    And the other device's dashboard layout, quick stats, and idle-lock
+      timeout are left exactly as they were on that device, untouched by
+      the import
 
   Scenario: Export never happens automatically
     Given the user has logged data

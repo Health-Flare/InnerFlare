@@ -88,4 +88,23 @@ void main() {
 
     expect(result?.symptoms, {'cramps', 'headache', 'bloating'});
   });
+
+  test('getAll returns every logged day, oldest first', () async {
+    await repository.save(emptyLog(date: DateTime.utc(2026, 3, 3)));
+    await repository.save(emptyLog(date: DateTime.utc(2026, 3, 1)));
+    await repository.save(emptyLog(date: DateTime.utc(2026, 3, 2)));
+
+    final all = await repository.getAll();
+
+    expect(all.map((log) => log.date.day).toList(), [1, 2, 3]);
+  });
+
+  test('deleteAll removes every row', () async {
+    await repository.save(emptyLog(date: DateTime.utc(2026, 3, 1)));
+    await repository.save(emptyLog(date: DateTime.utc(2026, 3, 2)));
+
+    await repository.deleteAll();
+
+    expect(await repository.getAll(), isEmpty);
+  });
 }
