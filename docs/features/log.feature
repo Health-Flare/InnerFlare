@@ -3,6 +3,11 @@ Feature: Daily logging
   I want to log a day in one screen with no required fields
   So that logging is ridiculously easy and I actually keep doing it
 
+  # Section order below (flow, then symptoms, then note) is the default for
+  # every user. docs/features/perimenopause.feature overrides this default
+  # once life stage is "menopause" specifically — see "Daily log screen
+  # layout adapts once menopause is confirmed" there.
+
   Background:
     Given the user has completed onboarding
     And the user is on the dashboard

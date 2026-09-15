@@ -56,10 +56,14 @@ something she wants in a cloud account yet.
 ("declining ovarian reserve") reads as a diagnosis the app has no business
 making. Too vague ("your cycles are a bit different lately!") reads as
 dismissive of something she's genuinely anxious about. Too early or too
-insistent a nudge reads as presumptuous — "the app thinks I'm old." The
-actual nudge and observation copy is still unwritten (flagged as open
-question C1 in the perimenopause spec review) — Renata is the reason that
-gap matters more than any other remaining item.
+insistent a nudge reads as presumptuous — "the app thinks I'm old." **Also
+the reason the age-based nudge trigger was cut entirely** — it could only
+ever fire for a user who'd already entered a birth year unprompted, which
+Renata never would; the variability nudge is now the only path that
+actually reaches her. Draft copy for the variability nudge and the
+12-month observation is now written (see docs/spec-review-perimenopause.md
+and the candidate-copy comments in docs/features/perimenopause.feature) —
+still pending final review, no longer a blank gap.
 
 ---
 
@@ -84,8 +88,11 @@ the two — the variability nudge fires purely off cycle-length variance, and
 reproductive context is something she has to think to go record on her own.
 A 29-year-old getting a "you might be entering perimenopause" nudge because
 of an IUD side effect is exactly the kind of wrong, alarming, and frankly
-insulting framing this whole feature is supposed to prevent. **This is a
-real gap, not just a risk** — see findings below.
+insulting framing this whole feature is supposed to prevent. **Fixed** —
+the variability nudge now asks "something else explain this?" (hormonal
+medication, an IUD, or pregnancy) before ever framing the pattern as
+perimenopause; see docs/features/perimenopause.feature, "The variability
+nudge offers another explanation before assuming perimenopause."
 
 ---
 
@@ -109,8 +116,10 @@ condolences, neutral copy only, because the app can't know whether that's
 good or bad news. That same principle is missing on the way *in*: nothing
 currently says recording a new pregnancy is copy-neutral too, and an app
 that says "Congratulations!" by default gets it wrong for anyone in Onyx's
-position for whom this isn't unambiguously happy news. **Also a real gap**
-— see findings below.
+position for whom this isn't unambiguously happy news. **Fixed** —
+recording a new pregnancy is now specified as copy-neutral, symmetric with
+ending one; see docs/features/perimenopause.feature, "Recording a new
+pregnancy is copy-neutral, the same as ending one."
 
 ---
 
@@ -121,24 +130,30 @@ specifically because she doesn't want her cycle data in anyone's cloud.
 Exported what she could from her old app before deleting it.
 
 **Tech & privacy posture:** Privacy is the whole reason she's here — this is
-the persona the import feature was built for. Moderately tech-savvy; willing
-to do a column-mapping wizard once, not interested in re-typing three years
-of history by hand.
+the persona the import feature was originally built for. Moderately
+tech-savvy; would have been willing to do a column-mapping wizard once, not
+interested in re-typing three years of history by hand. **Her core need —
+importing directly from Flo — is out of scope for v1** (see Framing risk
+below); she's kept in this document because that's a real, named
+limitation worth remembering, not a solved case.
 
 **Goals:**
 - Bring her history in without losing or misrepresenting any of it
 - Never be made to feel judged for having used another app
 - Trust that the file she imported from isn't lingering somewhere unencrypted
 
-**Framing risk:** Nothing in the spec's tone is wrong for Dana — the
+**Framing risk:** Nothing in the spec's tone was wrong for Dana — the
 unrecognized-value mapping and "offer, never force, delete the source file"
-scenarios are both good, respectful defaults. The actual risk is upstream of
-framing: **the entire CSV-import feature assumes a source app produces a
-usable CSV, and that's an unverified premise.** Worth confirming what Flo,
-Clue, and similar apps actually offer before this gets built — some offer a
-structured export, some only a GDPR-style data request that comes back as
-JSON or a PDF, not a clean CSV a mapping wizard can read. Flagged, not
-guessed at, below.
+scenarios were both good, respectful defaults. The actual risk was upstream
+of framing: **the entire CSV-import feature assumed a source app produces a
+usable CSV, and that was an unverified premise.** Checked: Clue's export is
+JSON only, in a password-protected ZIP, no CSV option; Flo offers CSV but
+only via a manual "contact support" request emailed later, not an in-app
+download. Neither hands Dana a CSV the way the mapping wizard assumed. **Cut
+from v1 rather than shipped on an unverified premise** — see design
+decision 2 in docs/features/export.feature. Dana can still move her data in
+via InnerFlare's own export/import format on a device-to-device basis; a
+from-Flo-or-Clue import path is deferred, not designed around a guess.
 
 ---
 
@@ -159,11 +174,13 @@ symptom tags exist.
 
 **Framing risk:** The spec confirms predictions stop and nothing "implies
 period logging is still expected" — good coverage for what happens in
-Insights. But it says nothing about whether the **daily log screen's own
-layout** still puts flow logging first for her, purely by inherited default
-ordering, even though it's irrelevant to her life stage. If the log screen's
-visual hierarchy doesn't adapt, Fern experiences the app as a periods app
-begrudgingly tolerating her rather than one that was actually built for
-where she is now. This is a real, unspecified gap — but it's a UI-design
-question, not something to resolve by guessing at layout in a Gherkin file.
-Flagged, not designed, below.
+Insights. It said nothing, though, about whether the **daily log screen's
+own layout** still put flow logging first for her, purely by inherited
+default ordering, even though it's irrelevant to her life stage. If the log
+screen's visual hierarchy didn't adapt, Fern would experience the app as a
+periods app begrudgingly tolerating her rather than one that was actually
+built for where she is now. **Fixed** — once life stage is "menopause",
+symptom logging now leads and flow logging moves down (never hidden, since
+a period after confirmed menopause isn't an error); see
+docs/features/perimenopause.feature, "Daily log screen layout adapts once
+menopause is confirmed."

@@ -73,3 +73,44 @@ Feature: Cycle insights and predictions
     When the user returns to insights
     Then the average, variability, and predictions reflect the edited date immediately
     And no separate cached "insights" row needed to be manually updated
+
+  # --- Life stage and reproductive context adjust predictions -------------
+  #
+  # These mirror the suppression/confidence rules owned by
+  # docs/features/perimenopause.feature (see its "Reproductive context: HRT,
+  # IUD, and pregnancy" and "Cycle-math and insights adaptation" sections
+  # for the full rationale and data model) — restated here explicitly so an
+  # implementer working from this file alone doesn't miss them.
+
+  Scenario: A reproductive context flag suppresses predictions regardless of life stage
+    Given the user has recorded hormonal medication use, a hormonal IUD, or
+      a pregnancy
+    When the user views insights
+    Then no predicted next period date or fertile window is shown
+    And the stated reason matches the specific flag set (medication, IUD,
+      or pregnancy), not a generic explanation
+    And this overrides normal prediction behavior regardless of life stage
+
+  Scenario: Sustained variability during perimenopause labels predictions low-confidence rather than hiding them
+    Given the user's life stage is "perimenopause"
+    And no reproductive context flag is set
+    And cycle lengths over the last 6 cycles vary by more than 10 days
+      across at least 4 of them
+    When the user views insights
+    Then a predicted next period date is still shown if an average exists
+    And it is labeled low-confidence, distinct from the standard "estimate" label
+
+  Scenario: Confirmed menopause turns off period and fertile-window predictions
+    Given the user's life stage is "menopause"
+    When the user views insights
+    Then no predicted next period date or fertile window is shown
+    And the stated reason is that periods aren't expected at this life
+      stage, not that data is missing
+
+  Scenario: A reproductive context flag takes precedence over low-confidence labeling
+    Given the user's life stage is "perimenopause" and the variability
+      threshold above is met
+    And a reproductive context flag is also set
+    When the user views insights
+    Then predictions are hidden per the reproductive context reason
+    And no low-confidence prediction is shown alongside it
