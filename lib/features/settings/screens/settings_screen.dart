@@ -13,6 +13,8 @@ import 'package:inner_flare/core/providers/lock_timeout_provider.dart';
 import 'package:inner_flare/core/providers/now_provider.dart';
 import 'package:inner_flare/core/providers/today_log_provider.dart';
 import 'package:inner_flare/features/dashboard/widgets/database_status_indicator.dart';
+import 'package:inner_flare/features/export/screens/export_screen.dart';
+import 'package:inner_flare/features/export/screens/import_screen.dart';
 import 'package:inner_flare/features/settings/screens/symptom_settings_screen.dart';
 import 'package:inner_flare/models/lock_timeout.dart';
 import 'package:sqflite_common/sqlite_api.dart';
@@ -115,6 +117,38 @@ class SettingsScreen extends ConsumerWidget {
                   builder: (_) => const SymptomSettingsScreen(),
                 ),
               );
+            },
+          ),
+          const Divider(height: 32),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(20, 0, 20, 4),
+            child: Text(
+              'Backup',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ),
+          ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+            title: const Text('Export data'),
+            subtitle: const Text(
+              'Save a backup file to move to your own other device.',
+            ),
+            trailing: const Icon(Icons.chevron_right_rounded),
+            onTap: () {
+              Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const ExportScreen()));
+            },
+          ),
+          ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+            title: const Text('Import data'),
+            subtitle: const Text('Restore a previously exported backup file.'),
+            trailing: const Icon(Icons.chevron_right_rounded),
+            onTap: () {
+              Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const ImportScreen()));
             },
           ),
           const Divider(height: 32),
