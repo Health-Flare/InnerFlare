@@ -48,10 +48,9 @@
 #    engages with this feature should never see "hot flash" or "night
 #    sweat" cluttering the daily log screen — this is the concrete UX
 #    answer to "fade in and out as relevant": the log screen itself changes
-#    shape, not just a dashboard card. Opting into the tags themselves no
-#    longer requires opting into full tracking — see point 9.
+#    shape, not just a dashboard card.
 #
-# 6. Every dismissible nudge (not just the one in this file) now follows a
+# 6. Every dismissible nudge (not just the two in this file) now follows a
 #    single pattern: state the concrete reason inline, offer deferral to
 #    either a suggested date or a user-picked one instead of a fixed
 #    cooldown, and always name where the same setting lives in Settings.
@@ -62,44 +61,10 @@
 #    normal way" — a hormonal IUD produces the identical false-perimenopause
 #    signal, and pregnancy needs the same prediction suppression for an
 #    unrelated reason. All three now live together as "reproductive
-#    context", deliberately NOT gated behind perimenopause opt-in — see
-#    "Reproductive context: HRT, IUD, and pregnancy". A copper IUD is
+#    context", deliberately NOT gated behind perimenopause opt-in or age —
+#    see "Reproductive context: HRT, IUD, and pregnancy". A copper IUD is
 #    explicitly excluded from this suppression since it doesn't affect
 #    hormones or ovulation.
-#
-# 8. Two gaps surfaced by walking the spec against docs/personas.md rather
-#    than just re-reading it: (a) the variability nudge had no way to catch
-#    a user whose irregularity has an unrelated cause (an IUD, HRT,
-#    pregnancy) she hasn't told the app about yet — it would have read a
-#    29-year-old's IUD side effect as a perimenopause signal. The nudge now
-#    offers "something else explain this?" alongside the perimenopause
-#    option, linking straight to reproductive context settings, rather than
-#    assuming perimenopause is the only possible cause. (b) The neutral,
-#    no-assumed-emotion copy standard was specified for *ending* a recorded
-#    pregnancy but not for recording a new one — asymmetric, and wrong in
-#    the same direction (assuming congratulations are always welcome).
-#    Fixed to apply symmetrically. See "The variability nudge offers
-#    another explanation before assuming perimenopause" and "Recording a
-#    new pregnancy is copy-neutral, the same as ending one".
-#
-# 9. Declining full tracking no longer means an all-or-nothing choice. The
-#    variability nudge now offers a third option alongside "enable tracking"
-#    and "something else explains this": add the expanded symptom tags to
-#    "Symptoms to track" on their own, without changing life stage. Tags
-#    added this way start disabled — same as any newly added custom symptom
-#    in docs/features/symptom_settings.feature — rather than pre-enabled the
-#    way accepting full tracking makes them. See "A user can add the tags
-#    without enabling tracking".
-#
-# 10. Fern's persona (docs/personas.md) surfaced that nothing addressed the
-#     daily log screen's own visual hierarchy — flow logging leading by
-#     inherited default even once periods aren't expected anymore. Resolved
-#     during spec review (docs/spec-review-perimenopause.md): once life
-#     stage is specifically "menopause" (not "perimenopause", where periods
-#     are still expected, just less predictable), the log screen reorders to
-#     lead with symptoms; flow logging moves down but is never removed,
-#     since a period after confirmed menopause is explicitly not an error.
-#     See "Daily log screen layout adapts once menopause is confirmed".
 
 Feature: Perimenopause and menopause tracking
   As a user whose cycle patterns may be changing with age
@@ -188,24 +153,25 @@ Feature: Perimenopause and menopause tracking
   # --- Nudge transparency and deferral ------------------------------------
   #
   # This pattern isn't specific to perimenopause — any dismissible
-  # suggestion the app shows (this feature's variability nudge today,
+  # suggestion the app shows (this feature's age/variability nudges today,
   # whatever else in the future) follows the same three rules: say why
   # you're being asked, let the user pick when to be asked again instead of
   # a fixed cooldown, and always say where the same choice lives in
   # Settings for later.
   #
   # Data model: a new per-device `nudge_state` table, one row per nudge id
-  # ('perimenopause_variability' today, future ones as they're added),
+  # ('perimenopause_age', 'perimenopause_variability', and future ones),
   # columns `deferred_until` (nullable date) and `permanently_dismissed`
   # (boolean). Deliberately NOT part of export/import — like dashboard
   # card positions, this is transient per-device UI state, not data about
   # the user's body.
 
   Scenario: Every nudge states its own trigger in plain language
-    Given any dismissible nudge shown by this feature
+    Given any dismissible nudge shown by this feature (age-based or
+      variability-based)
     When the user views the nudge
-    Then it states the specific reason it's showing now (the observed cycle
-      pattern) in one plain sentence
+    Then it states the specific reason it's showing now (the birth year
+      threshold, or the observed cycle pattern) in one plain sentence
     And it never uses a generic reason like "you might be interested in this"
 
   Scenario: A nudge can be deferred to a suggested future point
@@ -246,6 +212,13 @@ Feature: Perimenopause and menopause tracking
       date simply pass
     And the user can still find and enable the feature manually from
       Settings at any time afterward
+
+  Scenario: The variability nudge follows the identical explain/defer/educate pattern
+    Given the sustained cycle variability nudge is shown
+    Then it follows every rule above the same way the age-based nudge does —
+      its own plain-language reason, the same deferral choices, and the
+      same pointer to Settings
+    And no separate nudge mechanism exists for variability versus age
 
   Scenario: Deferring or declining a nudge changes nothing else about the app
     Given the user defers, dismisses, or permanently silences a nudge
@@ -400,14 +373,14 @@ Feature: Perimenopause and menopause tracking
   # --- Reproductive context: HRT, IUD, and pregnancy ----------------------
   #
   # These three settings live together because they share one job: telling
-  # cycle-math and the perimenopause nudge "don't read this pattern the
+  # cycle-math and the perimenopause nudges "don't read this pattern the
   # way you normally would." They are NOT gated behind perimenopause
-  # tracking or the variability trigger — a 27-year-old with a hormonal
+  # tracking or any age/variability trigger — a 27-year-old with a hormonal
   # IUD or a first pregnancy needs the exact same prediction suppression a
   # 46-year-old does, for unrelated reasons. This section's scope has grown
-  # beyond "perimenopause" specifically; docs/features/insights.feature now
-  # carries its own explicit scenarios mirroring the suppression rules set
-  # here, rather than leaving them as an implicit cross-file qualifier.
+  # beyond "perimenopause" specifically; docs/features/insights.feature's
+  # prediction scenarios should be read as implicitly qualified by whatever
+  # is set here.
   #
   # Hormonal and copper IUDs are NOT interchangeable here: a hormonal IUD
   # commonly thins or stops the lining and suppresses ovulation for some
@@ -433,8 +406,8 @@ Feature: Perimenopause and menopause tracking
     Then next-period and fertile-window predictions are hidden
     And insights explains that predictions aren't attempted while this is
       set, because medication-influenced bleeding patterns aren't modeled
-    And the perimenopause variability nudge does not trigger while this
-      flag is set
+    And the perimenopause age and variability nudges do not trigger while
+      this flag is set
 
   Scenario: A hormonal IUD is recorded distinctly from a copper IUD
     Given the user opens the reproductive context settings
@@ -447,7 +420,7 @@ Feature: Perimenopause and menopause tracking
     Given the user has recorded a hormonal IUD
     When the user views insights or the dashboard
     Then next-period and fertile-window predictions are hidden
-    And the perimenopause variability nudge does not trigger
+    And the perimenopause age and variability nudges do not trigger
     And the stated reason references the IUD specifically, not a generic
       "medication" explanation
 
@@ -464,29 +437,10 @@ Feature: Perimenopause and menopause tracking
     And insights explains that predictions are off because a period isn't
       expected during pregnancy, distinct from the medication-suppression wording
 
-  # Candidate copy, pressure-tested against Onyx (docs/personas.md) — this
-  # can't assume the pregnancy is unambiguously welcome news:
-  #
-  #   Title: "Pregnancy recorded"
-  #   Body: "Period and fertile-window predictions are turned off while
-  #   this is set, since they don't apply during pregnancy."
-  #   Footer: "You can update or remove this anytime in Settings >
-  #   Reproductive context."
-
-  Scenario: Recording a new pregnancy is copy-neutral, the same as ending one
-    Given the user is recording a pregnancy for the first time
-    When the confirmation screen is shown
-    Then no congratulations, celebratory language, or assumption about
-      whether this is welcome news is shown
-    And the screen states plainly what changes (predictions and nudges are
-      suppressed) without commenting on the pregnancy itself
-    And this matches the same neutral standard "Ending a recorded
-      pregnancy" already holds, applied symmetrically on the way in
-
   Scenario: Recording pregnancy also suppresses the perimenopause nudges
     Given the user has recorded a pregnancy
     When the user views the dashboard
-    Then the perimenopause variability nudge does not trigger
+    Then the age-based and variability-based perimenopause nudges do not trigger
     And an absence of periods during a recorded pregnancy is never read as
       a perimenopause signal
 
@@ -506,30 +460,16 @@ Feature: Perimenopause and menopause tracking
       period, or not) speak for themselves
 
   Scenario: Pregnancy takes precedence over IUD or HRT status when both are recorded
-    Given the user has a recorded pregnancy alongside a recorded IUD, a
-      hormonal medication flag, or both (rare, but not impossible — device
-      failure happens, and some medication use continues into early
-      pregnancy under clinical guidance)
+    Given the user has both a recorded IUD and a recorded pregnancy (rare,
+      but not impossible — device failure happens)
     When the user views insights
-    Then the pregnancy-suppression explanation is shown, not the IUD or
-      medication one
-    And the IUD and medication records themselves are left untouched, only
-      the displayed reason changes
+    Then the pregnancy-suppression explanation is shown, not the IUD one
+    And the IUD record itself is left untouched, only the displayed reason changes
 
-  Scenario: Reproductive context suppression takes precedence over variability-based low-confidence labeling
-    Given the user's life stage is "perimenopause" and cycle variability
-      meets the low-confidence threshold described above
-    And a reproductive context flag (hormonal medication, hormonal IUD, or
-      pregnancy) is also set
-    When the user views insights
-    Then predictions are hidden per the reproductive context reason
-    And no low-confidence prediction is shown instead — the two explanations
-      never compete for the same space on screen
-
-  Scenario: Turning off any reproductive context flag restores normal prediction and nudge behavior
+  Scenario: Turning off any reproductive context flag restores normal prediction behavior
     Given a hormonal medication flag, hormonal IUD, or pregnancy record was
       set and is now cleared
-    When the user views insights or the dashboard
+    When the user views insights
     Then predictions resume using the same cycle-math logic as any other
       user at that life stage
     And the perimenopause variability nudge resumes evaluating its normal
@@ -556,8 +496,8 @@ Feature: Perimenopause and menopause tracking
     And it is not marked mandatory or unremovable
 
   Scenario: Life stage settings are per-device, never synced
-    Given the user has set a life stage or reproductive context field
-      (hormonal medication, IUD type, or pregnancy)
+    Given the user has set a life stage, birth year, or reproductive
+      context field (hormonal medication, IUD type, or pregnancy)
     When the app is reopened
     Then the same settings are shown
     And no network request was made to retrieve or persist them
@@ -571,10 +511,12 @@ Feature: Perimenopause and menopause tracking
       older backup
 
   Scenario: A backup that does include life stage data round-trips correctly
-    Given the user has a life stage and reproductive context settings
-      (hormonal medication flag, IUD type, and/or pregnancy record) set
+    Given the user has a life stage, optional birth year, and reproductive
+      context settings (hormonal medication flag, IUD type, and/or
+      pregnancy record) set
     When the user exports and then re-imports that backup
-    Then life stage and every reproductive context field are restored exactly
+    Then life stage, birth year (if entered), and every reproductive
+      context field are restored exactly
     And symptom logs using the expanded tag set are restored exactly
 
   Scenario: Nudge deferral state is device-local and deliberately not exported
