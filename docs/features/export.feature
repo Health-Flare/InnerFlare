@@ -12,30 +12,50 @@
 #    at the user's own other device actually needs. See "Export stays
 #    personal-use, not a sharing format".
 #
-# 2. Import is a different problem from export and gets an asymmetric
-#    answer: CSV import (from wherever a user's old app or their own
-#    spreadsheet produced one) is genuinely valuable on the way IN, because
-#    it's the lowest common denominator most other cycle-tracking apps and
-#    manual trackers actually produce, and it's how a user leaves another
-#    app for good. Supporting CSV import while refusing CSV export isn't a
-#    contradiction — export serves round-tripping InnerFlare's own full
-#    data model; import serves whatever incomplete, lossy format a user
-#    shows up with. See "Importing from other cycle-tracking apps".
+# 2. Generic CSV import from other cycle-tracking apps was drafted for v1
+#    and then dropped after spec review checked the premise it rested on:
+#    that a user's old app hands them a usable CSV. It mostly doesn't. Flo
+#    offers CSV as one export option, but only via a manual "contact
+#    support" request that emails a download link later — not an in-app
+#    download sitting in Files the moment someone switches phones. Clue
+#    offers JSON only, in a password-protected ZIP, with no CSV option at
+#    all. Shipping a column-mapping wizard framed around "import from your
+#    old app" would have implied a level of compatibility with named
+#    competitors this app hadn't actually verified, for either of the two
+#    most obvious sources. Rather than build that and caveat it after the
+#    fact, the whole "Importing from other cycle-tracking apps" section
+#    (column mapping, the `import_field_mappings` table, symptom-value
+#    resolution) is cut from v1. InnerFlare's own export/import format
+#    remains the only supported round-trip. Revisit only once a real
+#    third-party source is confirmed to produce something this app can
+#    honestly claim to read.
 #
-# 3. Platform health stores (Apple Health on iOS, Health Connect on
-#    Android) are a materially bigger lift than file-based CSV import —
-#    native permission grants, platform-specific APIs, and (Health Connect
-#    especially) a live on-device read rather than a picked file. Scoped as
-#    its own later phase rather than bundled into a v1 CSV importer; see
+# 3. "All cycle_day_logs and settings" in the first scenario below means
+#    portable data, not every row in the database. dashboard_card_preferences,
+#    quick_stat_preferences, and security_settings (the idle-lock timeout)
+#    are each documented elsewhere as per-device state — see "Card
+#    preferences are stored per-device in settings, not synced"
+#    (dashboard.feature), "Quick stat preferences are stored per-device, not
+#    synced" (quick_stats.feature), and app_lock.feature's idle-lock timeout
+#    scenario — and perimenopause.feature's "Nudge deferral state is
+#    device-local and deliberately not exported" scenario confirms the same
+#    is true of dashboard layout by direct analogy. None of the three round-
+#    trip through export/import; a device keeps its own layout, quick-stat
+#    choices, and lock timeout regardless of what's imported onto it. The
+#    `symptoms` catalog is the one settings table that *does* travel with
+#    the data, since `cycle_day_logs.symptoms` entries are meaningless
+#    without the labels (and custom entries) they reference — see "The
+#    symptom catalog travels with the data" below.
+#
+# 4. Platform health stores (Apple Health on iOS, Health Connect on
+#    Android) are a materially bigger lift than file-based CSV import ever
+#    was — native permission grants, platform-specific APIs, and (Health
+#    Connect especially) a live on-device read rather than a picked file.
+#    Unlike generic CSV import, they weren't cut: reading structured
+#    records an app itself wrote via a documented platform API is a
+#    verifiable claim, not a guess about a competitor's export format. See
 #    "Importing from the platform health store" for what's specified now
-#    versus deferred.
-#
-# 4. A third-party file's data quality is unknown and its column/tag names
-#    never match InnerFlare's model by construction. The rule throughout:
-#    never guess a mapping silently and never silently drop what doesn't
-#    map — always show the user what wasn't understood and let them decide,
-#    the same "no fabrication" principle cycle_math.dart already applies to
-#    gaps in logged data.
+#    versus deferred to its own later phase.
 
 Feature: Backup export and import
   As a user
@@ -48,9 +68,20 @@ Feature: Backup export and import
   Scenario: Export produces a single portable file
     Given the user has logged data across multiple cycles
     When the user chooses "export" in settings
-    Then a single file is produced containing all cycle_day_logs and settings
+    Then a single file is produced containing all cycle_day_logs and the
+      symptom catalog
     And the file includes the current schema_version
     And the OS share sheet is presented so the user can save or send the file
+
+  Scenario: The symptom catalog travels with the data, per-device settings do not
+    Given the user has renamed a built-in symptom and added a custom one
+    And the user has also customized their dashboard layout, quick stats,
+      and idle-lock timeout
+    When the user exports and imports that backup onto another device
+    Then the renamed and custom symptoms are restored on the other device
+    And the other device's dashboard layout, quick stats, and idle-lock
+      timeout are left exactly as they were on that device, untouched by
+      the import
 
   Scenario: Export never happens automatically
     Given the user has logged data
@@ -105,113 +136,21 @@ Feature: Backup export and import
     Then the file is written as plaintext
     And the user is not blocked from exporting by an unset passphrase
 
-  # --- Importing from other cycle-tracking apps ----------------------------
-  #
-  # This is new scope beyond BRIEF.md's v1 MVP (which only covers
-  # InnerFlare's own export round-tripping). A user switching in from
-  # another app is the whole point: they shouldn't have to re-enter years
-  # of history by hand, and a CSV is the one format most other trackers (or
-  # a manually kept spreadsheet) can actually produce.
-  #
-  # Data model: a new per-device `import_field_mappings` table — columns
-  # `source_label` (user-entered, e.g. "Clue export"), `source_field`,
-  # `mapped_to` (an InnerFlare field or symptom, or explicitly "ignore"),
-  # `last_used_at`. Purely a convenience cache for re-imports from the same
-  # source; never required, never exported/synced (per-device UI state,
-  # same bar as nudge_state in docs/features/perimenopause.feature), and
-  # safe to lose. Also needs an `ImportSource` domain concept
-  # (innerFlareBackup | genericCsv | appleHealth | healthConnect) to
-  # select the right parser and drive the mapping screen's copy.
-
-  Scenario: A CSV file can be chosen as an alternative to InnerFlare's own export format
-    Given the user chooses "import" in settings
-    When the user selects a .csv file instead of an InnerFlare export file
-    Then the app recognizes it as a CSV import rather than rejecting it outright
-    And the user is taken to a column-mapping screen instead of the
-      replace/merge prompt used for InnerFlare's own format
-
-  Scenario: CSV columns are mapped by the user, never guessed silently
-    Given the app has read the CSV file's header row
-    When the mapping screen is shown
-    Then each source column is listed next to a chooser for which
-      InnerFlare field it corresponds to (date, period flow, symptom, note,
-      or "ignore this column")
-    And no column is auto-assigned to a field without the user confirming it
-
-  Scenario: Only a recognizable date column is required to proceed
-    Given the user is mapping CSV columns
-    When no column has been mapped to "date"
-    Then the import cannot proceed
-    And every other mapping (flow, symptoms, note) remains optional
-
-  Scenario: Unrecognized symptom values are never silently dropped or guessed
-    Given a mapped symptom column contains a value with no matching
-      InnerFlare symptom tag (e.g. a source app's own custom tag name)
-    When the mapping screen reaches that column
-    Then each distinct unrecognized value is listed individually
-    And the user chooses, per value, to map it to an existing symptom tag,
-      keep it as text appended to that day's note, or ignore it
-    And no value is imported into a symptom tag it wasn't explicitly mapped to
-
-  Scenario: A preview is shown before anything is written to the database
-    Given the user has finished mapping columns
-    When the user reaches the review step
-    Then a sample of the rows as they will be imported is shown, using the
-      chosen mappings
-    And the user can go back and change a mapping before confirming
-    And nothing is written to the database until the user explicitly confirms
-
-  Scenario: A CSV import still goes through the same replace/merge choice as any other import
-    Given the user has confirmed a CSV import's column mappings
-    When the import is about to run
-    Then the user is asked to choose replace or merge, the same choice
-      offered for an InnerFlare-format import
-    And the chosen strategy is applied before any data is written
-
-  Scenario: Malformed rows are reported, not silently skipped
-    Given a CSV file has rows that don't parse under the chosen mappings
-      (e.g. an unparseable date)
-    When the user reaches the preview step
-    Then those rows are already listed as unparseable, with the reason,
-      before the user is asked to confirm anything
-    When the user confirms the import
-    Then only the rows that did parse are written to the database
-    And the malformed rows still appear in the post-import summary as not imported
-    And the app never guesses a value to make a malformed row fit
-
-  Scenario: Column mappings can be reused on a later import from the same source
-    Given the user previously imported a CSV and named the mapping (e.g.
-      "Clue export")
-    When the user imports another CSV and selects that saved mapping
-    Then the same column-to-field assignments are pre-filled
-    And the user can still adjust them before confirming, same as a fresh import
-
-  Scenario: CSV import never makes a network request
-    Given the user is anywhere in the CSV import flow, including column
-      mapping and symptom-value resolution
-    Then no request is made to look up a known app's template or column
-      names from anywhere but the app's own bundled data
-    And this matches the app's existing offline-only posture for every
-      other feature
-
-  Scenario: The app offers, but never forces, removing the source file after a successful import
-    Given a CSV import has completed successfully
-    When the confirmation screen is shown
-    Then the user is offered the option to delete the original file the
-      app read from
-    And declining leaves the file exactly where the user's file picker
-      found it — the app never deletes it without the user choosing to
-
   # --- Importing from the platform health store ----------------------------
   #
-  # Scoped lighter than CSV import above on purpose — this is a later phase,
-  # not something this spec expects to ship alongside generic CSV import.
-  # Apple Health (iOS) and Health Connect (Android) both store menstrual
-  # flow and symptom records other apps have written via each platform's
-  # HealthKit/Health Connect API, entirely on-device. Reading them needs a
-  # native runtime permission grant and platform-specific integration code,
-  # not a file picker — closer in weight to this app's existing
-  # biometric-gate/Keychain integration work than to parsing a CSV.
+  # This is the only external (non-InnerFlare-format) import path in v1 —
+  # generic CSV import from other cycle-tracking apps was drafted and then
+  # dropped; see design decision 2 above for why. Platform health stores
+  # are a materially bigger lift — native permission grants,
+  # platform-specific APIs, and (Health Connect especially) a live
+  # on-device read rather than a picked file, closer in weight to this
+  # app's existing biometric-gate/Keychain integration work than to parsing
+  # a file. Apple Health (iOS) and Health Connect (Android) both store
+  # menstrual flow and symptom records other apps have written via each
+  # platform's HealthKit/Health Connect API, entirely on-device. Scoped as
+  # its own later phase; the scenarios below describe what a future
+  # implementation should guarantee, not something expected alongside this
+  # file's other v1 scenarios.
 
   Scenario: Platform health import requests only the record types it needs
     Given the user chooses to import from Apple Health or Health Connect
@@ -227,9 +166,13 @@ Feature: Backup export and import
     And this matches "Export never happens automatically" above — a granted
       permission is not standing consent for the app to read on its own schedule
 
-  Scenario: Platform health import reuses the same preview-before-write and replace/merge rules
+  Scenario: Platform health import previews records and resolves unmapped values before writing anything
     Given records have been read from the platform health store
     When the user reviews them before import
-    Then the same preview, unmapped-value resolution, and replace/merge
-      choices apply as they do for a CSV import
-    And no platform-specific exception to those rules exists
+    Then a sample of the records as they will be imported is shown before
+      anything is written to the database
+    And any symptom value with no matching InnerFlare tag is listed
+      individually for the user to map, keep as note text, or ignore —
+      never guessed or silently dropped
+    And the user is asked to choose replace or merge, the same choice
+      offered for an InnerFlare-format import, before the import runs
