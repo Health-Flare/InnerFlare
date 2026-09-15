@@ -57,4 +57,56 @@ void main() {
     expect(cramps.label, 'Cramping');
     expect(cramps.isCustom, isFalse);
   });
+
+  test(
+    'replaceAll wipes the catalog and inserts the given symptoms exactly',
+    () async {
+      await repository.replaceAll(const [
+        TrackedSymptom(
+          id: 'custom_1',
+          label: 'Only this one',
+          isCustom: true,
+          enabled: true,
+          sortOrder: 0,
+        ),
+      ]);
+
+      final all = await repository.getAll();
+      expect(all.where((s) => s.id == 'custom_1'), hasLength(1));
+      // Built-ins missing from the replacement set are backfilled, never
+      // left to disappear entirely.
+      expect(
+        all.map((s) => s.id),
+        containsAll(builtInSymptoms.map((s) => s.$1)),
+      );
+    },
+  );
+
+  test(
+    'upsertIfAbsent adds a new id but never touches an existing one',
+    () async {
+      await repository.rename('cramps', 'My cramps label');
+
+      await repository.upsertIfAbsent(const [
+        TrackedSymptom(
+          id: 'cramps',
+          label: 'Should be ignored',
+          isCustom: false,
+          enabled: true,
+          sortOrder: 0,
+        ),
+        TrackedSymptom(
+          id: 'custom_new',
+          label: 'Brand new',
+          isCustom: true,
+          enabled: true,
+          sortOrder: 99,
+        ),
+      ]);
+
+      final all = await repository.getAll();
+      expect(all.firstWhere((s) => s.id == 'cramps').label, 'My cramps label');
+      expect(all.any((s) => s.id == 'custom_new'), isTrue);
+    },
+  );
 }

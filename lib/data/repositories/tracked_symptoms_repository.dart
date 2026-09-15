@@ -55,6 +55,50 @@ class TrackedSymptomsRepository {
     );
   }
 
+  /// Import's "replace" strategy (docs/features/export.feature): wipes the
+  /// catalog and reinserts [symptoms] exactly, then backfills any
+  /// [builtInSymptoms] id missing from it. That backfill matters because a
+  /// backup from an older app version only ever contains the built-ins
+  /// that existed when it was exported — without it, replacing onto a
+  /// newer app version could make a since-added built-in symptom
+  /// disappear entirely rather than just start out enabled-by-default.
+  Future<void> replaceAll(List<TrackedSymptom> symptoms) async {
+    await _db.transaction((txn) async {
+      await txn.delete(symptomsTable);
+      for (final symptom in symptoms) {
+        await txn.insert(symptomsTable, _toRow(symptom));
+      }
+
+      final presentIds = symptoms.map((s) => s.id).toSet();
+      var nextOrder = symptoms.length;
+      for (final (id, label) in builtInSymptoms) {
+        if (presentIds.contains(id)) continue;
+        await txn.insert(symptomsTable, {
+          'id': id,
+          'label': label,
+          'is_custom': 0,
+          'enabled': 1,
+          'sort_order': nextOrder,
+        });
+        nextOrder++;
+      }
+    });
+  }
+
+  /// Import's "merge" strategy (docs/features/export.feature): adds each
+  /// of [symptoms] whose id isn't already in the catalog (e.g. a custom
+  /// symptom created on the exporting device), leaving every existing row
+  /// — built-in or custom — exactly as this device already has it.
+  Future<void> upsertIfAbsent(List<TrackedSymptom> symptoms) async {
+    final existingIds = (await getAll()).map((s) => s.id).toSet();
+    await _db.transaction((txn) async {
+      for (final symptom in symptoms) {
+        if (existingIds.contains(symptom.id)) continue;
+        await txn.insert(symptomsTable, _toRow(symptom));
+      }
+    });
+  }
+
   Map<String, Object?> _toRow(TrackedSymptom symptom) {
     return {
       'id': symptom.id,

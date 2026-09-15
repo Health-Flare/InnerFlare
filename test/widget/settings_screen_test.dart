@@ -6,6 +6,8 @@ import 'package:inner_flare/core/providers/tracked_symptoms_repository_provider.
 import 'package:inner_flare/data/database/schema.dart';
 import 'package:inner_flare/data/repositories/security_settings_repository.dart';
 import 'package:inner_flare/data/repositories/tracked_symptoms_repository.dart';
+import 'package:inner_flare/features/export/screens/export_screen.dart';
+import 'package:inner_flare/features/export/screens/import_screen.dart';
 import 'package:inner_flare/features/settings/screens/settings_screen.dart';
 import 'package:inner_flare/features/settings/screens/symptom_settings_screen.dart';
 import 'package:inner_flare/models/lock_timeout.dart';
@@ -92,5 +94,29 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(SymptomSettingsScreen), findsOneWidget);
+  });
+
+  testWidgets('the export entry point opens the export screen '
+      '(docs/features/export.feature)', (tester) async {
+    await pumpTestApp(tester, const SettingsScreen(), overrides: overrides());
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(find.text('Export data'), 200);
+    await tester.tap(find.text('Export data'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ExportScreen), findsOneWidget);
+  });
+
+  testWidgets('the import entry point opens the import screen '
+      '(docs/features/export.feature)', (tester) async {
+    await pumpTestApp(tester, const SettingsScreen(), overrides: overrides());
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(find.text('Import data'), 200);
+    await tester.tap(find.text('Import data'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ImportScreen), findsOneWidget);
   });
 }

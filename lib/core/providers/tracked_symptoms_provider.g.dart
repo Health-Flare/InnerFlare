@@ -47,7 +47,7 @@ final class TrackedSymptomsNotifierProvider
 }
 
 String _$trackedSymptomsNotifierHash() =>
-    r'3e9d2c7a1f5b8e0d4c6a9f2b7e1d5c8a0f3b6e9d';
+    r'912c6e527fd5b59e9f1fb909e45e2e16e6062ceb';
 
 /// The user's full symptom catalog — built-in defaults plus anything
 /// they've added — and each one's enabled state
