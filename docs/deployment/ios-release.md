@@ -9,12 +9,12 @@ Mirrors `docs/deployment/android-release.md`. The workflow lives at
 run, no signing setup required:
 
 1. GitHub repo → **Actions** → **iOS build & release** → **Run workflow**.
-2. When it finishes, download the `inner-flare-simulator-build` artifact —
+2. When it finishes, download the `inner-flare-simulator-build` artifact -
    a `.app` bundle you can drag onto a booted simulator, or install with
    `xcrun simctl install <device> Runner.app`.
 
 This exists purely to keep the iOS build green in CI without needing any
-Apple credentials. It does not install on a physical device — iOS requires
+Apple credentials. It does not install on a physical device - iOS requires
 every build to be signed by a provisioning profile to run on real hardware,
 even for local testing, unlike Android's unsigned debug APKs.
 
@@ -22,7 +22,7 @@ even for local testing, unlike Android's unsigned debug APKs.
 
 Pushing a tag matching `v*.*.*` builds a **signed** `.ipa` and uploads it to
 App Store Connect. This requires a real Apple Developer Program enrollment
-and several repo secrets — one-time setup:
+and several repo secrets - one-time setup:
 
 ### 1. Apple Developer Program + App Store Connect setup
 
@@ -34,11 +34,11 @@ Do this once, in your Apple Developer / App Store Connect account:
    `ios/Runner.xcodeproj/project.pbxproj` exactly).
 3. Create the app record in **App Store Connect** using that bundle ID.
 4. Create a **Distribution** certificate and download the `.p12` (you'll
-   set a password on export — that's `APPLE_CERTIFICATE_PASSWORD` below).
+   set a password on export - that's `APPLE_CERTIFICATE_PASSWORD` below).
 5. Create an **App Store** provisioning profile for that bundle ID and
    download the `.mobileprovision` file.
 6. Create an **App Store Connect API key** (Users and Access → Integrations
-   → App Store Connect API) with the **App Manager** role — this lets CI
+   → App Store Connect API) with the **App Manager** role - this lets CI
    upload builds without storing an Apple ID password or handling 2FA.
    Download the `.p8` key file; note the Key ID and Issuer ID shown next to
    it (the `.p8` can only be downloaded once).
@@ -53,8 +53,8 @@ repository secret**. Add:
 | `APPLE_CERTIFICATE_BASE64` | `base64 -i DistributionCert.p12` |
 | `APPLE_CERTIFICATE_PASSWORD` | the password you set exporting the `.p12` |
 | `APPLE_PROVISIONING_PROFILE_BASE64` | `base64 -i InnerFlare_AppStore.mobileprovision` |
-| `APPLE_PROVISIONING_PROFILE_NAME` | the profile's **name** (not its UUID/filename) exactly as shown in the Developer portal — the export step maps `org.healthflare.app.innerflare` to this name |
-| `APPLE_TEAM_ID` | your 10-character Apple Developer Team ID (Xcode → Signing & Capabilities → Team, or developer.appleid.apple.com under Membership — same value that goes in `ios/Flutter/Local.xcconfig` for local builds) |
+| `APPLE_PROVISIONING_PROFILE_NAME` | the profile's **name** (not its UUID/filename) exactly as shown in the Developer portal - the export step maps `org.healthflare.app.innerflare` to this name |
+| `APPLE_TEAM_ID` | your 10-character Apple Developer Team ID (Xcode → Signing & Capabilities → Team, or developer.appleid.apple.com under Membership - same value that goes in `ios/Flutter/Local.xcconfig` for local builds) |
 | `APP_STORE_CONNECT_KEY_ID` | the Key ID shown next to the API key |
 | `APP_STORE_CONNECT_ISSUER_ID` | the Issuer ID shown on the same page |
 | `APP_STORE_CONNECT_API_KEY_BASE64` | `base64 -i AuthKey_XXXXXXXXXX.p8` |
@@ -62,7 +62,7 @@ repository secret**. Add:
 The workflow decodes the certificate and profile into a temporary keychain
 and `~/Library/MobileDevice/Provisioning Profiles/`, writes an
 `ExportOptions.plist` from `APPLE_TEAM_ID`/`APPLE_PROVISIONING_PROFILE_NAME`
-(there's no static `ExportOptions.plist` committed to the repo — CI
+(there's no static `ExportOptions.plist` committed to the repo - CI
 generates it per run so the real Team ID never has to live in source),
 builds and signs the archive, exports an `.ipa`, uploads it to App Store
 Connect via `xcrun altool` using the API key (no Apple ID/2FA involved),
@@ -101,11 +101,11 @@ non-CI things Apple will ask for and aren't set up yet:
       support URL, marketing URL (optional), icon (already in
       `ios/Runner/Assets.xcassets/AppIcon.appiconset`), screenshots (already
       captured in `screenshots/app_store/iphone_17_pro/` and
-      `screenshots/app_store/ipad_pro_13/` — confirm these cover every
+      `screenshots/app_store/ipad_pro_13/` - confirm these cover every
       device-size bucket App Store Connect currently requires; Apple's
       required screenshot sizes change occasionally)
-- [ ] Privacy policy URL — same one used for Play
-- [ ] App Privacy ("nutrition label") questionnaire in App Store Connect —
+- [ ] Privacy policy URL - same one used for Play
+- [ ] App Privacy ("nutrition label") questionnaire in App Store Connect -
       expect "Data Not Collected" for every category given the fully
       offline design, but each category still needs an explicit answer
 - [x] Export compliance: the app uses encryption (SQLCipher, see
@@ -114,14 +114,14 @@ non-CI things Apple will ask for and aren't set up yet:
       Connect won't ask this on every upload. `false` is correct here
       because on-device storage encryption with no custom cryptography
       beyond what SQLCipher/the OS provide typically qualifies for the
-      standard exemption — re-confirm against Apple's current export
+      standard exemption - re-confirm against Apple's current export
       compliance guidance before the first real submission, since the
       exact exemption categories do shift.
 - [ ] Age rating questionnaire
 - [ ] At least one TestFlight internal build, tested on a real device
 - [ ] Not-a-medical-device / no-diagnostic-claims language visible
       somewhere in the listing or in-app (already a stated design
-      principle in `CLAUDE.md` — just needs to survive into the App Store
+      principle in `CLAUDE.md` - just needs to survive into the App Store
       copy too, since Apple scrutinizes health-app claims during review)
 - [ ] First submission for review (subsequent versions can often use
       automatic release after approval; decide that per-release)

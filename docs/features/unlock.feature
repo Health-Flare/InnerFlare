@@ -17,7 +17,7 @@ Feature: Unlocking Inner Flare
   Scenario: The unlock screen explains itself before asking for anything
     Given the dedicated unlock screen has just appeared, whether on first open this session or after re-locking
     Then it explains in plain language that the data is encrypted on-device and needs to be unlocked to view
-    And an enabled "Unlock" button is shown — nothing is requested of the user automatically
+    And an enabled "Unlock" button is shown - nothing is requested of the user automatically
 
   Scenario: The database is never created or opened until the user chooses to unlock
     Given the dedicated unlock screen is showing, before any tap
@@ -40,7 +40,7 @@ Feature: Unlocking Inner Flare
   Scenario: Cancelling or failing the prompt leaves one clear way to retry
     Given the user tapped "Unlock" and the prompt was cancelled or failed
     Then the dedicated unlock screen stays up, with a plain-language explanation and a single "Unlock" button
-    And no prompt is triggered automatically afterwards — the user decides when to try again, with another tap
+    And no prompt is triggered automatically afterwards - the user decides when to try again, with another tap
 
   Scenario: Retrying is a single tap, never a stack of prompts
     Given the dedicated unlock screen is showing a retry state after a cancelled or failed attempt

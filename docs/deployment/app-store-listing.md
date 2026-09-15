@@ -2,7 +2,7 @@
 
 Canonical copy for the App Store Connect "Prepare for Submission" page and
 App Information tab. Companion to `docs/deployment/play-store-listing.md`
-— same claims, adapted to App Store's fields and iOS-specific details
+- same claims, adapted to App Store's fields and iOS-specific details
 (Face ID/Touch ID, AirDrop) instead of Play's.
 
 ## Subtitle (max 30 characters, under the app name on the App Store)
@@ -62,12 +62,12 @@ Inner Flare is a tracking tool, not a diagnostic one, and it's not a substitute 
 
 ## Screenshots
 
-`screenshots/app_store/iphone_6.5in/` — captured 2026-09-10 against the
+`screenshots/app_store/iphone_6.5in/` - captured 2026-09-10 against the
 iPhone 11 Pro Max simulator specifically because that's the device whose
 native resolution (1242×2688) exactly matches one of the four pixel sizes
 Apple's "iPhone 6.5" Display" screenshot slot accepts. The previously
 captured `screenshots/app_store/iphone_17_pro/` set is 1206×2622, which
-doesn't match any of Apple's required screenshot bucket sizes — don't
+doesn't match any of Apple's required screenshot bucket sizes - don't
 upload those to the 6.5" slot. If App Store Connect's screenshot section
 shows additional size tiers beyond 6.5" (e.g. a 6.7" or 6.9" slot for
 newer devices), those will need their own capture run against a matching
@@ -77,13 +77,13 @@ tier ASC is actually asking for before capturing).
 `screenshots/app_store/ipad_pro_13/` (2064×2752) matches the 13-inch M4
 iPad Pro's native resolution exactly and is expected to satisfy whatever
 iPad screenshot slot is current, but this hasn't been confirmed against
-App Store Connect directly — try uploading it and see whether ASC accepts
+App Store Connect directly - try uploading it and see whether ASC accepts
 it before assuming.
 
 ## Not yet written
 
 - App Information tab: Name ("Inner Flare"), Category (Health & Fitness or
-  Medical — pick one; Medical often draws more review scrutiny for
+  Medical - pick one; Medical often draws more review scrutiny for
   diagnostic-sounding claims, and this app deliberately makes none, so
   Health & Fitness is probably the safer/faster fit), age rating, and
   copyright.

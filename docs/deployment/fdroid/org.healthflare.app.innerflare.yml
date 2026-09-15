@@ -1,10 +1,10 @@
-# DRAFT — not yet submitted to fdroid/fdroid-data.
+# DRAFT - not yet submitted to fdroid/fdroid-data.
 #
 # Starting point only. Validate every field against F-Droid's current
 # Build Metadata Reference (https://f-droid.org/docs/Build_Metadata_Reference/)
-# before opening the actual merge request — this schema evolves, and the
+# before opening the actual merge request - this schema evolves, and the
 # Flutter build steps below are unverified against F-Droid's real build
-# sandbox (see docs/deployment/fdroid/README.md — the build spike has to
+# sandbox (see docs/deployment/fdroid/README.md - the build spike has to
 # pass first).
 
 Categories:
@@ -37,7 +37,7 @@ Builds:
     # Flutter SDK provisioning: F-Droid has historically supported this via
     # a pinned `srclibs` checkout of the Flutter SDK rather than a raw curl
     # install. Replace this block once the build spike confirms the current
-    # supported approach — do not assume `flutter` is preinstalled.
+    # supported approach - do not assume `flutter` is preinstalled.
     init:
       - flutter pub get
       - flutter build apk --release
