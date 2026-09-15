@@ -1,18 +1,13 @@
 # Design decisions and open challenges (read before touching scenarios below)
 #
-# 1. Age and birth year are not collected by this feature at all — cycle
-#    variability is the sole trigger. An age-based path (birth year on file
-#    making the user 40+) was drafted and then cut during spec review (see
-#    docs/spec-review-perimenopause.md): it could only ever fire for a user
-#    who had already entered a birth year, but a birth year could only ever
-#    be entered from inside that same nudge, or via an unprompted Settings
-#    visit most users would never think to make on their own. That's not a
-#    trigger, it's a dead path for anyone but a small self-disclosing
-#    minority — and it would have meant carrying age as stored PII for a
-#    feature that mostly couldn't use it. Rather than bolt on some other
-#    onboarding-time age question (which this app has deliberately avoided
-#    everywhere else, for the same reason — see BRIEF.md's minimal-data
-#    stance), the age path was removed entirely rather than half-fixed.
+# 1. Age is asked nowhere in onboarding. Front-loading a "your age" question
+#    onto every new user — most of whom are years from needing it — pads
+#    onboarding for the common case to serve a minority. Age is only ever
+#    asked contextually, inside the nudge itself (see "Introducing the
+#    feature"), or if the user proactively opens Settings and turns this on
+#    unprompted. Only birth year is stored, never a full date of birth —
+#    month/day adds nothing to an age estimate and is unnecessary PII for an
+#    app whose whole design stance is minimal data collection.
 #
 # 2. Detecting "menopause reached" from data alone is unreliable: 12 months
 #    without a logged period start looks identical whether periods actually
@@ -26,22 +21,16 @@
 #    periods entirely, in patterns this app has no way to model correctly.
 #    Rather than guess, v1 explicitly scopes this out: HRT use is recorded
 #    as a flag that suppresses cycle-regularity predictions and irregularity
-#    nudges rather than attempting to interpret them. See "Reproductive
-#    context: HRT, IUD, and pregnancy" (extended per point 7 below to cover
-#    IUDs and pregnancy on the same principle).
+#    nudges rather than attempting to interpret them. See "HRT and hormonal
+#    medication context".
 #
 # 4. The variability threshold/window that reasonably suggests perimenopause
 #    (as opposed to one or two normal irregular cycles, already handled in
 #    insights.feature) is a clinical judgment call, not something derivable
-#    from first principles. Checked during spec review against STRAW+10 (the
-#    standard clinical staging criteria, which defines early perimenopause
-#    variability as a ≥7-day difference between *consecutive* cycles,
-#    recurring within a window of up to 10 cycles): this spec's 10-day/
-#    4-of-6-cycle bar is deliberately stricter on magnitude. That's a
-#    conscious choice, not an oversight — this is a soft, dismissible,
-#    non-diagnostic nudge, not a staging tool, and erring toward
-#    under-flagging fits "never presumptuous" better than matching a
-#    clinical criterion would. See docs/spec-review-perimenopause.md.
+#    from first principles. This spec uses a longer trailing window than
+#    ordinary irregularity detection and treats it as a soft, dismissible
+#    nudge rather than a claim — precision here matters less than never
+#    presenting it as diagnostic.
 #
 # 5. Expanded symptom tags (vasomotor, sleep, cognitive) are gated behind
 #    opt-in, not merged into the default symptom list. A user who never
@@ -77,78 +66,43 @@ Feature: Perimenopause and menopause tracking
     Given the user has completed onboarding
 
   # --- Introducing the feature -----------------------------------------
-  #
-  # Candidate copy for the variability nudge (resolves "open question C1",
-  # docs/spec-review-perimenopause.md and docs/personas.md's Renata section)
-  # — pressure-tested against Renata specifically: anxious, undiagnosed,
-  # doesn't want to be told what's happening to her. Not yet locked; the
-  # scenarios below only require "states the specific reason... in one
-  # plain sentence" so implementation isn't blocked on final wording, but
-  # this is the working draft:
-  #
-  #   Title: "Your cycles have been less predictable lately"
-  #   Body: "Over your last 6 logged cycles, the length has varied by more
-  #   than 10 days on several of them. That can have a few different
-  #   causes — including a change some people notice as they get older,
-  #   sometimes called perimenopause. Tracking alone can't tell us which
-  #   one applies to you."
-  #   Actions: "Turn on extra symptom tracking" (hot flashes, sleep, and
-  #   more) · "Something else explains this" (hormonal medication, an IUD,
-  #   or pregnancy) · "Just add the tags for now" · "Not now"
-  #   Footer (always shown, regardless of choice): "You can turn this on or
-  #   off anytime in Settings > Life stage."
-  #
-  # Deliberately avoids: naming an age, saying "you might be starting
-  # perimenopause" as a claim rather than a possibility, and any variant of
-  # "don't worry" (reads as dismissive of something Renata is already
-  # anxious about, per her persona's framing risk).
 
   Scenario: The feature is entirely opt-in and invisible until relevant
-    Given a newly onboarded user
+    Given a newly onboarded user with no birth year on file
     And no cycle data suggesting irregularity
     When the user views the dashboard
     Then no perimenopause-related card, nudge, or prompt is shown
     And nothing about perimenopause tracking is enabled
 
-  Scenario: Sustained cycle variability triggers a dismissible nudge
+  Scenario: A birth year suggesting relevant age triggers a dismissible nudge
+    Given the user has entered a birth year making them 40 or older
+    When the user views the dashboard
+    Then a dismissible nudge invites the user to enable perimenopause
+      symptom tracking
+    And the nudge explains this is an offer based on age, not an assessment
+      of the user's body
+
+  Scenario: Sustained cycle variability triggers the same nudge regardless of age
     Given the user's cycle lengths over the last 6 logged cycles vary by
       more than 10 days from each other
     And this pattern holds across at least 4 of those cycles, not just one
       outlier pair
     When the user views the dashboard
-    Then a dismissible nudge invites the user to enable perimenopause
-      symptom tracking
-    And the nudge cites the specific variability pattern as its reason
+    Then the same dismissible nudge is shown
+    And the nudge cites the variability pattern as its reason, not age
 
-  Scenario: The variability nudge offers another explanation before assuming perimenopause
-    Given the sustained cycle variability nudge is triggered
-    And the user has not recorded any reproductive context (hormonal
-      medication, an IUD, or pregnancy)
+  Scenario: The nudge itself is where age is first asked, and it's optional
+    Given the nudge is shown for either age or variability reasons
     When the user opens the nudge
-    Then alongside the option to enable perimenopause symptom tracking, the
-      nudge asks whether something else explains the pattern — hormonal
-      medication, an IUD, or pregnancy — and links directly to reproductive
-      context settings
-    And choosing one of those reasons there suppresses the variability
-      nudge going forward, the same as recording it from Settings would
-    And the nudge never assumes perimenopause is the only possible
-      explanation for cycle variability
-
-  Scenario: A user can add the tags without enabling tracking
-    Given the sustained cycle variability nudge is triggered
-    When the user opens the nudge
-    Then alongside "enable perimenopause symptom tracking" and "something
-      else explains this", a third option offers to add the expanded
-      symptom tags to "Symptoms to track" without enabling tracking
-    And choosing that option adds the tags to symptom settings, disabled by
-      default, the same as any newly added custom symptom
-    And life stage remains unset and no other tracking behavior changes
+    Then the user may enter a birth year if one isn't already on file
+    And entering a birth year is optional even at this point
+    And declining to enter it does not block enabling symptom tracking
 
   Scenario: Any user can turn this on proactively, unprompted
-    Given a user with no variability trigger
+    Given a user of any age with no variability trigger
     When the user opens Settings and enables perimenopause symptom tracking directly
     Then tracking is enabled immediately
-    And no justification is required
+    And no birth year or justification is required
 
   # --- Nudge transparency and deferral ------------------------------------
   #
@@ -224,7 +178,8 @@ Feature: Perimenopause and menopause tracking
     Given the user defers, dismisses, or permanently silences a nudge
     When the user continues using the app
     Then logging, calendar, and insights behave exactly as before
-    And life stage remains unset
+    And no data about age or life stage is retained from a declined nudge's
+      birth year entry, if the user chose not to save it
 
   # --- Life stage is an explicit, user-owned setting ---------------------
 
@@ -241,21 +196,10 @@ Feature: Perimenopause and menopause tracking
     And this only changes which symptom tags and cards are shown, not any
       cycle-math prediction logic yet
 
-  # Candidate copy for the 12-month observation (same C1 draft pass as the
-  # variability nudge above):
-  #
-  #   Title: "It's been 12 months since your last logged period"
-  #   Body: "You've kept up regular logging, and there's no period recorded
-  #   in the last year. Some people reach menopause around this point —
-  #   that's a milestone only you can confirm, not something tracking data
-  #   can determine on its own."
-  #   Actions: "Yes, mark menopause as reached" · "Not yet" · "Ask me again later"
-  #   Footer: "You can change this anytime in Settings > Life stage."
-
   Scenario: 12 months without a logged period is surfaced as a question, never set automatically
     Given the user's life stage is "perimenopause"
     And the user has logged at least one cycle day (of any kind — flow,
-      symptoms, or note) in at least 9 of the last 12 months
+      symptoms, or note) in each of the last 12 months
     And no period start has been logged in that same 12-month span
     When the user views insights or the dashboard
     Then the app shows an observation that it's been 12 months since the
@@ -265,7 +209,8 @@ Feature: Perimenopause and menopause tracking
 
   Scenario: A logging gap is never mistaken for a menopause milestone
     Given no period start has been logged in the last 12 months
-    And the user has logged on fewer than 9 of those 12 months
+    But the user also has no other cycle day logs of any kind across at
+      least 3 of those months
     When the user views insights or the dashboard
     Then the app does not suggest that menopause may have been reached
     And any period-related "not enough data" or "no recent logs" messaging
@@ -310,29 +255,6 @@ Feature: Perimenopause and menopause tracking
       daily log screen
     And previously logged days still show and store their hot flash tag
     And no logged data is deleted
-
-  # --- Daily log screen layout adapts once menopause is confirmed --------
-  #
-  # Fern's persona (docs/personas.md) surfaced that Insights adapting isn't
-  # enough on its own — the log screen's own section ordering still put
-  # flow logging first by inherited default, for a life stage where it's
-  # irrelevant. Scoped to "menopause" specifically, not "perimenopause":
-  # periods are still expected during perimenopause, just less predictably,
-  # so flow logging staying first there is still correct.
-
-  Scenario: Flow logging stays first for every life stage except confirmed menopause
-    Given the user's life stage is unset, "not tracking", or "perimenopause"
-    When the user opens the daily log screen
-    Then period flow logging is the first section shown
-    And this matches docs/features/log.feature's existing default layout
-
-  Scenario: Symptom logging leads once menopause is confirmed
-    Given the user's life stage is "menopause"
-    When the user opens the daily log screen
-    Then symptom logging is the first section shown
-    And period flow logging is still present, just moved below symptoms —
-      never hidden, since a period after confirmed menopause is not an error
-    And the note field's position is unchanged
 
   # --- Cycle-math and insights adaptation --------------------------------
 
@@ -399,10 +321,10 @@ Feature: Perimenopause and menopause tracking
   # this IS part of export/import — it's data about the user's body, same
   # bar as life stage or symptom logs.
 
-  Scenario: Recording hormonal medication use (HRT or otherwise) suppresses regularity-based predictions
-    Given any user, regardless of life stage
-    When the user indicates in Settings that they're using HRT or another
-      hormonal medication that affects bleeding patterns
+  Scenario: Recording HRT/hormonal medication use suppresses regularity-based predictions
+    Given the user's life stage is "perimenopause" or "menopause"
+    When the user indicates in Settings that they're using HRT or hormonal
+      medication that affects bleeding patterns
     Then next-period and fertile-window predictions are hidden
     And insights explains that predictions aren't attempted while this is
       set, because medication-influenced bleeding patterns aren't modeled
@@ -472,8 +394,6 @@ Feature: Perimenopause and menopause tracking
     When the user views insights
     Then predictions resume using the same cycle-math logic as any other
       user at that life stage
-    And the perimenopause variability nudge resumes evaluating its normal
-      trigger conditions
 
   # --- Not a diagnosis, always --------------------------------------------
 
@@ -518,10 +438,3 @@ Feature: Perimenopause and menopause tracking
     Then life stage, birth year (if entered), and every reproductive
       context field are restored exactly
     And symptom logs using the expanded tag set are restored exactly
-
-  Scenario: Nudge deferral state is device-local and deliberately not exported
-    Given the user has deferred or permanently silenced a nudge on this device
-    When the user exports a backup and imports it on a different device
-    Then the imported device shows nudges according to its own trigger
-      conditions, not the exporting device's deferral state
-    And this matches how dashboard card layout is also per-device, never synced
