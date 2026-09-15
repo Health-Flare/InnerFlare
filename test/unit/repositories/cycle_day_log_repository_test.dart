@@ -2,7 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:inner_flare/data/database/schema.dart';
 import 'package:inner_flare/data/repositories/cycle_day_log_repository.dart';
 import 'package:inner_flare/models/period_flow.dart';
-import 'package:inner_flare/models/symptom.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 
 import '../../fixtures/cycle_day_log_fixtures.dart';
@@ -81,16 +80,12 @@ void main() {
   test('symptom sets round-trip through storage', () async {
     final log = symptomOnlyLog(
       date: DateTime.utc(2026, 3, 1),
-      symptoms: {Symptom.cramps, Symptom.headache, Symptom.bloating},
+      symptoms: {'cramps', 'headache', 'bloating'},
     );
 
     await repository.save(log);
     final result = await repository.getByDate(log.date);
 
-    expect(result?.symptoms, {
-      Symptom.cramps,
-      Symptom.headache,
-      Symptom.bloating,
-    });
+    expect(result?.symptoms, {'cramps', 'headache', 'bloating'});
   });
 }

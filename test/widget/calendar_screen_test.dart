@@ -3,12 +3,13 @@ import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:inner_flare/core/providers/cycle_day_log_repository_provider.dart';
 import 'package:inner_flare/core/providers/now_provider.dart';
+import 'package:inner_flare/core/providers/tracked_symptoms_repository_provider.dart';
 import 'package:inner_flare/data/database/schema.dart';
 import 'package:inner_flare/data/repositories/cycle_day_log_repository.dart';
+import 'package:inner_flare/data/repositories/tracked_symptoms_repository.dart';
 import 'package:inner_flare/features/calendar/screens/calendar_screen.dart';
 import 'package:inner_flare/models/cycle_day_log.dart';
 import 'package:inner_flare/models/period_flow.dart';
-import 'package:inner_flare/models/symptom.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 
 import '../helpers/test_app_builder.dart';
@@ -33,6 +34,16 @@ void main() {
     return repository;
   }
 
+  // Tapping a day opens the log screen, which reads the tracked symptom
+  // catalog; every override list needs this so it resolves to an
+  // in-memory db instead of the real (biometric-gated) one.
+  Override symptomsOverride() {
+    return trackedSymptomsRepositoryProvider.overrideWith((ref) async {
+      final db = await openInMemoryTestDatabase(onCreate: onCreate);
+      return TrackedSymptomsRepository(db);
+    });
+  }
+
   List<Override> overridesFor(
     CycleDayLogRepository repository,
     DateTime Function() now,
@@ -40,6 +51,7 @@ void main() {
     return [
       nowProvider.overrideWithValue(now),
       cycleDayLogRepositoryProvider.overrideWith((ref) async => repository),
+      symptomsOverride(),
     ];
   }
 
@@ -67,7 +79,7 @@ void main() {
     tester,
   ) async {
     final repository = await seededRepository([
-      CycleDayLog(date: DateTime(2026, 1, 3), symptoms: const {Symptom.cramps}),
+      CycleDayLog(date: DateTime(2026, 1, 3), symptoms: const {'cramps'}),
       CycleDayLog(date: DateTime(2026, 1, 4), periodFlow: PeriodFlow.medium),
     ]);
 

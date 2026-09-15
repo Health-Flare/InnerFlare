@@ -1,7 +1,6 @@
 import 'package:inner_flare/models/cycle_day_log.dart';
 import 'package:inner_flare/models/ovulation_test_result.dart';
 import 'package:inner_flare/models/period_flow.dart';
-import 'package:inner_flare/models/symptom.dart';
 
 /// A deterministic set of [CycleDayLog]s used only to populate the app
 /// with realistic-looking history for taking app-store screenshots (see
@@ -73,9 +72,9 @@ List<CycleDayLog> _periodDays(DateTime startDate, {required DateTime today}) {
           date: startDate.add(Duration(days: day)),
           periodFlow: flows[day],
           symptoms: day == 0
-              ? const {Symptom.cramps, Symptom.fatigue}
+              ? const {'cramps', 'fatigue'}
               : day == 1
-              ? const {Symptom.cramps}
+              ? const {'cramps'}
               : const {},
           note: day == 0 ? 'Cramps started overnight, first day today.' : null,
         ),
@@ -98,15 +97,15 @@ List<CycleDayLog> _midCycleDays(DateTime periodStartDate) {
       date: periodStartDate.add(const Duration(days: 14)),
       ovulationTestResult: OvulationTestResult.positive,
       basalBodyTempCelsius: 36.7,
-      symptoms: const {Symptom.tenderBreasts},
+      symptoms: const {'tenderBreasts'},
     ),
     CycleDayLog(
       date: periodStartDate.add(const Duration(days: 22)),
-      symptoms: const {Symptom.bloating, Symptom.moodSwings},
+      symptoms: const {'bloating', 'moodSwings'},
     ),
     CycleDayLog(
       date: periodStartDate.add(const Duration(days: 25)),
-      symptoms: const {Symptom.headache, Symptom.fatigue},
+      symptoms: const {'headache', 'fatigue'},
       note: 'Low energy today, went to bed early.',
     ),
   ];
