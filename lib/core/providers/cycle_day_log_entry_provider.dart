@@ -21,12 +21,30 @@ class CycleDayLogEntry extends _$CycleDayLogEntry {
   /// Persists [log], replacing any existing entry for [date] — the
   /// repository upserts by date, so there is only ever one row per date
   /// (docs/features/log.feature, "Editing an existing day's log").
+  ///
+  /// Only today's instance of this family has a standing watcher
+  /// ([todayLogProvider], via the dashboard); every other date — i.e. any
+  /// day edited from the calendar — has none. Without [ref.keepAlive],
+  /// this autoDispose provider is eligible for disposal the moment it's
+  /// created via `ref.read(...).notifier`, and the `await` below gives it
+  /// the chance: disposal doesn't stop `repository.save` from completing
+  /// (and actually writing the row), but assigning to `state` afterward
+  /// throws because the notifier is already gone — surfacing as a false
+  /// "Couldn't save" to the caller even though the save succeeded. Holding
+  /// the link across the whole method keeps the notifier alive long enough
+  /// for that assignment to be safe, then releases it so a date with no
+  /// watcher still disposes normally once the save is done.
   Future<void> save(CycleDayLog log) async {
-    // ignore: invalid_use_of_internal_member
-    state = const AsyncLoading<CycleDayLog?>().copyWithPrevious(state);
-    state = await AsyncValue.guard(() async {
-      final repository = await ref.read(cycleDayLogRepositoryProvider.future);
-      return repository.save(log);
-    });
+    final keepAliveLink = ref.keepAlive();
+    try {
+      // ignore: invalid_use_of_internal_member
+      state = const AsyncLoading<CycleDayLog?>().copyWithPrevious(state);
+      state = await AsyncValue.guard(() async {
+        final repository = await ref.read(cycleDayLogRepositoryProvider.future);
+        return repository.save(log);
+      });
+    } finally {
+      keepAliveLink.close();
+    }
   }
 }
