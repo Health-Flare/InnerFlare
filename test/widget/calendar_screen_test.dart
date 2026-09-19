@@ -193,43 +193,42 @@ void main() {
     },
   );
 
-  testWidgets(
-    'editing a previous day does not show a spurious save error',
-    (tester) async {
-      // Regression test: cycleDayLogEntryProvider is only kept alive for
-      // today's date, via todayLogProvider on the dashboard — no widget
-      // watches it for any other date. Editing a previous day from the
-      // calendar used to hit that provider's autoDispose window mid-save:
-      // the write to the database succeeded, but assigning the resulting
-      // state afterward threw because the (unwatched) notifier had
-      // already been torn down, surfacing as a false "Couldn't save"
-      // error on a save that had actually worked.
-      final repository = await seededRepository([]);
+  testWidgets('editing a previous day does not show a spurious save error', (
+    tester,
+  ) async {
+    // Regression test: cycleDayLogEntryProvider is only kept alive for
+    // today's date, via todayLogProvider on the dashboard — no widget
+    // watches it for any other date. Editing a previous day from the
+    // calendar used to hit that provider's autoDispose window mid-save:
+    // the write to the database succeeded, but assigning the resulting
+    // state afterward threw because the (unwatched) notifier had
+    // already been torn down, surfacing as a false "Couldn't save"
+    // error on a save that had actually worked.
+    final repository = await seededRepository([]);
 
-      await pumpTestApp(
-        tester,
-        const CalendarScreen(),
-        overrides: overridesFor(repository, () => DateTime(2026, 1, 5, 9)),
-      );
-      await tester.pumpAndSettle();
+    await pumpTestApp(
+      tester,
+      const CalendarScreen(),
+      overrides: overridesFor(repository, () => DateTime(2026, 1, 5, 9)),
+    );
+    await tester.pumpAndSettle();
 
-      await tester.tap(find.byKey(ValueKey(DateTime(2026, 1, 2))));
-      await tester.pumpAndSettle();
-      expect(find.text('Edit a previous day'), findsOneWidget);
+    await tester.tap(find.byKey(ValueKey(DateTime(2026, 1, 2))));
+    await tester.pumpAndSettle();
+    expect(find.text('Edit a previous day'), findsOneWidget);
 
-      await tester.tap(find.widgetWithText(ChoiceChip, 'Medium'));
-      await tester.pumpAndSettle();
-      expect(find.textContaining("Couldn't save"), findsNothing);
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Medium'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining("Couldn't save"), findsNothing);
 
-      await tester.tap(find.widgetWithText(FilterChip, 'Cramps'));
-      await tester.pumpAndSettle();
-      expect(find.textContaining("Couldn't save"), findsNothing);
+    await tester.tap(find.widgetWithText(FilterChip, 'Cramps'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining("Couldn't save"), findsNothing);
 
-      final saved = await repository.getByDate(DateTime(2026, 1, 2));
-      expect(saved?.periodFlow, PeriodFlow.medium);
-      expect(saved?.symptoms, {'cramps'});
-    },
-  );
+    final saved = await repository.getByDate(DateTime(2026, 1, 2));
+    expect(saved?.periodFlow, PeriodFlow.medium);
+    expect(saved?.symptoms, {'cramps'});
+  });
 
   testWidgets(
     'the calendar reflects an edited previous day immediately, without '
