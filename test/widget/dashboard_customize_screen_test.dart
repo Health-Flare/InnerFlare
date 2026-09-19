@@ -95,7 +95,7 @@ void main() {
       final saved = await DashboardCardPreferencesRepository(openDb!).getAll();
       // Insights (never hidden) should now lead; re-shown Calendar moved to
       // the end instead of keeping its original leading position.
-      expect(saved.map((p) => p.card.name).toList(), ['insights', 'calendar']);
+      expect(saved.map((p) => p.kind.name).toList(), ['insights', 'calendar']);
       expect(saved.every((p) => p.visible), isTrue);
     },
   );
@@ -114,7 +114,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final saved = await DashboardCardPreferencesRepository(openDb!).getAll();
-    final insightsPref = saved.firstWhere((p) => p.card.name == 'insights');
+    final insightsPref = saved.firstWhere((p) => p.kind.name == 'insights');
     expect(insightsPref.visible, isFalse);
   });
 }

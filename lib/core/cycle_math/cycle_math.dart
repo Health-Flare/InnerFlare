@@ -212,6 +212,42 @@ int? estimatedDaysToNextPeriod({
   return daysBetween(now, predicted);
 }
 
+/// Whether cycle-length history is too thin to show a single confident
+/// number for — fewer than 2 complete cycle lengths, or the last
+/// [windowSize] lengths vary by more than [thresholdDays] (see
+/// docs/features/dashboard_visualizations.feature, "Gauge shows a range
+/// instead of false precision when data is thin"). The same rule the
+/// trend card's "never fabricates a trend" scenario uses for the
+/// length-only half of its check.
+bool hasThinCycleHistory(
+  List<int> cycleLengths, {
+  int windowSize = 3,
+  int thresholdDays = 7,
+}) {
+  return cycleLengths.length < 2 ||
+      cycleLengthsAreIrregular(
+        cycleLengths,
+        windowSize: windowSize,
+        thresholdDays: thresholdDays,
+      );
+}
+
+/// How full a gauge card should render, as a fraction of the user's own
+/// average cycle length — never a fixed or generic scale (see
+/// docs/features/dashboard_visualizations.feature, "the gauge fills
+/// relative to the user's own average cycle length"). Clamped to [0, 1]:
+/// an overdue period (more elapsed days than the average cycle length)
+/// still renders as a full gauge rather than overflowing it. Null when
+/// there's no average to measure against yet.
+double? gaugeFillFraction({
+  required int elapsedDays,
+  required double? averageCycleLength,
+}) {
+  if (averageCycleLength == null || averageCycleLength <= 0) return null;
+  final fraction = elapsedDays / averageCycleLength;
+  return fraction.clamp(0.0, 1.0);
+}
+
 List<int> _lastN(List<int> values, int n) {
   if (values.length <= n) return values;
   return values.sublist(values.length - n);

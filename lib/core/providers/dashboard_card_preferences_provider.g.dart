@@ -8,26 +8,38 @@ part of 'dashboard_card_preferences_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// The dashboard's customizable card layout — show/hide and order
-/// (docs/features/dashboard.feature). Backs both the dashboard screen's
-/// rendering and the customization screen's controls.
+/// The dashboard's customizable card layout — show/hide, order, add/remove,
+/// and per-card mode config (docs/features/dashboard.feature,
+/// docs/features/dashboard_visualizations.feature). Backs both the
+/// dashboard screen's rendering and the customization/add-card screens'
+/// controls. Every mutator here is keyed off [DashboardCardInstance.id],
+/// never [DashboardCardKind], since more than one instance of the same
+/// kind can exist.
 
 @ProviderFor(DashboardCardPreferencesNotifier)
 final dashboardCardPreferencesProvider =
     DashboardCardPreferencesNotifierProvider._();
 
-/// The dashboard's customizable card layout — show/hide and order
-/// (docs/features/dashboard.feature). Backs both the dashboard screen's
-/// rendering and the customization screen's controls.
+/// The dashboard's customizable card layout — show/hide, order, add/remove,
+/// and per-card mode config (docs/features/dashboard.feature,
+/// docs/features/dashboard_visualizations.feature). Backs both the
+/// dashboard screen's rendering and the customization/add-card screens'
+/// controls. Every mutator here is keyed off [DashboardCardInstance.id],
+/// never [DashboardCardKind], since more than one instance of the same
+/// kind can exist.
 final class DashboardCardPreferencesNotifierProvider
     extends
         $AsyncNotifierProvider<
           DashboardCardPreferencesNotifier,
-          List<DashboardCardPreference>
+          List<DashboardCardInstance>
         > {
-  /// The dashboard's customizable card layout — show/hide and order
-  /// (docs/features/dashboard.feature). Backs both the dashboard screen's
-  /// rendering and the customization screen's controls.
+  /// The dashboard's customizable card layout — show/hide, order, add/remove,
+  /// and per-card mode config (docs/features/dashboard.feature,
+  /// docs/features/dashboard_visualizations.feature). Backs both the
+  /// dashboard screen's rendering and the customization/add-card screens'
+  /// controls. Every mutator here is keyed off [DashboardCardInstance.id],
+  /// never [DashboardCardKind], since more than one instance of the same
+  /// kind can exist.
   DashboardCardPreferencesNotifierProvider._()
     : super(
         from: null,
@@ -49,32 +61,36 @@ final class DashboardCardPreferencesNotifierProvider
 }
 
 String _$dashboardCardPreferencesNotifierHash() =>
-    r'31e0983507ea60abfc013131d95c80f4d53493a4';
+    r'34716856c4e1fddaae34d8862fd427b6d882515b';
 
-/// The dashboard's customizable card layout — show/hide and order
-/// (docs/features/dashboard.feature). Backs both the dashboard screen's
-/// rendering and the customization screen's controls.
+/// The dashboard's customizable card layout — show/hide, order, add/remove,
+/// and per-card mode config (docs/features/dashboard.feature,
+/// docs/features/dashboard_visualizations.feature). Backs both the
+/// dashboard screen's rendering and the customization/add-card screens'
+/// controls. Every mutator here is keyed off [DashboardCardInstance.id],
+/// never [DashboardCardKind], since more than one instance of the same
+/// kind can exist.
 
 abstract class _$DashboardCardPreferencesNotifier
-    extends $AsyncNotifier<List<DashboardCardPreference>> {
-  FutureOr<List<DashboardCardPreference>> build();
+    extends $AsyncNotifier<List<DashboardCardInstance>> {
+  FutureOr<List<DashboardCardInstance>> build();
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
     final ref =
         this.ref
             as $Ref<
-              AsyncValue<List<DashboardCardPreference>>,
-              List<DashboardCardPreference>
+              AsyncValue<List<DashboardCardInstance>>,
+              List<DashboardCardInstance>
             >;
     final element =
         ref.element
             as $ClassProviderElement<
               AnyNotifier<
-                AsyncValue<List<DashboardCardPreference>>,
-                List<DashboardCardPreference>
+                AsyncValue<List<DashboardCardInstance>>,
+                List<DashboardCardInstance>
               >,
-              AsyncValue<List<DashboardCardPreference>>,
+              AsyncValue<List<DashboardCardInstance>>,
               Object?,
               Object?
             >;

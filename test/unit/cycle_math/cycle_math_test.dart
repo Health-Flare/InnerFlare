@@ -1,5 +1,7 @@
-// Exercises docs/features/insights.feature against the pure cycle-math
-// module. No Flutter, no database — see lib/core/cycle_math/cycle_math.dart.
+// Exercises docs/features/insights.feature and
+// docs/features/dashboard_visualizations.feature against the pure
+// cycle-math module. No Flutter, no database — see
+// lib/core/cycle_math/cycle_math.dart.
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:inner_flare/core/cycle_math/cycle_math.dart';
@@ -272,5 +274,57 @@ void main() {
         expect(daysBetween(start, end), expectedDays);
       });
     }
+  });
+
+  // docs/features/dashboard_visualizations.feature, "Gauge shows a range
+  // instead of false precision when data is thin".
+  group('hasThinCycleHistory', () {
+    test('fewer than 2 complete cycle lengths is thin', () {
+      expect(hasThinCycleHistory(const []), isTrue);
+      expect(hasThinCycleHistory(const [28]), isTrue);
+    });
+
+    test('2+ regular cycle lengths is not thin', () {
+      expect(hasThinCycleHistory(const [28, 29, 27]), isFalse);
+    });
+
+    test('the last 3 lengths varying by more than 7 days is thin, even '
+        'with plenty of history', () {
+      expect(hasThinCycleHistory(const [28, 29, 21, 40]), isTrue);
+    });
+
+    test('an old irregular stretch outside the window doesn\'t count', () {
+      // Last 3 (28, 27, 29) are tight; the 40 four cycles back is out of
+      // the default 3-length window.
+      expect(hasThinCycleHistory(const [40, 21, 28, 27, 29]), isFalse);
+    });
+  });
+
+  // docs/features/dashboard_visualizations.feature, "the gauge fills
+  // relative to the user's own average cycle length, not a fixed or
+  // generic scale".
+  group('gaugeFillFraction', () {
+    test('null with no average cycle length yet', () {
+      expect(
+        gaugeFillFraction(elapsedDays: 10, averageCycleLength: null),
+        isNull,
+      );
+    });
+
+    test('fraction of elapsed days over the average cycle length', () {
+      expect(
+        gaugeFillFraction(elapsedDays: 10, averageCycleLength: 28),
+        closeTo(10 / 28, 1e-9),
+      );
+    });
+
+    test('clamps to 1.0 once the period is overdue, rather than '
+        'overflowing the gauge', () {
+      expect(gaugeFillFraction(elapsedDays: 40, averageCycleLength: 28), 1.0);
+    });
+
+    test('clamps to 0.0 for a negative elapsed-day count', () {
+      expect(gaugeFillFraction(elapsedDays: -2, averageCycleLength: 28), 0.0);
+    });
   });
 }
