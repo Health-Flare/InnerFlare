@@ -108,8 +108,8 @@ Feature: Dashboard visualization cards
     # before it can show a precise number). Flagging rather than
     # guessing until this is settled.
 
-  Scenario: The dashboard nudges toward cleanup once there are 5 or more cards
-    Given the user has 5 or more cards on the dashboard, whether default
+  Scenario: The dashboard nudges toward cleanup once there are 6 or more cards
+    Given the user has 6 or more cards on the dashboard, whether default
       or added
     When the user opens the dashboard
     Then a cleanup nudge appears (docs/features/dashboard_nudges.feature)

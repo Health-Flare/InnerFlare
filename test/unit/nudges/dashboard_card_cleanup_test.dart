@@ -15,18 +15,18 @@ void main() {
   );
 
   group('hasEnoughCardsForCleanupNudge', () {
-    test('fewer than 5 cards does not trigger the nudge', () {
-      final cards = List.generate(4, calendar);
+    test('fewer than 6 cards does not trigger the nudge', () {
+      final cards = List.generate(5, calendar);
       expect(hasEnoughCardsForCleanupNudge(cards), isFalse);
     });
 
-    test('exactly 5 cards triggers the nudge', () {
-      final cards = List.generate(5, calendar);
+    test('exactly 6 cards triggers the nudge', () {
+      final cards = List.generate(6, calendar);
       expect(hasEnoughCardsForCleanupNudge(cards), isTrue);
     });
 
-    test('more than 5 cards still triggers the nudge', () {
-      final cards = List.generate(8, calendar);
+    test('more than 6 cards still triggers the nudge', () {
+      final cards = List.generate(9, calendar);
       expect(hasEnoughCardsForCleanupNudge(cards), isTrue);
     });
 

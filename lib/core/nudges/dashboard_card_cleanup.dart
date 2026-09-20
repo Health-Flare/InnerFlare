@@ -1,6 +1,6 @@
 /// Pure trigger conditions for the dashboard cleanup nudge
 /// (docs/features/dashboard_visualizations.feature, "The dashboard
-/// nudges toward cleanup once there are 5 or more cards" / "A cleanup
+/// nudges toward cleanup once there are 6 or more cards" / "A cleanup
 /// nudge calls out duplicate cards by name"). The nudge's own
 /// dismiss/snooze behavior once triggered is generic — see
 /// lib/core/nudges/nudge_rules.dart — this file only decides *when* the
@@ -9,8 +9,11 @@ library;
 
 import 'package:inner_flare/models/dashboard_card.dart';
 
-/// How many cards (default or added) trigger the cleanup nudge.
-const int cleanupNudgeCardThreshold = 5;
+/// How many cards (default or added) trigger the cleanup nudge. Set
+/// above the 4-card default grid (both quick stats, Calendar, Insights)
+/// so the nudge only fires once the user has actually added cards of
+/// their own, not just for sitting at the starting layout.
+const int cleanupNudgeCardThreshold = 6;
 
 /// Whether [cards] has enough of them to warrant a cleanup nudge.
 bool hasEnoughCardsForCleanupNudge(
