@@ -29,10 +29,21 @@ class DashboardCardPreferencesRepository {
     );
     final result = [for (final row in rows) _fromRow(row)];
 
-    final present = result.map((c) => c.kind).toSet();
+    final presentIds = result.map((c) => c.id).toSet();
     var nextOrder = result.isEmpty ? 0 : result.last.order + 1;
     for (final kind in DashboardCardKind.values.where((k) => k.isDefault)) {
-      if (!present.contains(kind)) {
+      if (kind == DashboardCardKind.quickStat) {
+        // Two fixed cards, not one — see defaultQuickStatCardInstances.
+        for (final quickStat in defaultQuickStatCardInstances(
+          firstOrder: nextOrder,
+        )) {
+          if (presentIds.contains(quickStat.id)) continue;
+          result.add(quickStat);
+          nextOrder++;
+        }
+        continue;
+      }
+      if (!presentIds.contains(kind.name)) {
         result.add(
           DashboardCardInstance(
             id: kind.name,

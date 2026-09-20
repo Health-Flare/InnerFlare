@@ -4,12 +4,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:inner_flare/core/providers/cycle_day_log_repository_provider.dart';
 import 'package:inner_flare/core/providers/dashboard_card_preferences_repository_provider.dart';
 import 'package:inner_flare/core/providers/now_provider.dart';
-import 'package:inner_flare/core/providers/quick_stat_preferences_repository_provider.dart';
 import 'package:inner_flare/core/providers/tracked_symptoms_repository_provider.dart';
 import 'package:inner_flare/data/database/schema.dart';
 import 'package:inner_flare/data/repositories/cycle_day_log_repository.dart';
 import 'package:inner_flare/data/repositories/dashboard_card_preferences_repository.dart';
-import 'package:inner_flare/data/repositories/quick_stat_preferences_repository.dart';
 import 'package:inner_flare/data/repositories/tracked_symptoms_repository.dart';
 import 'package:inner_flare/features/dashboard/screens/dashboard_screen.dart';
 import 'package:inner_flare/models/cycle_day_log.dart';
@@ -45,16 +43,6 @@ void main() {
     });
   }
 
-  // Dashboard screen also reads the quick stat slot preferences; every
-  // override list needs this for the same reason as dashboardPrefsOverride
-  // above.
-  Override quickStatPrefsOverride() {
-    return quickStatPreferencesRepositoryProvider.overrideWith((ref) async {
-      final db = await openInMemoryTestDatabase(onCreate: onCreate);
-      return QuickStatPreferencesRepository(db);
-    });
-  }
-
   // The log screen (opened via "Log today" or the calendar) reads the
   // tracked symptom catalog; every override list needs this so it
   // resolves to an in-memory db instead of the real (biometric-gated)
@@ -75,7 +63,6 @@ void main() {
         return CycleDayLogRepository(db);
       }),
       dashboardPrefsOverride(),
-      quickStatPrefsOverride(),
       symptomsOverride(),
     ];
   }
@@ -427,6 +414,10 @@ void main() {
       await tester.tap(find.byTooltip('Customize dashboard'));
       await tester.pumpAndSettle();
 
+      await tester.scrollUntilVisible(
+        find.widgetWithText(SwitchListTile, 'Insights'),
+        200,
+      );
       await tester.tap(find.widgetWithText(SwitchListTile, 'Insights'));
       await tester.pumpAndSettle();
 
@@ -450,35 +441,41 @@ void main() {
   );
 
   group('quick stats (docs/features/quick_stats.feature)', () {
-    testWidgets('both default quick stats appear below the log-today area and '
-        'above "Your data, at a glance"', (tester) async {
-      final db = await openInMemoryTestDatabase(onCreate: onCreate);
-      openDb = db;
-      final repository = CycleDayLogRepository(db);
-      await savePeriod(repository, DateTime(2026, 7, 27), flowDays: 5);
-      await savePeriod(repository, DateTime(2026, 8, 24), flowDays: 3);
+    testWidgets(
+      'both default quick stats appear below the log-today area, in the '
+      'same grid as Calendar and Insights (docs/features/'
+      'dashboard_grid_layout.feature)',
+      (tester) async {
+        final db = await openInMemoryTestDatabase(onCreate: onCreate);
+        openDb = db;
+        final repository = CycleDayLogRepository(db);
+        await savePeriod(repository, DateTime(2026, 7, 27), flowDays: 5);
+        await savePeriod(repository, DateTime(2026, 8, 24), flowDays: 3);
 
-      await pumpTestApp(
-        tester,
-        const DashboardScreen(),
-        overrides: [
-          nowProvider.overrideWithValue(() => DateTime(2026, 9, 3, 9)),
-          cycleDayLogRepositoryProvider.overrideWith((ref) async {
-            return repository;
-          }),
-          dashboardPrefsOverride(),
-          quickStatPrefsOverride(),
-        ],
-      );
-      await tester.pumpAndSettle();
+        await pumpTestApp(
+          tester,
+          const DashboardScreen(),
+          overrides: [
+            nowProvider.overrideWithValue(() => DateTime(2026, 9, 3, 9)),
+            cycleDayLogRepositoryProvider.overrideWith((ref) async {
+              return repository;
+            }),
+            dashboardPrefsOverride(),
+          ],
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.text('Log a previous day'), findsOneWidget);
-      expect(find.text('Days since last period'), findsOneWidget);
-      expect(find.text('Est. days to next period'), findsOneWidget);
-
-      await tester.scrollUntilVisible(find.text('Your data, at a glance'), 200);
-      expect(find.text('Your data, at a glance'), findsOneWidget);
-    });
+        expect(find.text('Log a previous day'), findsOneWidget);
+        await tester.scrollUntilVisible(
+          find.text('Days since last period'),
+          200,
+        );
+        expect(find.text('Days since last period'), findsOneWidget);
+        expect(find.text('Est. days to next period'), findsOneWidget);
+        expect(find.text('Calendar'), findsOneWidget);
+        expect(find.text('Insights'), findsOneWidget);
+      },
+    );
 
     testWidgets(
       'computes both defaults from real logged history: end-of-period '
@@ -501,10 +498,10 @@ void main() {
               return repository;
             }),
             dashboardPrefsOverride(),
-            quickStatPrefsOverride(),
           ],
         );
         await tester.pumpAndSettle();
+        await tester.scrollUntilVisible(find.text('since it ended'), 200);
 
         // Default reference point is the end of the last period (the
         // 26th) — 8 days before "now" (Sept 3rd).
@@ -536,10 +533,13 @@ void main() {
               return repository;
             }),
             dashboardPrefsOverride(),
-            quickStatPrefsOverride(),
           ],
         );
         await tester.pumpAndSettle();
+        await tester.scrollUntilVisible(
+          find.text('Days since last period'),
+          200,
+        );
 
         expect(find.text('0'), findsOneWidget);
       },
@@ -555,6 +555,10 @@ void main() {
           overrides: overridesFor(() => DateTime(2026, 1, 1, 9)),
         );
         await tester.pumpAndSettle();
+        await tester.scrollUntilVisible(
+          find.text('Not enough data yet').first,
+          200,
+        );
 
         expect(find.text('Not enough data yet'), findsNWidgets(2));
       },
@@ -578,10 +582,10 @@ void main() {
               return repository;
             }),
             dashboardPrefsOverride(),
-            quickStatPrefsOverride(),
           ],
         );
         await tester.pumpAndSettle();
+        await tester.scrollUntilVisible(find.text('an estimate'), 200);
 
         expect(find.text('8'), findsOneWidget); // days since it ended
         expect(find.text('Not enough data yet'), findsOneWidget);
@@ -607,37 +611,18 @@ void main() {
             return repository;
           }),
           dashboardPrefsOverride(),
-          quickStatPrefsOverride(),
         ],
       );
       await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(find.text('3 days overdue'), 200);
 
       expect(find.text('-3'), findsNothing);
       expect(find.text('3 days overdue'), findsOneWidget);
     });
 
     testWidgets(
-      'the quick stat customization entry point is discoverable from the '
-      'dashboard',
-      (tester) async {
-        await pumpTestApp(
-          tester,
-          const DashboardScreen(),
-          overrides: overridesFor(() => DateTime(2026, 1, 1, 9)),
-        );
-        await tester.pumpAndSettle();
-
-        expect(find.byTooltip('Customize quick stats'), findsOneWidget);
-
-        await tester.tap(find.byTooltip('Customize quick stats'));
-        await tester.pumpAndSettle();
-
-        expect(find.text('Customize quick stats'), findsWidgets);
-      },
-    );
-
-    testWidgets(
-      'reconfiguring a quick stat slot persists after the app is reopened',
+      'quick stats are reconfigured the same way as any other card, from '
+      'Customize dashboard, and it persists after the app is reopened',
       (tester) async {
         final overrides = overridesFor(() => DateTime(2026, 9, 3, 9));
         await pumpTestApp(
@@ -647,11 +632,14 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        await tester.tap(find.byTooltip('Customize quick stats'));
+        await tester.tap(find.byTooltip('Customize dashboard'));
         await tester.pumpAndSettle();
 
+        // Slot 0 defaults to "days since last period", whose reference-
+        // point selector is shown inline, same as gauge/trend mode
+        // selectors.
         await tester.tap(
-          find.byKey(const ValueKey('quick-stat-slot-0-refpoint-periodStart')),
+          find.byKey(const ValueKey('quick-stat-0-refpoint-periodStart')),
         );
         await tester.pumpAndSettle();
 
@@ -665,9 +653,14 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        final saved = await QuickStatPreferencesRepository(openDb!).getAll();
-        final slot0 = saved.firstWhere((p) => p.slot == 0);
-        expect(slot0.referencePoint, QuickStatReferencePoint.periodStart);
+        final saved = await DashboardCardPreferencesRepository(
+          openDb!,
+        ).getAll();
+        final slot0 = saved.firstWhere((c) => c.id == 'quick-stat-0');
+        expect(
+          slot0.quickStatReferencePoint,
+          QuickStatReferencePoint.periodStart,
+        );
       },
     );
   });

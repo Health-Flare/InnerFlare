@@ -1,30 +1,50 @@
+import 'package:inner_flare/models/quick_stat.dart';
+
 /// A customizable card on the dashboard (docs/features/dashboard.feature,
+/// docs/features/dashboard_grid_layout.feature,
 /// docs/features/dashboard_visualizations.feature). The "log today" entry
 /// point is not in this set — it is a persistent part of the dashboard
 /// shell, never hidden (see "Hiding every card still leaves the log entry
 /// point reachable").
 enum DashboardCardKind {
+  quickStat,
   calendar,
   insights,
   gauge,
   trend;
 
   String get label => switch (this) {
+    DashboardCardKind.quickStat => 'Quick stat',
     DashboardCardKind.calendar => 'Calendar',
     DashboardCardKind.insights => 'Insights',
     DashboardCardKind.gauge => 'Gauge',
     DashboardCardKind.trend => 'Trend chart',
   };
 
-  /// Calendar and Insights exist for every user from the start — hidden
-  /// with the same show/hide toggle as everything else, but never
-  /// "removed" outright, and never something you'd find in the add-card
-  /// catalog. Gauge/trend cards are the opposite: nothing appears until
-  /// the user explicitly adds one (see "Additional data points can be
-  /// added as their own cards"), and each addition is its own removable
-  /// [DashboardCardInstance].
+  /// Quick stats, Calendar, and Insights exist for every user from the
+  /// start, hidden with the same show/hide toggle as everything else but
+  /// never "removed" outright, and never something you'd find in the
+  /// add-card catalog. Gauge/trend cards are the opposite: nothing
+  /// appears until the user explicitly adds one (see "Additional data
+  /// points can be added as their own cards"), and each addition is its
+  /// own removable [DashboardCardInstance].
   bool get isDefault =>
-      this == DashboardCardKind.calendar || this == DashboardCardKind.insights;
+      this == DashboardCardKind.quickStat ||
+      this == DashboardCardKind.calendar ||
+      this == DashboardCardKind.insights;
+
+  /// This kind's default grid footprint (docs/features/
+  /// dashboard_grid_layout.feature, "A newly added gauge or trend card
+  /// defaults to a wider cell"). Quick stat/Calendar/Insights are all a
+  /// single cell; gauge/trend need more room for a gauge or chart to read
+  /// clearly. User-driven resizing doesn't exist yet — this is every
+  /// card's starting size, not a ceiling.
+  (int columns, int rows) get defaultGridSpan => switch (this) {
+    DashboardCardKind.quickStat ||
+    DashboardCardKind.calendar ||
+    DashboardCardKind.insights => (1, 1),
+    DashboardCardKind.gauge || DashboardCardKind.trend => (2, 1),
+  };
 }
 
 /// Which value a gauge card displays (docs/features/dashboard_visualizations
@@ -83,6 +103,8 @@ class DashboardCardConfigKeys {
   static const gaugeMode = 'gauge_mode';
   static const trendMetric = 'trend_metric';
   static const trendChartType = 'trend_chart_type';
+  static const quickStatType = 'quick_stat_type';
+  static const quickStatReferencePoint = 'quick_stat_reference_point';
 }
 
 /// One card's show/hide state, position, and (for gauge/trend cards) mode
@@ -131,6 +153,22 @@ class DashboardCardInstance {
     return TrendChartType.values.firstWhere(
       (type) => type.name == raw,
       orElse: () => TrendChartType.bar,
+    );
+  }
+
+  QuickStatType get quickStatType {
+    final raw = config[DashboardCardConfigKeys.quickStatType];
+    return QuickStatType.values.firstWhere(
+      (type) => type.name == raw,
+      orElse: () => QuickStatType.daysSinceLastPeriod,
+    );
+  }
+
+  QuickStatReferencePoint get quickStatReferencePoint {
+    final raw = config[DashboardCardConfigKeys.quickStatReferencePoint];
+    return QuickStatReferencePoint.values.firstWhere(
+      (point) => point.name == raw,
+      orElse: () => QuickStatReferencePoint.periodEnd,
     );
   }
 
@@ -210,6 +248,47 @@ DashboardCardInstance newTrendCardInstance({
       DashboardCardConfigKeys.trendChartType: chartType.name,
     },
   );
+}
+
+/// The two quick stat cards' fixed identity and default configuration
+/// (docs/features/quick_stats.feature, "Default first/second quick
+/// stat") — used to auto-populate them the same way calendar/insights
+/// are auto-populated when missing (see
+/// [DashboardCardPreferencesRepository.getAll]), and to migrate an
+/// existing install's old two-slot `quick_stat_preferences` rows onto
+/// this shape (see schema_version 7 in lib/data/database/schema.dart).
+/// Unlike gauge/trend, quick stat cards are never added or removed via
+/// the catalog — always exactly these two, matching the "keep Calendar
+/// and Insights as fixed defaults" rule extended to quick stats.
+List<DashboardCardInstance> defaultQuickStatCardInstances({
+  required int firstOrder,
+}) {
+  return [
+    DashboardCardInstance(
+      id: 'quick-stat-0',
+      kind: DashboardCardKind.quickStat,
+      visible: true,
+      order: firstOrder,
+      config: {
+        DashboardCardConfigKeys.quickStatType:
+            QuickStatType.daysSinceLastPeriod.name,
+        DashboardCardConfigKeys.quickStatReferencePoint:
+            QuickStatReferencePoint.periodEnd.name,
+      },
+    ),
+    DashboardCardInstance(
+      id: 'quick-stat-1',
+      kind: DashboardCardKind.quickStat,
+      visible: true,
+      order: firstOrder + 1,
+      config: {
+        DashboardCardConfigKeys.quickStatType:
+            QuickStatType.estimatedDaysToNextPeriod.name,
+        DashboardCardConfigKeys.quickStatReferencePoint:
+            QuickStatReferencePoint.periodEnd.name,
+      },
+    ),
+  ];
 }
 
 bool _mapEquals(Map<String, String> a, Map<String, String> b) {

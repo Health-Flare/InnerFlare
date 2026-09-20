@@ -218,3 +218,114 @@ final class TrendCardDisplayFamily extends $Family
   @override
   String toString() => r'trendCardDisplayProvider';
 }
+
+/// Resolves [instance] (a quick stat card) to its live display value,
+/// from the same period-start and cycle-length data as
+/// docs/features/insights.feature — no separate cached calculation to
+/// keep in sync (see "Quick stats recompute live from the same data as
+/// Insights").
+
+@ProviderFor(quickStatCardDisplay)
+final quickStatCardDisplayProvider = QuickStatCardDisplayFamily._();
+
+/// Resolves [instance] (a quick stat card) to its live display value,
+/// from the same period-start and cycle-length data as
+/// docs/features/insights.feature — no separate cached calculation to
+/// keep in sync (see "Quick stats recompute live from the same data as
+/// Insights").
+
+final class QuickStatCardDisplayProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<QuickStatCardDisplay>,
+          QuickStatCardDisplay,
+          FutureOr<QuickStatCardDisplay>
+        >
+    with
+        $FutureModifier<QuickStatCardDisplay>,
+        $FutureProvider<QuickStatCardDisplay> {
+  /// Resolves [instance] (a quick stat card) to its live display value,
+  /// from the same period-start and cycle-length data as
+  /// docs/features/insights.feature — no separate cached calculation to
+  /// keep in sync (see "Quick stats recompute live from the same data as
+  /// Insights").
+  QuickStatCardDisplayProvider._({
+    required QuickStatCardDisplayFamily super.from,
+    required DashboardCardInstance super.argument,
+  }) : super(
+         retry: null,
+         name: r'quickStatCardDisplayProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$quickStatCardDisplayHash();
+
+  @override
+  String toString() {
+    return r'quickStatCardDisplayProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<QuickStatCardDisplay> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<QuickStatCardDisplay> create(Ref ref) {
+    final argument = this.argument as DashboardCardInstance;
+    return quickStatCardDisplay(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is QuickStatCardDisplayProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$quickStatCardDisplayHash() =>
+    r'288fde6f1f2d0b15b2c11b644653f6d3e44b635d';
+
+/// Resolves [instance] (a quick stat card) to its live display value,
+/// from the same period-start and cycle-length data as
+/// docs/features/insights.feature — no separate cached calculation to
+/// keep in sync (see "Quick stats recompute live from the same data as
+/// Insights").
+
+final class QuickStatCardDisplayFamily extends $Family
+    with
+        $FunctionalFamilyOverride<
+          FutureOr<QuickStatCardDisplay>,
+          DashboardCardInstance
+        > {
+  QuickStatCardDisplayFamily._()
+    : super(
+        retry: null,
+        name: r'quickStatCardDisplayProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// Resolves [instance] (a quick stat card) to its live display value,
+  /// from the same period-start and cycle-length data as
+  /// docs/features/insights.feature — no separate cached calculation to
+  /// keep in sync (see "Quick stats recompute live from the same data as
+  /// Insights").
+
+  QuickStatCardDisplayProvider call(DashboardCardInstance instance) =>
+      QuickStatCardDisplayProvider._(argument: instance, from: this);
+
+  @override
+  String toString() => r'quickStatCardDisplayProvider';
+}

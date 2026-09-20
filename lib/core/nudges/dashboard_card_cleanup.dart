@@ -23,8 +23,9 @@ bool hasEnoughCardsForCleanupNudge(
 /// Groups of 2+ cards configured identically — same kind, and for
 /// gauge/trend cards, the same mode/metric (chart type doesn't count:
 /// the same metric shown as a bar and a line is still the same
-/// underlying data point twice). Calendar and Insights are singletons
-/// and can never appear here. Empty when there are no duplicates.
+/// underlying data point twice). Quick stat, Calendar, and Insights
+/// cards are fixed defaults and can never appear here. Empty when there
+/// are no duplicates.
 List<List<DashboardCardInstance>> findDuplicateCardGroups(
   List<DashboardCardInstance> cards,
 ) {
@@ -33,7 +34,9 @@ List<List<DashboardCardInstance>> findDuplicateCardGroups(
     final key = switch (card.kind) {
       DashboardCardKind.gauge => 'gauge:${card.gaugeMode.name}',
       DashboardCardKind.trend => 'trend:${card.trendMetric.name}',
-      DashboardCardKind.calendar || DashboardCardKind.insights => null,
+      DashboardCardKind.quickStat ||
+      DashboardCardKind.calendar ||
+      DashboardCardKind.insights => null,
     };
     if (key == null) continue;
     (groups[key] ??= []).add(card);

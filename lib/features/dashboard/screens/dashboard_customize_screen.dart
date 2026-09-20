@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inner_flare/core/providers/dashboard_card_preferences_provider.dart';
 import 'package:inner_flare/features/dashboard/screens/add_dashboard_card_screen.dart';
 import 'package:inner_flare/models/dashboard_card.dart';
+import 'package:inner_flare/models/quick_stat.dart';
 
 /// Lets the user show, hide, reorder, and (for gauge/trend cards) add,
 /// remove, and reconfigure dashboard cards (docs/features/dashboard.
@@ -88,6 +89,7 @@ class _CardTile extends ConsumerWidget {
     final title = switch (instance.kind) {
       DashboardCardKind.gauge => instance.gaugeMode.label,
       DashboardCardKind.trend => instance.trendMetric.label,
+      DashboardCardKind.quickStat => instance.quickStatType.label,
       _ => instance.kind.label,
     };
 
@@ -119,6 +121,8 @@ class _CardTile extends ConsumerWidget {
           _GaugeModeSelector(instance: instance),
         if (instance.kind == DashboardCardKind.trend)
           _TrendChartTypeSelector(instance: instance),
+        if (instance.kind == DashboardCardKind.quickStat)
+          _QuickStatSelector(instance: instance),
       ],
     );
   }
@@ -154,6 +158,70 @@ class _GaugeModeSelector extends ConsumerWidget {
               ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _QuickStatSelector extends ConsumerWidget {
+  const _QuickStatSelector({required this.instance});
+
+  final DashboardCardInstance instance;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final notifier = ref.read(dashboardCardPreferencesProvider.notifier);
+    return Padding(
+      padding: const EdgeInsets.only(left: 16),
+      child: Column(
+        children: [
+          RadioGroup<QuickStatType>(
+            groupValue: instance.quickStatType,
+            onChanged: (type) {
+              if (type == null) return;
+              notifier.updateConfig(
+                instance.id,
+                DashboardCardConfigKeys.quickStatType,
+                type.name,
+              );
+            },
+            child: Column(
+              children: [
+                for (final type in QuickStatType.values)
+                  RadioListTile<QuickStatType>(
+                    key: ValueKey('${instance.id}-type-${type.name}'),
+                    title: Text(type.label),
+                    value: type,
+                  ),
+              ],
+            ),
+          ),
+          if (instance.quickStatType == QuickStatType.daysSinceLastPeriod)
+            Padding(
+              padding: const EdgeInsets.only(left: 16),
+              child: RadioGroup<QuickStatReferencePoint>(
+                groupValue: instance.quickStatReferencePoint,
+                onChanged: (point) {
+                  if (point == null) return;
+                  notifier.updateConfig(
+                    instance.id,
+                    DashboardCardConfigKeys.quickStatReferencePoint,
+                    point.name,
+                  );
+                },
+                child: Column(
+                  children: [
+                    for (final point in QuickStatReferencePoint.values)
+                      RadioListTile<QuickStatReferencePoint>(
+                        key: ValueKey('${instance.id}-refpoint-${point.name}'),
+                        title: Text(point.label),
+                        value: point,
+                      ),
+                  ],
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
