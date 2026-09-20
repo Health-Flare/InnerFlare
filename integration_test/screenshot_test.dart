@@ -38,6 +38,8 @@ import 'package:inner_flare/core/providers/cycle_day_log_entry_provider.dart';
 import 'package:inner_flare/core/providers/cycle_day_log_repository_provider.dart';
 import 'package:inner_flare/core/providers/cycle_insights_provider.dart';
 import 'package:inner_flare/core/providers/cycle_prediction_provider.dart';
+import 'package:inner_flare/core/providers/dashboard_card_preferences_provider.dart';
+import 'package:inner_flare/core/providers/dashboard_card_preferences_repository_provider.dart';
 import 'package:inner_flare/core/providers/database_provider.dart';
 import 'package:inner_flare/core/providers/has_any_logs_provider.dart';
 import 'package:inner_flare/core/providers/now_provider.dart';
@@ -46,10 +48,12 @@ import 'package:inner_flare/core/security/biometric_gate.dart';
 import 'package:inner_flare/core/theme/app_theme.dart';
 import 'package:inner_flare/data/database/app_database.dart';
 import 'package:inner_flare/features/calendar/screens/calendar_screen.dart';
+import 'package:inner_flare/features/dashboard/screens/dashboard_customize_screen.dart';
 import 'package:inner_flare/features/dashboard/screens/dashboard_screen.dart';
 import 'package:inner_flare/features/insights/screens/insights_screen.dart';
 import 'package:inner_flare/features/log/screens/log_entry_screen.dart';
 import 'package:inner_flare/features/settings/screens/settings_screen.dart';
+import 'package:inner_flare/models/dashboard_card.dart';
 import 'package:integration_test/integration_test.dart';
 
 void main() {
@@ -97,6 +101,14 @@ void main() {
       LogEntryScreen(date: periodStartDate, initialLog: loggedDay),
     );
     await binding.takeScreenshot('05_log_entry');
+
+    await _seedCustomDashboardLayout(container);
+
+    await _showScreen(tester, container, const DashboardScreen());
+    await binding.takeScreenshot('06_dashboard_customized');
+
+    await _showScreen(tester, container, const DashboardCustomizeScreen());
+    await binding.takeScreenshot('07_customize_resize');
   });
 }
 
@@ -152,4 +164,45 @@ Future<DateTime> _seedDemoData(ProviderContainer container) async {
   // of [logs] became a period start.
   final periodStarts = await repository.getPeriodStartDates();
   return periodStarts.last;
+}
+
+/// Builds a dashboard layout that actually shows off customization — a
+/// gauge card, a trend card, and Calendar widened to full width — instead
+/// of the bare four-cell default every fresh install starts with (see
+/// docs/features/dashboard_grid_layout.feature, "A card's cell size can
+/// be adjusted from Customize dashboard"). Saved through the same
+/// repository real customization goes through, then invalidates the
+/// provider that reads it, same pattern as [_seedDemoData].
+///
+/// Drops any gauge/trend cards already present first — this runs against
+/// the real on-device database (see the file comment above), which may
+/// carry state left over from a previous run or from manually using the
+/// app on this device/simulator — so the layout this produces is the same
+/// regardless of what was there before.
+Future<void> _seedCustomDashboardLayout(ProviderContainer container) async {
+  final repository = await container.read(
+    dashboardCardPreferencesRepositoryProvider.future,
+  );
+  final current = await repository.getAll();
+  final withCalendarWidened = [
+    for (final instance in current)
+      if (instance.kind != DashboardCardKind.gauge &&
+          instance.kind != DashboardCardKind.trend)
+        if (instance.id == 'calendar')
+          instance.withGridSpan(columnSpan: dashboardGridMaxColumnSpan)
+        else
+          instance,
+  ];
+  final gauge = newGaugeCardInstance(
+    order: withCalendarWidened.length,
+    mode: GaugeCardMode.estimatedDaysUntilNextPeriod,
+  );
+  final trend = newTrendCardInstance(
+    order: withCalendarWidened.length + 1,
+    metric: TrendCardMetric.previousCycleLengths,
+    chartType: TrendChartType.line,
+  ).withGridSpan(rowSpan: 2);
+
+  await repository.saveAll([...withCalendarWidened, gauge, trend]);
+  container.invalidate(dashboardCardPreferencesProvider);
 }
