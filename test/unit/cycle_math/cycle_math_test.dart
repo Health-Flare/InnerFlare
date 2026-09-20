@@ -327,4 +327,58 @@ void main() {
       expect(gaugeFillFraction(elapsedDays: -2, averageCycleLength: 28), 0.0);
     });
   });
+
+  // docs/features/dashboard_visualizations.feature, "The cycle detail
+  // table lists every complete cycle and the gap since the one before
+  // it".
+  group('cycleDetailRows', () {
+    test('fewer than 2 period starts yields no rows', () {
+      expect(cycleDetailRows(const []), isEmpty);
+      expect(cycleDetailRows([DateTime.utc(2026, 1, 1)]), isEmpty);
+    });
+
+    test('one complete cycle has no difference to compare against', () {
+      final rows = cycleDetailRows([
+        DateTime.utc(2026, 1, 1),
+        DateTime.utc(2026, 1, 29),
+      ]);
+      expect(rows, hasLength(1));
+      expect(rows.single.start, DateTime.utc(2026, 1, 1));
+      expect(rows.single.lengthDays, 28);
+      expect(rows.single.differenceFromPreviousDays, isNull);
+    });
+
+    test('rows are most-recent-first, unlike the chronological trend '
+        'chart', () {
+      final rows = cycleDetailRows([
+        DateTime.utc(2026, 1, 1), // cycle 1: 28 days
+        DateTime.utc(2026, 1, 29), // cycle 2: 30 days
+        DateTime.utc(2026, 2, 28), // cycle 3 starts here (still open)
+      ]);
+      expect(rows.map((r) => r.start), [
+        DateTime.utc(2026, 1, 29), // most recent complete cycle first
+        DateTime.utc(2026, 1, 1),
+      ]);
+      expect(rows.map((r) => r.lengthDays), [30, 28]);
+    });
+
+    test('each row\'s difference is signed, versus the cycle immediately '
+        'before it', () {
+      final rows = cycleDetailRows([
+        DateTime.utc(2026, 1, 1), // cycle 1: 28 days
+        DateTime.utc(2026, 1, 29), // cycle 2: 30 days (+2)
+        DateTime.utc(2026, 2, 28), // cycle 3: 25 days (-5)
+        DateTime.utc(2026, 3, 25),
+      ]);
+      expect(rows.map((r) => r.differenceFromPreviousDays), [-5, 2, null]);
+    });
+
+    test('unsorted input is sorted before deriving rows', () {
+      final rows = cycleDetailRows([
+        DateTime.utc(2026, 1, 29),
+        DateTime.utc(2026, 1, 1),
+      ]);
+      expect(rows.single.lengthDays, 28);
+    });
+  });
 }

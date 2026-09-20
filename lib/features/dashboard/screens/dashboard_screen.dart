@@ -17,6 +17,7 @@ import 'package:inner_flare/features/dashboard/widgets/privacy_reassurance_card.
 import 'package:inner_flare/features/dashboard/widgets/quick_stats_row.dart';
 import 'package:inner_flare/features/dashboard/widgets/trend_card.dart';
 import 'package:inner_flare/features/dashboard/widgets/unlock_error_banner.dart';
+import 'package:inner_flare/features/insights/screens/cycle_detail_screen.dart';
 import 'package:inner_flare/features/insights/screens/insights_screen.dart';
 import 'package:inner_flare/features/log/screens/log_entry_screen.dart';
 import 'package:inner_flare/features/settings/screens/settings_screen.dart';
@@ -133,10 +134,27 @@ class DashboardScreen extends ConsumerWidget {
           onTap: () => _openInsights(context),
         );
       case DashboardCardKind.gauge:
-        return GaugeCard(instance: instance);
+        return GaugeCard(
+          instance: instance,
+          onTap: () => _openInsights(context),
+        );
       case DashboardCardKind.trend:
-        return TrendCard(instance: instance);
+        return TrendCard(
+          instance: instance,
+          onTap: () => _openCycleDetail(context),
+        );
     }
+  }
+
+  /// Opens the cycle detail table (docs/features/dashboard_visualizations
+  /// .feature, "The cycle detail table lists every complete cycle...") —
+  /// the destination for both the "previous cycle lengths" and "cycle
+  /// length variability" trend cards, once they have enough history to
+  /// be tappable at all (see [TrendCard]'s own tap-gating).
+  void _openCycleDetail(BuildContext context) {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const CycleDetailScreen()));
   }
 
   @override

@@ -248,6 +248,53 @@ double? gaugeFillFraction({
   return fraction.clamp(0.0, 1.0);
 }
 
+/// One row of the cycle-by-cycle detail table (docs/features/
+/// dashboard_visualizations.feature, "The cycle detail table lists every
+/// complete cycle and the gap since the one before it") — intended to be
+/// reviewed quickly, e.g. ahead of a healthcare provider conversation.
+class CycleDetailRow {
+  const CycleDetailRow({
+    required this.start,
+    required this.lengthDays,
+    required this.differenceFromPreviousDays,
+  });
+
+  /// The date this complete cycle started.
+  final DateTime start;
+
+  /// This cycle's length: days from [start] until the next period start.
+  final int lengthDays;
+
+  /// Signed difference from the cycle immediately before this one
+  /// ([lengthDays] minus that cycle's length). Null for the oldest
+  /// complete cycle on record — there's nothing earlier to compare it to.
+  final int? differenceFromPreviousDays;
+}
+
+/// Every complete cycle derived from [periodStarts], most-recent-first —
+/// deliberately the opposite order from the trend chart itself, which
+/// stays chronological (oldest-first) so it reads naturally left to
+/// right. Empty with fewer than 2 period starts, same as
+/// [cycleLengthsFromPeriodStarts] (there's no complete cycle yet).
+List<CycleDetailRow> cycleDetailRows(Iterable<DateTime> periodStarts) {
+  final sorted = periodStarts.map(dateOnly).toSet().toList()..sort();
+  if (sorted.length < 2) return const [];
+
+  final lengths = [
+    for (var i = 1; i < sorted.length; i++)
+      daysBetween(sorted[i - 1], sorted[i]),
+  ];
+
+  return [
+    for (var i = lengths.length - 1; i >= 0; i--)
+      CycleDetailRow(
+        start: sorted[i],
+        lengthDays: lengths[i],
+        differenceFromPreviousDays: i == 0 ? null : lengths[i] - lengths[i - 1],
+      ),
+  ];
+}
+
 List<int> _lastN(List<int> values, int n) {
   if (values.length <= n) return values;
   return values.sublist(values.length - n);

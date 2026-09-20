@@ -22,7 +22,7 @@ class GaugeCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final displayAsync = ref.watch(gaugeCardDisplayProvider(instance));
 
-    return Container(
+    final card = Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -39,6 +39,19 @@ class GaugeCard extends ConsumerWidget {
         error: (error, _) => Text('Couldn\'t load: $error'),
         data: (display) => _GaugeContent(display: display),
       ),
+    );
+
+    // Tappable only once it has real data behind it — see "A gauge card
+    // opens Insights once it has real data behind it" in
+    // docs/features/dashboard_visualizations.feature. A thin-history
+    // approximation isn't enough to summarize.
+    final display = displayAsync.value;
+    final isTappable = display != null && !display.isThinHistory;
+    if (!isTappable || onTap == null) return card;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(24),
+      child: card,
     );
   }
 }

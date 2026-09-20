@@ -18,7 +18,7 @@ class TrendCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final displayAsync = ref.watch(trendCardDisplayProvider(instance));
 
-    return Container(
+    final card = Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -35,6 +35,17 @@ class TrendCard extends ConsumerWidget {
         error: (error, _) => Text('Couldn\'t load: $error'),
         data: (display) => _TrendContent(display: display),
       ),
+    );
+
+    // Tappable only once there's a real series to summarize — see
+    // "A trend card becomes tappable once it has real history to
+    // summarize" / "...without enough history isn't tappable".
+    final isTappable = displayAsync.value?.hasEnoughHistory ?? false;
+    if (!isTappable || onTap == null) return card;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(24),
+      child: card,
     );
   }
 }
