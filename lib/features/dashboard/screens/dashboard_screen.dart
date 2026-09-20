@@ -11,10 +11,13 @@ import 'package:inner_flare/features/dashboard/screens/dashboard_customize_scree
 import 'package:inner_flare/features/dashboard/screens/quick_stat_customize_screen.dart';
 import 'package:inner_flare/features/dashboard/widgets/data_preview_card.dart';
 import 'package:inner_flare/features/dashboard/widgets/database_status_indicator.dart';
+import 'package:inner_flare/features/dashboard/widgets/gauge_card.dart';
 import 'package:inner_flare/features/dashboard/widgets/log_today_hero_card.dart';
 import 'package:inner_flare/features/dashboard/widgets/privacy_reassurance_card.dart';
 import 'package:inner_flare/features/dashboard/widgets/quick_stats_row.dart';
+import 'package:inner_flare/features/dashboard/widgets/trend_card.dart';
 import 'package:inner_flare/features/dashboard/widgets/unlock_error_banner.dart';
+import 'package:inner_flare/features/insights/screens/cycle_detail_screen.dart';
 import 'package:inner_flare/features/insights/screens/insights_screen.dart';
 import 'package:inner_flare/features/log/screens/log_entry_screen.dart';
 import 'package:inner_flare/features/settings/screens/settings_screen.dart';
@@ -99,11 +102,15 @@ class DashboardScreen extends ConsumerWidget {
     ).push(MaterialPageRoute(builder: (_) => const InsightsScreen()));
   }
 
-  /// Builds the [DataPreviewCard] for a customizable [card] — the one
-  /// place that maps a [DashboardCard] to its icon, copy, and tap target.
-  Widget _buildCard(BuildContext context, DashboardCard card, bool hasAnyLogs) {
-    switch (card) {
-      case DashboardCard.calendar:
+  /// Builds the widget for a customizable card [instance] — the one place
+  /// that maps a [DashboardCardInstance] to its rendering.
+  Widget _buildCard(
+    BuildContext context,
+    DashboardCardInstance instance,
+    bool hasAnyLogs,
+  ) {
+    switch (instance.kind) {
+      case DashboardCardKind.calendar:
         return DataPreviewCard(
           icon: Icons.calendar_month_rounded,
           title: 'Calendar',
@@ -114,7 +121,7 @@ class DashboardScreen extends ConsumerWidget {
                     'the moment you log your first day.',
           onTap: () => _openCalendar(context),
         );
-      case DashboardCard.insights:
+      case DashboardCardKind.insights:
         return DataPreviewCard(
           icon: Icons.insights_rounded,
           title: 'Insights',
@@ -126,7 +133,28 @@ class DashboardScreen extends ConsumerWidget {
                     'based on.',
           onTap: () => _openInsights(context),
         );
+      case DashboardCardKind.gauge:
+        return GaugeCard(
+          instance: instance,
+          onTap: () => _openInsights(context),
+        );
+      case DashboardCardKind.trend:
+        return TrendCard(
+          instance: instance,
+          onTap: () => _openCycleDetail(context),
+        );
     }
+  }
+
+  /// Opens the cycle detail table (docs/features/dashboard_visualizations
+  /// .feature, "The cycle detail table lists every complete cycle...") —
+  /// the destination for both the "previous cycle lengths" and "cycle
+  /// length variability" trend cards, once they have enough history to
+  /// be tappable at all (see [TrendCard]'s own tap-gating).
+  void _openCycleDetail(BuildContext context) {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const CycleDetailScreen()));
   }
 
   @override
@@ -142,10 +170,9 @@ class DashboardScreen extends ConsumerWidget {
         ref
             .watch(dashboardCardPreferencesProvider)
             .value
-            ?.where((pref) => pref.visible)
-            .map((pref) => pref.card)
+            ?.where((instance) => instance.visible)
             .toList() ??
-        const <DashboardCard>[];
+        const <DashboardCardInstance>[];
 
     return Scaffold(
       appBar: AppBar(
@@ -238,8 +265,8 @@ class DashboardScreen extends ConsumerWidget {
                 ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 12),
-              for (final card in visibleCards) ...[
-                _buildCard(context, card, hasAnyLogs),
+              for (final instance in visibleCards) ...[
+                _buildCard(context, instance, hasAnyLogs),
                 const SizedBox(height: 12),
               ],
             ] else

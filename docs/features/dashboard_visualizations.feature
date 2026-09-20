@@ -89,3 +89,89 @@ Feature: Dashboard visualization cards
     When the app is reopened
     Then both choices are restored exactly as set
     And no network request was made to retrieve or persist either choice
+
+  Scenario: Gauge and trend cards start hidden until the app suggests them
+    Given the user has never added a gauge or trend card
+    And the user has logged enough cycle history that at least one gauge
+      or trend card would show real data, not an immediate "not enough
+      data yet" state
+    When the user opens the dashboard
+    Then a nudge (docs/features/dashboard_nudges.feature) suggests
+      adding that specific card
+    And the card itself stays off the dashboard until the user acts on
+      the suggestion or adds it manually through "Add a card"
+
+    # The exact data threshold for "enough to suggest" is still open —
+    # candidates include reusing the same bar the gauge/trend cards
+    # already use for their own thin-history warning, or a lower one
+    # (e.g. a single logged period is enough to suggest a gauge, even
+    # before it can show a precise number). Flagging rather than
+    # guessing until this is settled.
+
+  Scenario: The dashboard nudges toward cleanup once there are 5 or more cards
+    Given the user has 5 or more cards on the dashboard, whether default
+      or added
+    When the user opens the dashboard
+    Then a cleanup nudge appears (docs/features/dashboard_nudges.feature)
+    And it suggests reviewing the dashboard in general terms
+
+  Scenario: A cleanup nudge calls out duplicate cards by name
+    Given two or more of the user's cards are the same kind, configured
+      with the same mode or metric
+    When the cleanup nudge (docs/features/dashboard_nudges.feature)
+      appears
+    Then it names the duplicate cards specifically, rather than speaking
+      generally about the whole dashboard
+    And it offers removing the extras directly, without a general
+      dashboard review
+
+  Scenario: A trend card becomes tappable once it has real history to summarize
+    Given a "previous cycle lengths" or "cycle length variability" trend
+      card has at least 2 complete cycles logged
+    When the user taps the card
+    Then it opens a cycle-by-cycle detail table
+
+  Scenario: A trend card without enough history isn't tappable
+    Given a trend card has fewer than 2 complete cycles logged
+    When the user views the card
+    Then it shows the same "not enough cycles logged yet" message as
+      before
+    And tapping it does nothing — there's nothing yet to summarize
+
+  Scenario: The cycle detail table lists every complete cycle and the gap since the one before it
+    Given the user has logged at least 2 complete cycles
+    When the user opens the cycle detail table from either the "previous
+      cycle lengths" or the "cycle length variability" trend card
+    Then each row shows one complete cycle: the date it started, its
+      length in days, and how many days it differs from the cycle
+      immediately before it
+    And rows are ordered most-recent-first, since this table exists to
+      be reviewed quickly — e.g. ahead of or during a conversation with
+      a healthcare provider — unlike the trend chart itself, which stays
+      chronological (oldest-first) to read naturally left to right
+
+  Scenario: Both trend cards open the exact same cycle detail table
+    Given the user has added both the "previous cycle lengths" and
+      "cycle length variability" trend cards
+    When the user taps either one
+    Then both open the identical cycle detail table
+    And the table's content never depends on which card was tapped
+
+  Scenario: The cycle detail table makes no diagnostic claim
+    Given the user opens the cycle detail table
+    Then it presents only what was logged, with no interpretation,
+      diagnosis, or recommendation attached
+    And this matches the app's existing "not a medical device, no
+      diagnostic claims" stance stated in onboarding
+
+  Scenario: A gauge card opens Insights once it has real data behind it
+    Given a gauge card is not showing a thin-history approximation
+    When the user taps the card
+    Then it opens Insights (docs/features/insights.feature), the
+      existing screen for real cycle history and predictions
+
+    # Unlike the trend cards' cycle detail table, no dedicated gauge
+    # detail screen has been designed yet — routing to the existing
+    # Insights screen is a reasonable default for now, not a settled
+    # product decision. Revisit if a more specific destination turns
+    # out to be worth building.

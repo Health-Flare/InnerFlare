@@ -1,5 +1,7 @@
-// Exercises docs/features/insights.feature against the pure cycle-math
-// module. No Flutter, no database — see lib/core/cycle_math/cycle_math.dart.
+// Exercises docs/features/insights.feature and
+// docs/features/dashboard_visualizations.feature against the pure
+// cycle-math module. No Flutter, no database — see
+// lib/core/cycle_math/cycle_math.dart.
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:inner_flare/core/cycle_math/cycle_math.dart';
@@ -272,5 +274,111 @@ void main() {
         expect(daysBetween(start, end), expectedDays);
       });
     }
+  });
+
+  // docs/features/dashboard_visualizations.feature, "Gauge shows a range
+  // instead of false precision when data is thin".
+  group('hasThinCycleHistory', () {
+    test('fewer than 2 complete cycle lengths is thin', () {
+      expect(hasThinCycleHistory(const []), isTrue);
+      expect(hasThinCycleHistory(const [28]), isTrue);
+    });
+
+    test('2+ regular cycle lengths is not thin', () {
+      expect(hasThinCycleHistory(const [28, 29, 27]), isFalse);
+    });
+
+    test('the last 3 lengths varying by more than 7 days is thin, even '
+        'with plenty of history', () {
+      expect(hasThinCycleHistory(const [28, 29, 21, 40]), isTrue);
+    });
+
+    test('an old irregular stretch outside the window doesn\'t count', () {
+      // Last 3 (28, 27, 29) are tight; the 40 four cycles back is out of
+      // the default 3-length window.
+      expect(hasThinCycleHistory(const [40, 21, 28, 27, 29]), isFalse);
+    });
+  });
+
+  // docs/features/dashboard_visualizations.feature, "the gauge fills
+  // relative to the user's own average cycle length, not a fixed or
+  // generic scale".
+  group('gaugeFillFraction', () {
+    test('null with no average cycle length yet', () {
+      expect(
+        gaugeFillFraction(elapsedDays: 10, averageCycleLength: null),
+        isNull,
+      );
+    });
+
+    test('fraction of elapsed days over the average cycle length', () {
+      expect(
+        gaugeFillFraction(elapsedDays: 10, averageCycleLength: 28),
+        closeTo(10 / 28, 1e-9),
+      );
+    });
+
+    test('clamps to 1.0 once the period is overdue, rather than '
+        'overflowing the gauge', () {
+      expect(gaugeFillFraction(elapsedDays: 40, averageCycleLength: 28), 1.0);
+    });
+
+    test('clamps to 0.0 for a negative elapsed-day count', () {
+      expect(gaugeFillFraction(elapsedDays: -2, averageCycleLength: 28), 0.0);
+    });
+  });
+
+  // docs/features/dashboard_visualizations.feature, "The cycle detail
+  // table lists every complete cycle and the gap since the one before
+  // it".
+  group('cycleDetailRows', () {
+    test('fewer than 2 period starts yields no rows', () {
+      expect(cycleDetailRows(const []), isEmpty);
+      expect(cycleDetailRows([DateTime.utc(2026, 1, 1)]), isEmpty);
+    });
+
+    test('one complete cycle has no difference to compare against', () {
+      final rows = cycleDetailRows([
+        DateTime.utc(2026, 1, 1),
+        DateTime.utc(2026, 1, 29),
+      ]);
+      expect(rows, hasLength(1));
+      expect(rows.single.start, DateTime.utc(2026, 1, 1));
+      expect(rows.single.lengthDays, 28);
+      expect(rows.single.differenceFromPreviousDays, isNull);
+    });
+
+    test('rows are most-recent-first, unlike the chronological trend '
+        'chart', () {
+      final rows = cycleDetailRows([
+        DateTime.utc(2026, 1, 1), // cycle 1: 28 days
+        DateTime.utc(2026, 1, 29), // cycle 2: 30 days
+        DateTime.utc(2026, 2, 28), // cycle 3 starts here (still open)
+      ]);
+      expect(rows.map((r) => r.start), [
+        DateTime.utc(2026, 1, 29), // most recent complete cycle first
+        DateTime.utc(2026, 1, 1),
+      ]);
+      expect(rows.map((r) => r.lengthDays), [30, 28]);
+    });
+
+    test('each row\'s difference is signed, versus the cycle immediately '
+        'before it', () {
+      final rows = cycleDetailRows([
+        DateTime.utc(2026, 1, 1), // cycle 1: 28 days
+        DateTime.utc(2026, 1, 29), // cycle 2: 30 days (+2)
+        DateTime.utc(2026, 2, 28), // cycle 3: 25 days (-5)
+        DateTime.utc(2026, 3, 25),
+      ]);
+      expect(rows.map((r) => r.differenceFromPreviousDays), [-5, 2, null]);
+    });
+
+    test('unsorted input is sorted before deriving rows', () {
+      final rows = cycleDetailRows([
+        DateTime.utc(2026, 1, 29),
+        DateTime.utc(2026, 1, 1),
+      ]);
+      expect(rows.single.lengthDays, 28);
+    });
   });
 }

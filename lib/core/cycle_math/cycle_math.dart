@@ -212,6 +212,89 @@ int? estimatedDaysToNextPeriod({
   return daysBetween(now, predicted);
 }
 
+/// Whether cycle-length history is too thin to show a single confident
+/// number for — fewer than 2 complete cycle lengths, or the last
+/// [windowSize] lengths vary by more than [thresholdDays] (see
+/// docs/features/dashboard_visualizations.feature, "Gauge shows a range
+/// instead of false precision when data is thin"). The same rule the
+/// trend card's "never fabricates a trend" scenario uses for the
+/// length-only half of its check.
+bool hasThinCycleHistory(
+  List<int> cycleLengths, {
+  int windowSize = 3,
+  int thresholdDays = 7,
+}) {
+  return cycleLengths.length < 2 ||
+      cycleLengthsAreIrregular(
+        cycleLengths,
+        windowSize: windowSize,
+        thresholdDays: thresholdDays,
+      );
+}
+
+/// How full a gauge card should render, as a fraction of the user's own
+/// average cycle length — never a fixed or generic scale (see
+/// docs/features/dashboard_visualizations.feature, "the gauge fills
+/// relative to the user's own average cycle length"). Clamped to [0, 1]:
+/// an overdue period (more elapsed days than the average cycle length)
+/// still renders as a full gauge rather than overflowing it. Null when
+/// there's no average to measure against yet.
+double? gaugeFillFraction({
+  required int elapsedDays,
+  required double? averageCycleLength,
+}) {
+  if (averageCycleLength == null || averageCycleLength <= 0) return null;
+  final fraction = elapsedDays / averageCycleLength;
+  return fraction.clamp(0.0, 1.0);
+}
+
+/// One row of the cycle-by-cycle detail table (docs/features/
+/// dashboard_visualizations.feature, "The cycle detail table lists every
+/// complete cycle and the gap since the one before it") — intended to be
+/// reviewed quickly, e.g. ahead of a healthcare provider conversation.
+class CycleDetailRow {
+  const CycleDetailRow({
+    required this.start,
+    required this.lengthDays,
+    required this.differenceFromPreviousDays,
+  });
+
+  /// The date this complete cycle started.
+  final DateTime start;
+
+  /// This cycle's length: days from [start] until the next period start.
+  final int lengthDays;
+
+  /// Signed difference from the cycle immediately before this one
+  /// ([lengthDays] minus that cycle's length). Null for the oldest
+  /// complete cycle on record — there's nothing earlier to compare it to.
+  final int? differenceFromPreviousDays;
+}
+
+/// Every complete cycle derived from [periodStarts], most-recent-first —
+/// deliberately the opposite order from the trend chart itself, which
+/// stays chronological (oldest-first) so it reads naturally left to
+/// right. Empty with fewer than 2 period starts, same as
+/// [cycleLengthsFromPeriodStarts] (there's no complete cycle yet).
+List<CycleDetailRow> cycleDetailRows(Iterable<DateTime> periodStarts) {
+  final sorted = periodStarts.map(dateOnly).toSet().toList()..sort();
+  if (sorted.length < 2) return const [];
+
+  final lengths = [
+    for (var i = 1; i < sorted.length; i++)
+      daysBetween(sorted[i - 1], sorted[i]),
+  ];
+
+  return [
+    for (var i = lengths.length - 1; i >= 0; i--)
+      CycleDetailRow(
+        start: sorted[i],
+        lengthDays: lengths[i],
+        differenceFromPreviousDays: i == 0 ? null : lengths[i] - lengths[i - 1],
+      ),
+  ];
+}
+
 List<int> _lastN(List<int> values, int n) {
   if (values.length <= n) return values;
   return values.sublist(values.length - n);

@@ -4,7 +4,7 @@ import 'package:sqflite_common/sqlite_api.dart';
 /// Bumped whenever the schema changes; every bump needs a matching branch
 /// in [onUpgrade] so exported backups from older versions still import
 /// cleanly (see BRIEF.md §4.2).
-const int schemaVersion = 5;
+const int schemaVersion = 6;
 
 const String cycleDayLogsTable = 'cycle_day_logs';
 
@@ -22,17 +22,29 @@ CREATE TABLE $cycleDayLogsTable (
 )
 ''';
 
-/// Per-device dashboard card show/hide + order (docs/features/dashboard.
-/// feature). Never synced — see "Card preferences are stored per-device
+/// Per-device dashboard card show/hide + order + mode config
+/// (docs/features/dashboard.feature, docs/features/dashboard_visualizations
+/// .feature). Never synced — see "Card preferences are stored per-device
 /// in settings, not synced".
+///
+/// `card_id` is the per-*instance* identity, not the card kind: calendar
+/// and insights are singletons whose `card_id` equals their kind name
+/// (unchanged since schema_version 2, so existing rows still resolve),
+/// but a gauge/trend card's `card_id` is generated when it's added via
+/// the add-card flow, since a user can add more than one card of the same
+/// kind. `card_kind` is the `DashboardCardKind` enum name; `config` is an
+/// opaque JSON-encoded string map (see [DashboardCardInstance.config]),
+/// NULL for calendar/insights.
 const String dashboardCardPreferencesTable = 'dashboard_card_preferences';
 
 const String _createDashboardCardPreferencesTable =
     '''
 CREATE TABLE $dashboardCardPreferencesTable (
   card_id TEXT PRIMARY KEY,
+  card_kind TEXT NOT NULL,
   visible INTEGER NOT NULL DEFAULT 1,
-  sort_order INTEGER NOT NULL
+  sort_order INTEGER NOT NULL,
+  config TEXT
 )
 ''';
 
@@ -119,5 +131,24 @@ Future<void> onUpgrade(Database db, int oldVersion, int newVersion) async {
   if (oldVersion < 5) {
     await db.execute(_createSymptomsTable);
     await _seedBuiltInSymptoms(db);
+  }
+  if (oldVersion >= 2 && oldVersion < 6) {
+    // oldVersion < 2 already creates the table via the current (post-v6)
+    // _createDashboardCardPreferencesTable above, so only versions that
+    // created the table in its pre-v6 shape need the ALTERs below.
+    //
+    // Pre-existing rows only ever had card_id == the card's kind (calendar
+    // or insights, the only kinds that existed before gauge/trend cards),
+    // so backfilling card_kind from card_id is exact, not a guess.
+    await db.execute(
+      'ALTER TABLE $dashboardCardPreferencesTable '
+      "ADD COLUMN card_kind TEXT NOT NULL DEFAULT ''",
+    );
+    await db.execute(
+      'ALTER TABLE $dashboardCardPreferencesTable ADD COLUMN config TEXT',
+    );
+    await db.execute(
+      'UPDATE $dashboardCardPreferencesTable SET card_kind = card_id',
+    );
   }
 }
