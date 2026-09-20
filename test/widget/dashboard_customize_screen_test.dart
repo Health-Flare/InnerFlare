@@ -38,6 +38,10 @@ void main() {
         overrides: overrides(),
       );
       await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.widgetWithText(SwitchListTile, 'Insights'),
+        200,
+      );
 
       final calendarSwitch = tester.widget<SwitchListTile>(
         find.widgetWithText(SwitchListTile, 'Calendar'),
@@ -59,6 +63,10 @@ void main() {
       overrides: overrides(),
     );
     await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.widgetWithText(SwitchListTile, 'Insights'),
+      200,
+    );
 
     await tester.tap(find.widgetWithText(SwitchListTile, 'Calendar'));
     await tester.pumpAndSettle();
@@ -85,17 +93,31 @@ void main() {
         overrides: overrides(),
       );
       await tester.pumpAndSettle();
+      await tester.ensureVisible(
+        find.widgetWithText(SwitchListTile, 'Calendar'),
+      );
+      await tester.pumpAndSettle();
 
-      // Hide Calendar (the first card), then re-show it.
+      // Hide Calendar, then re-show it.
       await tester.tap(find.widgetWithText(SwitchListTile, 'Calendar'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(
+        find.widgetWithText(SwitchListTile, 'Calendar'),
+      );
       await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(SwitchListTile, 'Calendar'));
       await tester.pumpAndSettle();
 
       final saved = await DashboardCardPreferencesRepository(openDb!).getAll();
-      // Insights (never hidden) should now lead; re-shown Calendar moved to
-      // the end instead of keeping its original leading position.
-      expect(saved.map((p) => p.kind.name).toList(), ['insights', 'calendar']);
+      // The two quick stats and Insights (never hidden) keep their
+      // original order; re-shown Calendar moved to the end instead of
+      // keeping its original position.
+      expect(saved.map((p) => p.id).toList(), [
+        'quick-stat-0',
+        'quick-stat-1',
+        'insights',
+        'calendar',
+      ]);
       expect(saved.every((p) => p.visible), isTrue);
     },
   );
@@ -109,6 +131,10 @@ void main() {
       overrides: overrides(),
     );
     await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.widgetWithText(SwitchListTile, 'Insights'),
+      200,
+    );
 
     await tester.tap(find.widgetWithText(SwitchListTile, 'Insights'));
     await tester.pumpAndSettle();

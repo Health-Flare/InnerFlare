@@ -1,10 +1,13 @@
+import 'dart:convert';
+
+import 'package:inner_flare/models/quick_stat.dart';
 import 'package:inner_flare/models/tracked_symptom.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 
 /// Bumped whenever the schema changes; every bump needs a matching branch
 /// in [onUpgrade] so exported backups from older versions still import
 /// cleanly (see BRIEF.md §4.2).
-const int schemaVersion = 6;
+const int schemaVersion = 7;
 
 const String cycleDayLogsTable = 'cycle_day_logs';
 
@@ -63,9 +66,12 @@ CREATE TABLE $securitySettingsTable (
 )
 ''';
 
-/// Per-device quick stat slot configuration (docs/features/quick_stats.
-/// feature). Exactly two slots (`slot` 0 and 1), each an independent stat
-/// type + optional reference point. Never synced.
+/// Legacy home of quick stat configuration, pre-schema_version 7. No
+/// longer written to — quick stats are `dashboard_card_preferences` rows
+/// like every other card now (docs/features/dashboard_grid_layout
+/// .feature), migrated onto that shape once, in [onUpgrade]'s
+/// `oldVersion < 7` branch. Table (and its create statement) kept only so
+/// that branch has something to read from on an existing install.
 const String quickStatPreferencesTable = 'quick_stat_preferences';
 
 const String _createQuickStatPreferencesTable =
@@ -150,5 +156,56 @@ Future<void> onUpgrade(Database db, int oldVersion, int newVersion) async {
     await db.execute(
       'UPDATE $dashboardCardPreferencesTable SET card_kind = card_id',
     );
+  }
+  if (oldVersion < 7) {
+    // Fold the old fixed two-slot quick_stat_preferences table into
+    // dashboard_card_preferences as `quickStat`-kind rows, so quick
+    // stats become part of the same reorderable grid as every other
+    // card instead of a separate, always-two-slots row (docs/features/
+    // dashboard_grid_layout.feature). Mirrors
+    // QuickStatPreferencesRepository.getAll()'s old "merge saved rows
+    // with the documented defaults per slot" behavior, so an install
+    // that never touched customization still gets the same two cards a
+    // fresh install would.
+    final savedBySlot = {
+      for (final row in await db.query(
+        quickStatPreferencesTable,
+        orderBy: 'slot ASC',
+      ))
+        row['slot'] as int: row,
+    };
+    const defaultTypeBySlot = {
+      0: QuickStatType.daysSinceLastPeriod,
+      1: QuickStatType.estimatedDaysToNextPeriod,
+    };
+
+    // Make room at the front of the order for the two migrated quick
+    // stat cards — matches where quick stats have always appeared, just
+    // above Calendar/Insights/whatever else is already there.
+    await db.execute(
+      'UPDATE $dashboardCardPreferencesTable SET sort_order = sort_order + 2',
+    );
+
+    for (final slot in [0, 1]) {
+      final saved = savedBySlot[slot];
+      final statType = saved == null
+          ? defaultTypeBySlot[slot]!
+          : QuickStatType.values.byName(saved['stat_type'] as String);
+      final referencePoint = saved == null
+          ? QuickStatReferencePoint.periodEnd
+          : QuickStatReferencePoint.values.byName(
+              saved['reference_point'] as String,
+            );
+      await db.insert(dashboardCardPreferencesTable, {
+        'card_id': 'quick-stat-$slot',
+        'card_kind': 'quickStat',
+        'visible': 1,
+        'sort_order': slot,
+        'config': jsonEncode({
+          'quick_stat_type': statType.name,
+          'quick_stat_reference_point': referencePoint.name,
+        }),
+      });
+    }
   }
 }

@@ -2,6 +2,7 @@ import 'package:inner_flare/core/cycle_math/cycle_math.dart' as cycle_math;
 import 'package:inner_flare/core/providers/cycle_day_log_repository_provider.dart';
 import 'package:inner_flare/core/providers/now_provider.dart';
 import 'package:inner_flare/models/dashboard_card.dart';
+import 'package:inner_flare/models/quick_stat.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'dashboard_visualization_displays_provider.g.dart';
@@ -137,5 +138,79 @@ Future<TrendCardDisplay> trendCardDisplay(
     cycleLengths: cycleLengths,
     averageCycleLength: cycle_math.averageCycleLength(cycleLengths),
     hasEnoughHistory: cycleLengths.length >= 2,
+  );
+}
+
+/// A quick stat card resolved to a concrete value, per
+/// docs/features/quick_stats.feature. [value] is null when there isn't
+/// enough history yet ("No period ever logged...", "Estimated days to
+/// next period needs at least one complete cycle"). Negative for
+/// [QuickStatType.estimatedDaysToNextPeriod] once the predicted date has
+/// passed; the widget layer decides how to present that as "overdue"
+/// rather than a bare negative number.
+class QuickStatCardDisplay {
+  const QuickStatCardDisplay({
+    required this.type,
+    required this.referencePoint,
+    required this.value,
+  });
+
+  final QuickStatType type;
+  final QuickStatReferencePoint referencePoint;
+  final int? value;
+}
+
+/// Resolves [instance] (a quick stat card) to its live display value,
+/// from the same period-start and cycle-length data as
+/// docs/features/insights.feature — no separate cached calculation to
+/// keep in sync (see "Quick stats recompute live from the same data as
+/// Insights").
+@riverpod
+Future<QuickStatCardDisplay> quickStatCardDisplay(
+  Ref ref,
+  DashboardCardInstance instance,
+) async {
+  assert(instance.kind == DashboardCardKind.quickStat);
+  final type = instance.quickStatType;
+  final referencePoint = instance.quickStatReferencePoint;
+  final repository = await ref.watch(cycleDayLogRepositoryProvider.future);
+  final now = ref.watch(nowProvider)();
+
+  final periodStarts = await repository.getPeriodStartDates();
+  if (periodStarts.isEmpty) {
+    return QuickStatCardDisplay(
+      type: type,
+      referencePoint: referencePoint,
+      value: null,
+    );
+  }
+
+  final lastPeriodStart = periodStarts.last;
+  final datesWithFlow = await repository.getDatesWithPeriodFlow();
+  final average = cycle_math.averageCycleLength(
+    cycle_math.cycleLengthsFromPeriodStarts(periodStarts),
+  );
+
+  final value = switch (type) {
+    QuickStatType.daysSinceLastPeriod => cycle_math.daysSinceLastPeriod(
+      lastPeriodStart: lastPeriodStart,
+      datesWithPeriodFlow: datesWithFlow,
+      now: now,
+      referencePoint: referencePoint == QuickStatReferencePoint.periodStart
+          ? cycle_math.PeriodReferencePoint.start
+          : cycle_math.PeriodReferencePoint.end,
+    ),
+    QuickStatType.estimatedDaysToNextPeriod =>
+      cycle_math.estimatedDaysToNextPeriod(
+        lastPeriodStart: lastPeriodStart,
+        averageCycleLength: average,
+        now: now,
+      ),
+  };
+
+  return QuickStatCardDisplay(
+    type: type,
+    referencePoint: referencePoint,
+    value: value,
   );
 }

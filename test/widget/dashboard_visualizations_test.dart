@@ -18,12 +18,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:inner_flare/core/providers/cycle_day_log_repository_provider.dart';
 import 'package:inner_flare/core/providers/dashboard_card_preferences_repository_provider.dart';
 import 'package:inner_flare/core/providers/now_provider.dart';
-import 'package:inner_flare/core/providers/quick_stat_preferences_repository_provider.dart';
 import 'package:inner_flare/core/providers/tracked_symptoms_repository_provider.dart';
 import 'package:inner_flare/data/database/schema.dart';
 import 'package:inner_flare/data/repositories/cycle_day_log_repository.dart';
 import 'package:inner_flare/data/repositories/dashboard_card_preferences_repository.dart';
-import 'package:inner_flare/data/repositories/quick_stat_preferences_repository.dart';
 import 'package:inner_flare/data/repositories/tracked_symptoms_repository.dart';
 import 'package:inner_flare/features/dashboard/screens/dashboard_customize_screen.dart';
 import 'package:inner_flare/features/dashboard/screens/dashboard_screen.dart';
@@ -84,9 +82,6 @@ void main() {
       ),
       dashboardCardPreferencesRepositoryProvider.overrideWith(
         (ref) async => DashboardCardPreferencesRepository(db),
-      ),
-      quickStatPreferencesRepositoryProvider.overrideWith(
-        (ref) async => QuickStatPreferencesRepository(db),
       ),
       trackedSymptomsRepositoryProvider.overrideWith(
         (ref) async => TrackedSymptomsRepository(db),
@@ -163,7 +158,13 @@ void main() {
           final defaults = await prefs.getAll();
           await prefs.saveAll([
             ...defaults,
-            newGaugeCardInstance(order: defaults.length),
+            // A mode distinct from quick-stat-0's default ("Days since
+            // last period") so the two don't share a SwitchListTile
+            // title below.
+            newGaugeCardInstance(
+              order: defaults.length,
+              mode: GaugeCardMode.estimatedDaysUntilNextPeriod,
+            ),
           ]);
         },
       );
@@ -174,6 +175,10 @@ void main() {
         overrides: overrides,
       );
       await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.byIcon(Icons.delete_outline_rounded),
+        300,
+      );
       expect(find.byIcon(Icons.delete_outline_rounded), findsOneWidget);
 
       await tester.tap(find.byIcon(Icons.delete_outline_rounded));
@@ -181,7 +186,7 @@ void main() {
 
       expect(find.byIcon(Icons.delete_outline_rounded), findsNothing);
       expect(
-        find.widgetWithText(SwitchListTile, 'Days since last period'),
+        find.widgetWithText(SwitchListTile, 'Estimated days until next period'),
         findsNothing,
       );
     });
@@ -309,12 +314,12 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        await tester.tap(
-          find.widgetWithText(
-            RadioListTile<GaugeCardMode>,
-            'Estimated days until next period',
-          ),
+        final estimatedModeOption = find.widgetWithText(
+          RadioListTile<GaugeCardMode>,
+          'Estimated days until next period',
         );
+        await tester.scrollUntilVisible(estimatedModeOption, 300);
+        await tester.tap(estimatedModeOption);
         await tester.pumpAndSettle();
 
         final saved = await DashboardCardPreferencesRepository(

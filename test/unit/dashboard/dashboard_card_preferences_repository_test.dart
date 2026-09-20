@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:inner_flare/data/database/schema.dart';
 import 'package:inner_flare/data/repositories/dashboard_card_preferences_repository.dart';
 import 'package:inner_flare/models/dashboard_card.dart';
+import 'package:inner_flare/models/quick_stat.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 
 import '../../helpers/test_database.dart';
@@ -27,10 +28,12 @@ void main() {
 
   tearDown(() => db.close());
 
-  test('a fresh install auto-populates calendar and insights, visible, '
-      'in enum order — but no gauge/trend card', () async {
+  test('a fresh install auto-populates two quick stats, calendar, and '
+      'insights, visible, in enum order — but no gauge/trend card', () async {
     final all = await repository.getAll();
     expect(all.map((c) => c.kind), [
+      DashboardCardKind.quickStat,
+      DashboardCardKind.quickStat,
       DashboardCardKind.calendar,
       DashboardCardKind.insights,
     ]);
@@ -125,9 +128,9 @@ void main() {
     expect(reloaded.gaugeMode, GaugeCardMode.estimatedDaysUntilNextPeriod);
   });
 
-  test('a device upgrading from schema_version 5 keeps its saved card '
-      'through the migration, with card_kind backfilled from the old '
-      'card_id', () async {
+  test('a device upgrading from schema_version 5 keeps its saved card and '
+      'its quick stat customization through the migration, with card_kind '
+      'backfilled from the old card_id and quick stats folded in', () async {
     // sqflite caches open databases by path, and every in-memory database
     // shares the literal ":memory:" path (see CLAUDE.md "sqflite on
     // desktop test runners") — close the outer setUp's db first so this
@@ -135,9 +138,10 @@ void main() {
     // reuse it (which already has the post-migration schema applied).
     await db.close();
 
-    // Recreate exactly the pre-v6 table shape and seed it the way schema
-    // version 5's repository would have (card_id == the kind name, no
-    // card_kind/config columns), then run the real onUpgrade path.
+    // Recreate exactly the pre-v6 dashboard_card_preferences shape and the
+    // quick_stat_preferences table every schema_version 5 device already
+    // has, seeded the way each table's schema_version 5 repository would
+    // have, then run the real onUpgrade path.
     final oldShapeDb = await openInMemoryTestDatabase(
       onCreate: (oldDb, _) async {
         await oldDb.execute('''
@@ -152,6 +156,19 @@ void main() {
           'visible': 0,
           'sort_order': 0,
         });
+        await oldDb.execute('''
+          CREATE TABLE quick_stat_preferences (
+            slot INTEGER PRIMARY KEY,
+            stat_type TEXT NOT NULL,
+            reference_point TEXT NOT NULL
+          )
+        ''');
+        // Only slot 0 was ever customized; slot 1 stays at its default.
+        await oldDb.insert('quick_stat_preferences', {
+          'slot': 0,
+          'stat_type': 'daysSinceLastPeriod',
+          'reference_point': 'periodStart',
+        });
       },
       version: 5,
     );
@@ -160,7 +177,7 @@ void main() {
     // own version-tracking, which the FFI in-memory helper doesn't expose
     // directly — so call the real migration function against this exact
     // pre-v6 connection instead, the same call `openDatabase` would make.
-    await onUpgrade(oldShapeDb, 5, 6);
+    await onUpgrade(oldShapeDb, 5, schemaVersion);
 
     final migrated = await DashboardCardPreferencesRepository(
       oldShapeDb,
@@ -168,6 +185,15 @@ void main() {
     final insights = migrated.firstWhere((c) => c.id == 'insights');
     expect(insights.kind, DashboardCardKind.insights);
     expect(insights.visible, isFalse);
+
+    final quickStat0 = migrated.firstWhere((c) => c.id == 'quick-stat-0');
+    expect(quickStat0.quickStatType, QuickStatType.daysSinceLastPeriod);
+    expect(
+      quickStat0.quickStatReferencePoint,
+      QuickStatReferencePoint.periodStart,
+    );
+    final quickStat1 = migrated.firstWhere((c) => c.id == 'quick-stat-1');
+    expect(quickStat1.quickStatType, QuickStatType.estimatedDaysToNextPeriod);
 
     await oldShapeDb.close();
   });
