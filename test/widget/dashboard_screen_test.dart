@@ -440,6 +440,48 @@ void main() {
     },
   );
 
+  testWidgets(
+    'a card resized taller in a previous session still renders alongside '
+    'its default-sized siblings (docs/features/dashboard_grid_layout.'
+    'feature)',
+    (tester) async {
+      final db = await openInMemoryTestDatabase(onCreate: onCreate);
+      openDb = db;
+      final prefs = DashboardCardPreferencesRepository(db);
+      final defaults = await prefs.getAll();
+      final resized = [
+        for (final instance in defaults)
+          if (instance.id == 'calendar')
+            instance.withGridSpan(rowSpan: 2)
+          else
+            instance,
+      ];
+      await prefs.saveAll(resized);
+
+      await pumpTestApp(
+        tester,
+        const DashboardScreen(),
+        overrides: [
+          nowProvider.overrideWithValue(() => DateTime(2026, 1, 1, 9)),
+          cycleDayLogRepositoryProvider.overrideWith((ref) async {
+            return CycleDayLogRepository(db);
+          }),
+          dashboardCardPreferencesRepositoryProvider.overrideWith((ref) async {
+            return prefs;
+          }),
+          symptomsOverride(),
+        ],
+      );
+      await tester.pumpAndSettle();
+
+      await tester.scrollUntilVisible(find.text('Insights'), 200);
+      expect(find.text('Calendar'), findsOneWidget);
+      expect(find.text('Insights'), findsOneWidget);
+      expect(find.text('Days since last period'), findsOneWidget);
+      expect(find.text('Est. days to next period'), findsOneWidget);
+    },
+  );
+
   group('quick stats (docs/features/quick_stats.feature)', () {
     testWidgets(
       'both default quick stats appear below the log-today area, in the '
@@ -638,9 +680,13 @@ void main() {
         // Slot 0 defaults to "days since last period", whose reference-
         // point selector is shown inline, same as gauge/trend mode
         // selectors.
-        await tester.tap(
-          find.byKey(const ValueKey('quick-stat-0-refpoint-periodStart')),
+        final periodStartOption = find.byKey(
+          const ValueKey('quick-stat-0-refpoint-periodStart'),
         );
+        await tester.scrollUntilVisible(periodStartOption, 300);
+        await tester.ensureVisible(periodStartOption);
+        await tester.pumpAndSettle();
+        await tester.tap(periodStartOption);
         await tester.pumpAndSettle();
 
         // "Reopening the app": rebuild fresh, reusing the same overrides

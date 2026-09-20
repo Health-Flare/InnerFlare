@@ -80,21 +80,33 @@ Feature: Dashboard grid layout
     But neither can be removed outright or replaced with a different card
       type, matching the existing rule in docs/features/dashboard.feature
 
-  # Forward-looking, not yet implemented: the user will eventually be
-  # able to resize any cell in the grid (e.g. make an added trend card
-  # two rows tall by two columns wide instead of its one-by-two default),
-  # not just accept the default size for its type. Noted here so the
-  # default-sizing rules above are understood as starting points, not a
-  # fixed layout. Candidate implementation: flutter_staggered_grid_view
-  # for variable-size cells plus a hand-built Draggable/DragTarget layer
-  # for reordering, since no single actively-maintained package does
-  # both (evaluated in product discussion, not yet spiked in code).
-  # Tracked as its own initiative, separate from the visualization/
-  # nudge/preset work already underway.
-  Scenario: Cell size will eventually be user-adjustable
-    Given a card is showing at its default size
-    When resizing ships in a future release
-    Then the user will be able to make that card's cell bigger or smaller
-      within the grid
-    And every other cell will reflow to accommodate the new size, the
+  Scenario: A card's cell size can be adjusted from Customize dashboard
+    Given the user opens Customize dashboard
+    Then a live preview of the grid is shown above the show/hide/reorder
+      list, using the same layout the dashboard itself uses
+    When the user drags a card's corner in that preview
+    Then the card's cell becomes bigger or smaller within the grid
+    And the change is saved per-device immediately, the same way other
+      dashboard preferences are saved
+
+  Scenario: Every other cell reflows around a resized cell
+    Given the grid contains several cards of default size
+    When one card is resized bigger or smaller
+    Then the rest of the grid repacks around the new size immediately, the
       same way reordering already causes the rest of the grid to shift
+    And this is visible directly in the live preview, not just on the
+      dashboard itself
+
+  Scenario: Cell size has sensible limits
+    Given a card is being resized in the live preview
+    Then its width can be made one column or the full two-column width
+    And its height can be made up to three times its default row height
+    But it cannot be resized past those limits, so no card can collapse to
+      nothing or balloon to dominate the whole dashboard
+
+  Scenario: Calendar and Insights can be resized just like any other cell
+    Given Calendar and Insights are default cells in the grid
+    Then they can be resized the same way as quick stats, gauge, and trend
+      cards
+    And this doesn't change the existing rule that neither can be removed
+      outright or replaced with a different card type

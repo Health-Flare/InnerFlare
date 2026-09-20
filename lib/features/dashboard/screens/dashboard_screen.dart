@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:inner_flare/core/providers/cycle_day_log_repository_provider.dart';
 import 'package:inner_flare/core/providers/dashboard_card_preferences_provider.dart';
 import 'package:inner_flare/core/providers/has_any_logs_provider.dart';
@@ -9,6 +8,7 @@ import 'package:inner_flare/core/providers/today_log_provider.dart';
 import 'package:inner_flare/features/calendar/screens/calendar_screen.dart';
 import 'package:inner_flare/features/dashboard/greeting.dart';
 import 'package:inner_flare/features/dashboard/screens/dashboard_customize_screen.dart';
+import 'package:inner_flare/features/dashboard/widgets/dashboard_card_grid.dart';
 import 'package:inner_flare/features/dashboard/widgets/dashboard_chip.dart';
 import 'package:inner_flare/features/dashboard/widgets/database_status_indicator.dart';
 import 'package:inner_flare/features/dashboard/widgets/gauge_card.dart';
@@ -228,19 +228,11 @@ class DashboardScreen extends ConsumerWidget {
               ),
             ],
             const SizedBox(height: 20),
-            if (visibleCards.isNotEmpty)
-              StaggeredGrid.count(
-                crossAxisCount: 2,
-                mainAxisSpacing: 12,
-                crossAxisSpacing: 12,
-                children: [
-                  for (final instance in visibleCards)
-                    StaggeredGridTile.fit(
-                      crossAxisCellCount: instance.kind.defaultGridSpan.$1,
-                      child: _buildCard(context, instance, hasAnyLogs),
-                    ),
-                ],
-              ),
+            DashboardCardGrid(
+              instances: visibleCards,
+              cardBuilder: (instance) =>
+                  _buildCard(context, instance, hasAnyLogs),
+            ),
             const SizedBox(height: 20),
             const PrivacyReassuranceCard(),
           ],

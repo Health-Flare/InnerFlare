@@ -86,6 +86,23 @@ class DashboardCardPreferencesNotifier
     await _persist(updated);
   }
 
+  /// Applies a resize override to the instance identified by [id] — either
+  /// dimension left null keeps that instance's current span (docs/features/
+  /// dashboard_grid_layout.feature, "A card's cell size can be adjusted
+  /// from Customize dashboard"). No-op for an id that isn't found.
+  Future<void> resizeCard(String id, {int? columnSpan, int? rowSpan}) async {
+    final current = await future;
+    final index = current.indexWhere((instance) => instance.id == id);
+    if (index == -1) return;
+
+    final updated = [...current];
+    updated[index] = updated[index].withGridSpan(
+      columnSpan: columnSpan,
+      rowSpan: rowSpan,
+    );
+    await _persist(updated);
+  }
+
   Future<void> _persist(List<DashboardCardInstance> instances) async {
     final withOrders = [
       for (var i = 0; i < instances.length; i++)

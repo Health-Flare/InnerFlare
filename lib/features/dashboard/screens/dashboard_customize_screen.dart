@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inner_flare/core/providers/dashboard_card_preferences_provider.dart';
 import 'package:inner_flare/features/dashboard/screens/add_dashboard_card_screen.dart';
+import 'package:inner_flare/features/dashboard/widgets/dashboard_card_grid.dart';
+import 'package:inner_flare/features/dashboard/widgets/dashboard_chip.dart';
 import 'package:inner_flare/models/dashboard_card.dart';
 import 'package:inner_flare/models/quick_stat.dart';
 
@@ -20,6 +22,41 @@ class DashboardCustomizeScreen extends ConsumerWidget {
     Navigator.of(
       context,
     ).push(MaterialPageRoute(builder: (_) => const AddDashboardCardScreen()));
+  }
+
+  /// Renders a card for the resize preview grid — a lightweight,
+  /// data-independent stand-in for the real card (which the dashboard
+  /// itself renders from the user's actual logged history). This is a
+  /// sizing preview, not a place to read real values, so it never touches
+  /// the cycle-data providers the real cards do.
+  static Widget _buildPreviewCard(DashboardCardInstance instance) {
+    switch (instance.kind) {
+      case DashboardCardKind.quickStat:
+        return DashboardChip(
+          icon: Icons.numbers_rounded,
+          title: instance.quickStatType.label,
+        );
+      case DashboardCardKind.calendar:
+        return const DashboardChip(
+          icon: Icons.calendar_month_rounded,
+          title: 'Calendar',
+        );
+      case DashboardCardKind.insights:
+        return const DashboardChip(
+          icon: Icons.insights_rounded,
+          title: 'Insights',
+        );
+      case DashboardCardKind.gauge:
+        return DashboardChip(
+          icon: Icons.speed_rounded,
+          title: instance.gaugeMode.label,
+        );
+      case DashboardCardKind.trend:
+        return DashboardChip(
+          icon: Icons.show_chart_rounded,
+          title: instance.trendMetric.label,
+        );
+    }
   }
 
   @override
@@ -42,19 +79,54 @@ class DashboardCustomizeScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => Center(child: Text('Couldn\'t load: $error')),
         data: (prefs) {
-          return Column(
-            children: [
-              const Padding(
-                padding: EdgeInsets.fromLTRB(20, 16, 20, 8),
-                child: Text(
-                  'This is your dashboard to shape. Turn any card off, drag '
-                  'to reorder, or add a gauge or trend card from your own '
-                  'data.',
+          final visibleCards = prefs
+              .where((instance) => instance.visible)
+              .toList();
+          // Built from CustomScrollView + SliverReorderableList directly
+          // (the documented way to combine a reorderable list with other
+          // content in one scroll view — see [SliverReorderableList])
+          // rather than ReorderableListView.builder's own `header:`
+          // support: that support's header/footer padding-splitting logic
+          // was observed corrupting the list's item count across separate
+          // `testWidgets` runs in the same test file once the header held
+          // more than trivial content, which this sidesteps entirely.
+          return CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: Column(
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(20, 16, 20, 8),
+                      child: Text(
+                        'This is your dashboard to shape. Turn any card '
+                        'off, drag to reorder, or add a gauge or trend '
+                        'card from your own data.',
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+                      child: Text(
+                        visibleCards.isEmpty
+                            ? 'Show a card to resize it here.'
+                            : "Drag a card's corner to resize it — the "
+                                  'dashboard reflows to match.',
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: DashboardCardGrid(
+                        instances: visibleCards,
+                        cardBuilder: _buildPreviewCard,
+                        resizable: true,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                 ),
               ),
-              Expanded(
-                child: ReorderableListView.builder(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                sliver: SliverReorderableList(
                   itemCount: prefs.length,
                   onReorderItem: (oldIndex, newIndex) {
                     notifier.reorder(oldIndex, newIndex);

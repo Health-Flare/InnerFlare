@@ -319,6 +319,8 @@ void main() {
           'Estimated days until next period',
         );
         await tester.scrollUntilVisible(estimatedModeOption, 300);
+        await tester.ensureVisible(estimatedModeOption);
+        await tester.pumpAndSettle();
         await tester.tap(estimatedModeOption);
         await tester.pumpAndSettle();
 

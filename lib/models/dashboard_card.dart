@@ -37,15 +37,43 @@ enum DashboardCardKind {
   /// dashboard_grid_layout.feature, "A newly added gauge or trend card
   /// defaults to a wider cell"). Quick stat/Calendar/Insights are all a
   /// single cell; gauge/trend need more room for a gauge or chart to read
-  /// clearly. User-driven resizing doesn't exist yet — this is every
-  /// card's starting size, not a ceiling.
+  /// clearly. This is every card's starting size, not a ceiling — see
+  /// [DashboardCardInstance.columnSpan]/[rowSpan] for the user-adjustable
+  /// override (docs/features/dashboard_grid_layout.feature, "A card's cell
+  /// size can be adjusted from Customize dashboard").
   (int columns, int rows) get defaultGridSpan => switch (this) {
     DashboardCardKind.quickStat ||
     DashboardCardKind.calendar ||
     DashboardCardKind.insights => (1, 1),
     DashboardCardKind.gauge || DashboardCardKind.trend => (2, 1),
   };
+
+  /// A rough "one row" pixel height for this kind, used only to size a
+  /// card that's been resized taller than its default row span (see
+  /// [DashboardCardGrid] in lib/features/dashboard/widgets/
+  /// dashboard_card_grid.dart) — a card at its default row span of 1 stays
+  /// on `StaggeredGridTile.fit` (auto-height from content) exactly as
+  /// before, so this only needs to be a reasonable approximation, not
+  /// pixel-perfect.
+  double get approximateRowHeight => switch (this) {
+    DashboardCardKind.quickStat ||
+    DashboardCardKind.calendar ||
+    DashboardCardKind.insights => 104,
+    DashboardCardKind.gauge => 132,
+    DashboardCardKind.trend => 190,
+  };
 }
+
+/// Bounds for [DashboardCardInstance.columnSpan] — the grid is a fixed
+/// `crossAxisCount: 2`, so a column span can only be half or full width.
+const dashboardGridMinColumnSpan = 1;
+const dashboardGridMaxColumnSpan = 2;
+
+/// Bounds for [DashboardCardInstance.rowSpan] (docs/features/
+/// dashboard_grid_layout.feature, "Cell size has sensible limits") — capped
+/// so a resized card can't balloon to dominate the whole dashboard.
+const dashboardGridMinRowSpan = 1;
+const dashboardGridMaxRowSpan = 3;
 
 /// Which value a gauge card displays (docs/features/dashboard_visualizations
 /// .feature, "A gauge card can show..."). Both modes fill the gauge
@@ -105,6 +133,8 @@ class DashboardCardConfigKeys {
   static const trendChartType = 'trend_chart_type';
   static const quickStatType = 'quick_stat_type';
   static const quickStatReferencePoint = 'quick_stat_reference_point';
+  static const gridColumnSpan = 'grid_column_span';
+  static const gridRowSpan = 'grid_row_span';
 }
 
 /// One card's show/hide state, position, and (for gauge/trend cards) mode
@@ -172,6 +202,30 @@ class DashboardCardInstance {
     );
   }
 
+  /// This instance's column span — the user's resize override if one is
+  /// stored, else [DashboardCardKind.defaultGridSpan]. Clamped defensively
+  /// in case a stored or imported value falls outside today's bounds.
+  int get columnSpan {
+    final raw = config[DashboardCardConfigKeys.gridColumnSpan];
+    final value = raw == null ? kind.defaultGridSpan.$1 : int.tryParse(raw);
+    return (value ?? kind.defaultGridSpan.$1).clamp(
+      dashboardGridMinColumnSpan,
+      dashboardGridMaxColumnSpan,
+    );
+  }
+
+  /// This instance's row span — the user's resize override if one is
+  /// stored, else [DashboardCardKind.defaultGridSpan]. Clamped defensively
+  /// in case a stored or imported value falls outside today's bounds.
+  int get rowSpan {
+    final raw = config[DashboardCardConfigKeys.gridRowSpan];
+    final value = raw == null ? kind.defaultGridSpan.$2 : int.tryParse(raw);
+    return (value ?? kind.defaultGridSpan.$2).clamp(
+      dashboardGridMinRowSpan,
+      dashboardGridMaxRowSpan,
+    );
+  }
+
   /// Value equality (not identity) — needed so the gauge/trend display
   /// providers (family providers keyed on the instance itself) cache and
   /// invalidate correctly instead of treating every rebuild's instance as
@@ -214,6 +268,27 @@ class DashboardCardInstance {
   /// Returns a copy with [key] set to [value] in [config].
   DashboardCardInstance withConfigValue(String key, String value) {
     return copyWith(config: {...config, key: value});
+  }
+
+  /// Returns a copy with a resize override applied — either dimension left
+  /// null keeps this instance's current [columnSpan]/[rowSpan]. Values are
+  /// clamped to the grid's bounds before being stored.
+  DashboardCardInstance withGridSpan({int? columnSpan, int? rowSpan}) {
+    final clampedColumns = (columnSpan ?? this.columnSpan).clamp(
+      dashboardGridMinColumnSpan,
+      dashboardGridMaxColumnSpan,
+    );
+    final clampedRows = (rowSpan ?? this.rowSpan).clamp(
+      dashboardGridMinRowSpan,
+      dashboardGridMaxRowSpan,
+    );
+    return copyWith(
+      config: {
+        ...config,
+        DashboardCardConfigKeys.gridColumnSpan: '$clampedColumns',
+        DashboardCardConfigKeys.gridRowSpan: '$clampedRows',
+      },
+    );
   }
 }
 
