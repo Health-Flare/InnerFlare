@@ -7,11 +7,14 @@ Feature: Dashboard quick stats
     Given the user has completed onboarding
     And the user is on the dashboard
 
-  Scenario: Quick stats sit between the "log today" area and the data cards
+  Scenario: Quick stats sit in the same grid as Calendar, Insights, and
+    any added cards
     Given the dashboard is showing its default layout
-    Then two quick stat data points appear below the "log today" hero card
-      and the "Log a previous day" link
-    And they appear above the "Your data, at a glance" heading
+    Then the two quick stats appear below the "log today" hero card and
+      the "Log a previous day" link, as two cells in the shared grid
+    And there is no separate section or heading just for quick stats,
+      distinct from Calendar, Insights, or any added card. See
+      docs/features/dashboard_grid_layout.feature for the full layout.
 
   Scenario: Default first quick stat is days since last period, measured from its end
     Given the user has logged a period that started and later stopped
