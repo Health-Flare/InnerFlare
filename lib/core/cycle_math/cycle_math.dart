@@ -106,6 +106,12 @@ const int defaultLutealPhaseLengthDays = 14;
 /// BRIEF.md §5).
 const int defaultPeriodLengthDays = 5;
 
+/// Standard clinical estimate for an average cycle, used wherever a
+/// personal average isn't available yet — e.g. sizing a suggestion
+/// nudge's snooze duration (docs/features/dashboard_nudges.feature,
+/// "Snoozing a suggestion nudge before any cycle history exists").
+const int defaultCycleLengthDays = 28;
+
 /// A predicted next-period date range, inclusive of both ends.
 class PredictedPeriodRange {
   const PredictedPeriodRange({required this.start, required this.end});
