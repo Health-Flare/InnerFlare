@@ -274,6 +274,18 @@ Use `pump(Duration(milliseconds: 500))` instead of `pumpAndSettle()` when provid
 - Clear, specific privacy statements (no vague "we value your privacy")
 - Not a medical device / no diagnostic claims — state this plainly in onboarding
 
+### Internationalization (i18n)
+
+Not yet implemented — every user-facing string is currently a hardcoded
+English literal, and `MaterialApp` doesn't set `locale`/
+`localizationsDelegates`/`supportedLocales`. See
+`docs/decisions/i18n-strategy.md` for the full investigation and the
+resulting tracking issues (`i18n` label). Short version: `flutter_localizations`
+(SDK) + `intl` (Dart-team-maintained) + `flutter gen-l10n`, not a third-party
+package — same "fewer, better-trusted dependencies" reasoning as the rest of
+this file, and it's the only option here with correct ICU plural/RTL support
+without adding a new thing to the supply-chain surface.
+
 ## Troubleshooting
 
 ### sqflite on desktop test runners
