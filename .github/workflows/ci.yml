@@ -1,22 +1,17 @@
 name: CI
 
+# No top-level `paths:` filter: `analyze`/`test` are gated per-job below
+# instead, so this workflow (and its `required` gate job) always runs and
+# can be used as a required branch-protection status check. A workflow-level
+# paths filter would make the whole run — required job included — never
+# start for a PR that doesn't touch a matching path, which leaves a
+# required status check permanently "Expected" and blocks the merge.
+
 on:
   push:
     branches: [main]
-    paths: &ci-paths
-      - 'lib/**'
-      - 'test/**'
-      - 'integration_test/**'
-      - 'assets/**'
-      - 'pubspec.yaml'
-      - 'pubspec.lock'
-      - 'analysis_options.yaml'
-      - 'scripts/check_no_network_urls.sh'
-      - '.url-scan-ignore'
-      - '.github/workflows/ci.yml'
   pull_request:
     branches: [main]
-    paths: *ci-paths
   workflow_dispatch:
 
 concurrency:
@@ -24,8 +19,35 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  changes:
+    name: Detect changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            code:
+              - 'lib/**'
+              - 'test/**'
+              - 'integration_test/**'
+              - 'assets/**'
+              - 'pubspec.yaml'
+              - 'pubspec.lock'
+              - 'analysis_options.yaml'
+              - 'scripts/check_no_network_urls.sh'
+              - '.url-scan-ignore'
+              - '.github/workflows/ci.yml'
+
   analyze:
     name: Format & analyze
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -52,6 +74,8 @@ jobs:
 
   test:
     name: Test
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -76,3 +100,18 @@ jobs:
           name: coverage-report
           path: coverage/lcov.info
           retention-days: 14
+
+  required:
+    name: CI required
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [analyze, test]
+    if: always()
+    steps:
+      - name: Check required jobs
+        run: |
+          if [ "${{ needs.analyze.result }}" = "failure" ] || [ "${{ needs.test.result }}" = "failure" ]; then
+            echo "A required CI job failed."
+            exit 1
+          fi
+          echo "OK (analyze: ${{ needs.analyze.result }}, test: ${{ needs.test.result }})"
