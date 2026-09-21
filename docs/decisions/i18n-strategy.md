@@ -234,5 +234,6 @@ Translation is the visible 20%. The rest, roughly in the order it'll bite:
 
 ## Tracking issues
 
-See the `i18n` label on GitHub for the full breakdown; the infrastructure
-issue is the dependency root for everything else in this list.
+See [#57](https://github.com/Health-Flare/InnerFlare/issues/57) for the full
+breakdown and sub-issues (#58–#65); the infrastructure issue (#58) is the
+dependency root for everything else in that list.
