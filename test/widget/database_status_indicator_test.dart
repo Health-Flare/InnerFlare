@@ -18,7 +18,7 @@ void main() {
   }
 
   testWidgets(
-    'shows a static icon while checking — not an indeterminate spinner, '
+    'shows a static icon while checking, not an indeterminate spinner, '
     'which would never let pumpAndSettle finish if this state persists',
     (tester) async {
       final completer = Completer<Database>();
@@ -71,7 +71,7 @@ void main() {
 
     expect(find.byIcon(Icons.lock_rounded), findsOneWidget);
 
-    // Tapping retries by invalidating the provider — with no successful
+    // Tapping retries by invalidating the provider. With no successful
     // override behind it here, it just fails the same way again, but
     // shouldn't crash or leave the icon stuck mid-transition.
     await tester.tap(find.byIcon(Icons.lock_rounded));

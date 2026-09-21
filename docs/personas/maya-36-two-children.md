@@ -1,4 +1,4 @@
-# Maya, 36 — the time-poor sceptic
+# Maya, 36: the time-poor sceptic
 
 > "I don't need it to be clever. I need it to be finished in four seconds
 > and not lie to me."
@@ -14,7 +14,7 @@ contraception two years ago and started tracking her cycle then.
 She is a critical thinker in the practical sense: she reads the permission
 list before installing, she notices when an app's marketing copy and its
 behaviour disagree, and her first question about any feature is "what
-happens when this goes wrong?" She is not hostile to technology — she's
+happens when this goes wrong?" She is not hostile to technology; she's
 hostile to technology that assumes it is the most important thing on her
 phone.
 
@@ -28,7 +28,7 @@ phone.
    An app that shows a confident fertile window it can't support is doing
    something worse than being unhelpful.
 
-## Her constraints — these shape every judgement she makes
+## Her constraints: these shape every judgement she makes
 
 - **She uses the app in 10–30 second windows.** One-handed. Often holding
   a child. Often at 11pm, half asleep. Often with the phone flat on a
@@ -41,7 +41,7 @@ phone.
   table at her mother-in-law's. What the app shows on a lock screen, in the
   app switcher, and to someone glancing over her shoulder is a real
   concern.
-- **She is privacy-motivated for concrete reasons** — insurers, employers,
+- **She is privacy-motivated for concrete reasons**: insurers, employers,
   and a flat refusal to have her reproductive data sitting on someone
   else's server. Not for abstract ones.
 - **Every unlock is a tax.** She pays it several times a day. A security
@@ -53,7 +53,7 @@ phone.
   seconds from cold launch.
 - Back-filling and missed days: is catching up on five days genuinely as
   fast as logging one?
-- Interruption and recovery — what survives when the app is killed
+- Interruption and recovery: what survives when the app is killed
   mid-task, backgrounded, or interrupted by a child.
 - The unlock and biometric experience as a recurring cost, and what the
   failure modes feel like.

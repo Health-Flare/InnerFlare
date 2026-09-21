@@ -5,7 +5,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'today_log_provider.g.dart';
 
-/// Whether — and how — today has been logged. A thin wrapper over
+/// Whether and how today has been logged. A thin wrapper over
 /// [cycleDayLogEntryProvider] for today's date; backs the dashboard's
 /// persistent "log today" entry point (docs/features/log.feature).
 @riverpod

@@ -3,7 +3,7 @@
 # 1. Export stays a personal-use portability format, never a sharing format.
 #    BRIEF.md §5 lists a "printable/PDF summary for a doctor visit" as a
 #    deferred v2 candidate; this spec supersedes that framing from
-#    "deferred" to "not a goal of this feature" — this app doesn't produce
+#    "deferred" to "not a goal of this feature". This app doesn't produce
 #    anything meant to be read by, or handed to, anyone but the user
 #    operating their own device. PDF and CSV export are both out: PDF is a
 #    presentation format for other readers, and a CSV export would
@@ -16,7 +16,7 @@
 #    and then dropped after spec review checked the premise it rested on:
 #    that a user's old app hands them a usable CSV. It mostly doesn't. Flo
 #    offers CSV as one export option, but only via a manual "contact
-#    support" request that emails a download link later — not an in-app
+#    support" request that emails a download link later, not an in-app
 #    download sitting in Files the moment someone switches phones. Clue
 #    offers JSON only, in a password-protected ZIP, with no CSV option at
 #    all. Shipping a column-mapping wizard framed around "import from your
@@ -33,23 +33,23 @@
 # 3. "All cycle_day_logs and settings" in the first scenario below means
 #    portable data, not every row in the database. dashboard_card_preferences,
 #    quick_stat_preferences, and security_settings (the idle-lock timeout)
-#    are each documented elsewhere as per-device state — see "Card
+#    are each documented elsewhere as per-device state: see "Card
 #    preferences are stored per-device in settings, not synced"
 #    (dashboard.feature), "Quick stat preferences are stored per-device, not
 #    synced" (quick_stats.feature), and app_lock.feature's idle-lock timeout
-#    scenario — and perimenopause.feature's "Nudge deferral state is
+#    scenario; and perimenopause.feature's "Nudge deferral state is
 #    device-local and deliberately not exported" scenario confirms the same
 #    is true of dashboard layout by direct analogy. None of the three round-
 #    trip through export/import; a device keeps its own layout, quick-stat
 #    choices, and lock timeout regardless of what's imported onto it. The
 #    `symptoms` catalog is the one settings table that *does* travel with
 #    the data, since `cycle_day_logs.symptoms` entries are meaningless
-#    without the labels (and custom entries) they reference — see "The
+#    without the labels (and custom entries) they reference: see "The
 #    symptom catalog travels with the data" below.
 #
 # 4. Platform health stores (Apple Health on iOS, Health Connect on
 #    Android) are a materially bigger lift than file-based CSV import ever
-#    was — native permission grants, platform-specific APIs, and (Health
+#    was: native permission grants, platform-specific APIs, and (Health
 #    Connect especially) a live on-device read rather than a picked file.
 #    Unlike generic CSV import, they weren't cut: reading structured
 #    records an app itself wrote via a documented platform API is a
@@ -96,7 +96,7 @@ Feature: Backup export and import
     Then the only output is the app's own portable file format
     And no PDF, CSV, or other externally-readable report format is offered
     And nothing in the export flow is framed around sharing with a third
-      party (a doctor, a partner, a printout) — it moves data to the
+      party (a doctor, a partner, a printout); it moves data to the
       user's own other device, nothing else
 
   Scenario: Import replaces or merges into the local database
@@ -138,10 +138,10 @@ Feature: Backup export and import
 
   # --- Importing from the platform health store ----------------------------
   #
-  # This is the only external (non-InnerFlare-format) import path in v1 —
+  # This is the only external (non-InnerFlare-format) import path in v1:
   # generic CSV import from other cycle-tracking apps was drafted and then
   # dropped; see design decision 2 above for why. Platform health stores
-  # are a materially bigger lift — native permission grants,
+  # are a materially bigger lift: native permission grants,
   # platform-specific APIs, and (Health Connect especially) a live
   # on-device read rather than a picked file, closer in weight to this
   # app's existing biometric-gate/Keychain integration work than to parsing
@@ -163,7 +163,7 @@ Feature: Backup export and import
     Given the app has previously been granted platform health permissions
     When the app is opened normally, without the user choosing "import"
     Then no read of the platform health store occurs
-    And this matches "Export never happens automatically" above — a granted
+    And this matches "Export never happens automatically" above: a granted
       permission is not standing consent for the app to read on its own schedule
 
   Scenario: Platform health import previews records and resolves unmapped values before writing anything
@@ -172,7 +172,7 @@ Feature: Backup export and import
     Then a sample of the records as they will be imported is shown before
       anything is written to the database
     And any symptom value with no matching InnerFlare tag is listed
-      individually for the user to map, keep as note text, or ignore —
+      individually for the user to map, keep as note text, or ignore,
       never guessed or silently dropped
     And the user is asked to choose replace or merge, the same choice
       offered for an InnerFlare-format import, before the import runs

@@ -5,7 +5,7 @@ import 'package:inner_flare/core/theme/app_theme.dart';
 import 'package:inner_flare/models/dashboard_card.dart';
 
 /// A trend card on the dashboard (docs/features/dashboard_visualizations
-/// .feature) — a bar or line chart of a data series over time, with the
+/// .feature), a bar or line chart of a data series over time, with the
 /// series average marked as a reference. No charting package: this is a
 /// [CustomPainter], matching CLAUDE.md's "Lightweight by Default".
 class TrendCard extends ConsumerWidget {
@@ -37,7 +37,7 @@ class TrendCard extends ConsumerWidget {
       ),
     );
 
-    // Tappable only once there's a real series to summarize — see
+    // Tappable only once there's a real series to summarize, see
     // "A trend card becomes tappable once it has real history to
     // summarize" / "...without enough history isn't tappable".
     final isTappable = displayAsync.value?.hasEnoughHistory ?? false;
@@ -69,14 +69,14 @@ class _TrendContent extends StatelessWidget {
         const SizedBox(height: 12),
         if (!display.metric.isImplemented)
           Text(
-            'Coming soon — this data point isn\'t tracked yet.',
+            'Coming soon: this data point isn\'t tracked yet.',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: AppColors.deepTeal.withValues(alpha: 0.7),
             ),
           )
         else if (!display.hasEnoughHistory)
           Text(
-            'Not enough cycles logged yet — at least 2 complete cycles are '
+            'Not enough cycles logged yet: at least 2 complete cycles are '
             'needed before a trend can be shown.',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: AppColors.deepTeal.withValues(alpha: 0.7),
@@ -125,7 +125,7 @@ class _TrendContent extends StatelessWidget {
   }
 }
 
-/// Numeric y-axis scale for [_TrendPainter] — "0" at the bottom and the
+/// Numeric y-axis scale for [_TrendPainter], "0" at the bottom and the
 /// chart's padded max at the top, matching [_TrendPainter.yFor] so the
 /// labels line up with where the painter actually places 0 and
 /// [maxValue] on the canvas.
@@ -154,7 +154,7 @@ class _TrendYAxisLabels extends StatelessWidget {
   }
 }
 
-/// Explains what each color in [_TrendPainter] means — the series/latest
+/// Explains what each color in [_TrendPainter] means: the series/latest
 /// distinction and (when there's enough history) the dashed average
 /// line, per docs/features/dashboard_visualizations.feature's "the most
 /// recent cycle is visually distinguishable as the latest" and "a
@@ -279,7 +279,7 @@ class _TrendPainter extends CustomPainter {
   final Color latestBarColor;
   final Color averageLineColor;
 
-  /// The padded top of the y-axis scale for [values] — shared with
+  /// The padded top of the y-axis scale for [values], shared with
   /// [_TrendYAxisLabels] so its top label lines up with where this
   /// painter actually places that value on the canvas (see [paint]'s
   /// `yFor`). Padded so the average line and tallest bar/point are never

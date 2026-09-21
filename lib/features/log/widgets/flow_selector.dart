@@ -3,7 +3,7 @@ import 'package:inner_flare/core/theme/app_theme.dart';
 import 'package:inner_flare/models/period_flow.dart';
 
 /// Single-tap chips for choosing the day's period flow. Tapping the
-/// already-selected chip clears it — flow is optional, never required
+/// already-selected chip clears it: flow is optional, never required
 /// (see docs/features/log.feature).
 class FlowSelector extends StatelessWidget {
   const FlowSelector({

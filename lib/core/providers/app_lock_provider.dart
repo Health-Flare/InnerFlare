@@ -7,7 +7,7 @@ part 'app_lock_provider.g.dart';
 ///
 /// Starts unlocked: the very first unlock of a session happens through
 /// [AppDatabase]'s own biometric gate the first time data is read, not
-/// through this — this provider only covers re-locking after the app has
+/// through this; this provider only covers re-locking after the app has
 /// already been in use.
 @riverpod
 class AppLock extends _$AppLock {

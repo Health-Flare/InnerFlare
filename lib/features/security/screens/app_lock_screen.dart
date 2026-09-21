@@ -7,8 +7,8 @@ import 'package:inner_flare/core/theme/app_theme.dart';
 
 /// Covers the app after it's been backgrounded past the idle timeout
 /// (docs/features/app_lock.feature). Never authenticates on its own when
-/// shown — same "the user decides when to try" rule as
-/// [UnlockErrorBanner] — so re-showing this screen never stacks a second
+/// shown (same "the user decides when to try" rule as
+/// [UnlockErrorBanner]) so re-showing this screen never stacks a second
 /// system biometric prompt on top of one already in flight.
 class AppLockScreen extends ConsumerStatefulWidget {
   const AppLockScreen({super.key});
@@ -23,7 +23,7 @@ class _AppLockScreenState extends ConsumerState<AppLockScreen> {
   Future<void> _unlock() async {
     setState(() => _authenticating = true);
     // Flagged for the whole native-prompt round trip so AppLockGate can
-    // ignore the inactive/resumed transitions that prompt itself causes —
+    // ignore the inactive/resumed transitions that prompt itself causes,
     // see reauthenticating_provider.dart for why that matters.
     final reauthFlag = ref.read(reauthenticationFlagProvider);
     reauthFlag.inProgress = true;

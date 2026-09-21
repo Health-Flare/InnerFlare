@@ -50,7 +50,7 @@ class TrendCardDisplay {
 
 /// Resolves [instance] (a gauge card) to its live display values, computed
 /// from the same period-start data as docs/features/insights.feature and
-/// docs/features/quick_stats.feature — no separate cached calculation to
+/// docs/features/quick_stats.feature: no separate cached calculation to
 /// drift out of sync.
 @riverpod
 Future<GaugeCardDisplay> gaugeCardDisplay(
@@ -106,7 +106,7 @@ Future<GaugeCardDisplay> gaugeCardDisplay(
 }
 
 /// Resolves [instance] (a trend card) to its live display values. Only
-/// [TrendCardMetric.previousCycleLengths] has real data behind it today —
+/// [TrendCardMetric.previousCycleLengths] has real data behind it today;
 /// see the TODO on [TrendCardMetric] in lib/models/dashboard_card.dart for
 /// what the other catalog entries still need before they can compute
 /// anything.
@@ -162,7 +162,7 @@ class QuickStatCardDisplay {
 
 /// Resolves [instance] (a quick stat card) to its live display value,
 /// from the same period-start and cycle-length data as
-/// docs/features/insights.feature — no separate cached calculation to
+/// docs/features/insights.feature: no separate cached calculation to
 /// keep in sync (see "Quick stats recompute live from the same data as
 /// Insights").
 @riverpod

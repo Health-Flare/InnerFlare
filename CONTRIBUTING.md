@@ -1,7 +1,7 @@
 # Contributing to Inner Flare
 
 Thanks for taking a look at Inner Flare. This is a small, offline-only,
-privacy-first project — contributions are welcome, but a few things about
+privacy-first project. Contributions are welcome, but a few things about
 how it's built are non-negotiable (see "Ground rules" below) precisely
 because they protect that.
 
@@ -10,17 +10,17 @@ project's license, GPLv3 or later (see `LICENSE`).
 
 ## Ground rules
 
-These aren't style preferences — they're the reasons this app is safe to
+These aren't style preferences; they're the reasons this app is safe to
 put health data in, so PRs that violate them will be asked to change
 regardless of how the rest of the code looks:
 
 - **No network calls, ever.** No HTTP clients, no analytics/telemetry SDKs,
   no crash reporters that phone home. The pre-commit hook scans for network
-  URLs in Dart files and will fail your commit if it finds one — see
+  URLs in Dart files and will fail your commit if it finds one; see
   `.url-scan-ignore` if you have a genuine, justified exception.
 - **The database stays encrypted.** Don't touch `lib/data/database/` or
   `lib/core/security/` without reading "Encrypted, biometric-gated storage"
-  in `CLAUDE.md` first — there's a real history of subtly-broken PRs in this
+  in `CLAUDE.md` first: there's a real history of subtly-broken PRs in this
   exact area (a biometric-gate bypass, a silent auto-retry bug), and the
   reasoning there explains why the current code looks the way it does.
 - **Exported backups from older versions must still import cleanly.** Any
@@ -37,7 +37,7 @@ flutter run
 ```
 
 See `README.md` for simulator/emulator setup and known platform quirks
-(macOS Keychain friction in particular — it's expected, not a bug), and
+(macOS Keychain friction in particular; it's expected, not a bug), and
 `CLAUDE.md` for the full architecture and conventions reference.
 
 ## Workflow
@@ -45,7 +45,7 @@ See `README.md` for simulator/emulator setup and known platform quirks
 This project develops feature-first, spec-first:
 
 1. **Specify the behavior** as Gherkin scenarios in `docs/features/*.feature`
-   (add to an existing file or create one — see the table in `CLAUDE.md`).
+   (add to an existing file or create one; see the table in `CLAUDE.md`).
 2. **Write failing tests** implementing those scenarios.
 3. **Implement** in `lib/`, following the existing feature-first structure
    (`lib/features/<feature>/`, providers in `lib/core/providers/`,
@@ -54,14 +54,14 @@ This project develops feature-first, spec-first:
    `flutter test`.
 
 Cycle-math logic (prediction/statistics) is pure, dependency-free, and
-exhaustively unit-tested — if you're touching anything in
+exhaustively unit-tested. If you're touching anything in
 `test/unit/cycle_math/`, that bar applies to your change too, including
 edge cases like irregular cycles, gaps in logging, and DST boundaries.
 
 ## Before opening a PR
 
 - `flutter analyze` passes with zero warnings/errors.
-- `dart format --set-exit-if-changed .` — no formatting diffs.
+- `dart format --set-exit-if-changed .`: no formatting diffs.
 - `flutter test` passes locally (the pre-push hook runs this automatically
   unless you've bypassed it).
 - New/changed behavior has a corresponding `.feature` scenario and test
@@ -70,7 +70,7 @@ edge cases like irregular cycles, gaps in logging, and DST boundaries.
   path (see "Adding/Changing a Database Table" in `CLAUDE.md`).
 
 CI runs the same format/analyze/URL-scan checks plus the full test suite
-with coverage on every PR — it needs to be green before merge.
+with coverage on every PR. It needs to be green before merge.
 
 ## Commit / PR conventions
 
@@ -85,7 +85,7 @@ with coverage on every PR — it needs to be green before merge.
 Open a GitHub issue. For anything that looks like a security or privacy
 issue specifically (e.g. a way data could leave the device, or a way the
 encrypted database or biometric gate could be bypassed), please don't file
-a public issue — email development@automatedbytes.com directly so it can be fixed
+a public issue. Email development@automatedbytes.com directly so it can be fixed
 before it's public.
 
 ## Code of Conduct

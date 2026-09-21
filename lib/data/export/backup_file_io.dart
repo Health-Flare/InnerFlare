@@ -3,18 +3,18 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
-/// The only part of the export/import flow that touches the filesystem —
+/// The only part of the export/import flow that touches the filesystem:
 /// [BackupExporter]/[BackupImporter] (backup_exporter.dart,
 /// backup_importer.dart) just gather/parse in-memory data, and the OS
 /// share sheet / file picker (lib/features/export/screens) hand off
 /// wherever the user actually saves or selects a file.
 class BackupFileIO {
-  /// Every backup file, encrypted or not, uses this extension — it's
+  /// Every backup file, encrypted or not, uses this extension: it's
   /// what the import screen's file picker filters on.
   static const extension = 'ifbackup';
 
   /// Writes [contents] to a fresh file in the OS temp directory (not the
-  /// app's private support directory the encrypted database lives in —
+  /// app's private support directory the encrypted database lives in;
   /// this file is meant to be handed off via the share sheet, then
   /// discarded) and returns its path.
   Future<String> writeTemporaryFile(String contents) async {

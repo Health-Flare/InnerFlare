@@ -9,7 +9,7 @@ import 'package:cryptography/cryptography.dart';
 /// db_passphrase_store.dart: that passphrase is generated, lives only in
 /// the platform secure key store, and protects the on-device database file.
 /// This one is chosen by the user, typed in at export/import time, and
-/// protects a file that — unlike the database — is expected to leave the
+/// protects a file that, unlike the database, is expected to leave the
 /// device (saved to Files, AirDropped, etc).
 ///
 /// AES-256-GCM with a key derived via PBKDF2-HMAC-SHA256. A fresh random
@@ -49,7 +49,7 @@ class BackupEncryption {
   /// Decrypts [backup] with a key derived from [passphrase].
   ///
   /// Throws [IncorrectBackupPassphrase] if the passphrase is wrong (or the
-  /// file was tampered with) — GCM's authentication tag check fails closed
+  /// file was tampered with): GCM's authentication tag check fails closed
   /// rather than returning corrupted plaintext.
   Future<List<int>> decrypt(EncryptedBackup backup, String passphrase) async {
     final secretKey = await _deriveKey(
@@ -93,7 +93,7 @@ class BackupEncryption {
 }
 
 /// The output of [BackupEncryption.encrypt] / input to
-/// [BackupEncryption.decrypt] — everything needed to reverse the operation
+/// [BackupEncryption.decrypt]: everything needed to reverse the operation
 /// given the correct passphrase. Safe to store or transmit as-is: the salt,
 /// nonce, and MAC are not secret, only the passphrase is.
 class EncryptedBackup {

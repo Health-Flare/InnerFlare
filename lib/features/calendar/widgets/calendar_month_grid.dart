@@ -6,7 +6,7 @@ import 'package:inner_flare/models/cycle_day_log.dart';
 
 /// A full-weeks grid (Monday-first) for the month containing [month],
 /// including the leading/trailing days of adjacent months needed to fill
-/// each week — those are still tappable (docs/features/calendar.feature,
+/// each week; those are still tappable (docs/features/calendar.feature,
 /// "the user taps any date, past or future").
 class CalendarMonthGrid extends StatelessWidget {
   const CalendarMonthGrid({
@@ -76,7 +76,7 @@ class CalendarMonthGrid extends StatelessWidget {
   /// enough adjacent-month days to complete the first and last week.
   ///
   /// Builds each day via the `DateTime(year, month, day)` constructor
-  /// rather than `DateTime.add(Duration(days: ...))` — adding a Duration
+  /// rather than `DateTime.add(Duration(days: ...))`: adding a Duration
   /// to a local (non-UTC) DateTime walks wall-clock time, so a grid
   /// spanning a DST transition would drift off midnight from that day
   /// onward (see `dateOnly`'s doc in cycle_math.dart for the same

@@ -22,7 +22,7 @@ class CycleDayLogRepository {
     return _fromRow(rows.first);
   }
 
-  /// All logged days between [start] and [end], inclusive — backs the
+  /// All logged days between [start] and [end], inclusive: backs the
   /// calendar's month view (docs/features/calendar.feature).
   Future<List<CycleDayLog>> getInRange(DateTime start, DateTime end) async {
     final rows = await _db.query(
@@ -33,7 +33,7 @@ class CycleDayLogRepository {
     return rows.map(_fromRow).toList();
   }
 
-  /// Every period-start date on record, oldest first — the raw input to
+  /// Every period-start date on record, oldest first: the raw input to
   /// the cycle-length/prediction math in `cycle_math.dart`.
   Future<List<DateTime>> getPeriodStartDates() async {
     final rows = await _db.query(
@@ -45,7 +45,7 @@ class CycleDayLogRepository {
     return rows.map((row) => DateTime.parse(row['date'] as String)).toList();
   }
 
-  /// Every date with a period flow logged — the raw input to
+  /// Every date with a period flow logged: the raw input to
   /// `lastLoggedPeriodEndDate` in cycle_math.dart.
   Future<Set<DateTime>> getDatesWithPeriodFlow() async {
     final rows = await _db.query(
@@ -56,19 +56,19 @@ class CycleDayLogRepository {
     return rows.map((row) => DateTime.parse(row['date'] as String)).toSet();
   }
 
-  /// Every logged day on record, oldest first — the full-history read
+  /// Every logged day on record, oldest first: the full-history read
   /// export uses to build a backup file (docs/features/export.feature).
   Future<List<CycleDayLog>> getAll() async {
     final rows = await _db.query(cycleDayLogsTable, orderBy: 'date ASC');
     return rows.map(_fromRow).toList();
   }
 
-  /// Deletes every row — only used by import's "replace" strategy
+  /// Deletes every row: only used by import's "replace" strategy
   /// (docs/features/export.feature), immediately before re-inserting the
   /// imported set.
   Future<void> deleteAll() => _db.delete(cycleDayLogsTable);
 
-  /// Whether the user has logged anything at all — distinguishes "no data
+  /// Whether the user has logged anything at all: distinguishes "no data
   /// yet" from "nothing in this particular month" for the calendar's empty
   /// state (docs/features/calendar.feature, "Empty calendar before any
   /// logging").
@@ -77,7 +77,7 @@ class CycleDayLogRepository {
     return rows.isNotEmpty;
   }
 
-  /// Saves [log], replacing any existing row for that date — there is
+  /// Saves [log], replacing any existing row for that date: there is
   /// never more than one row per date (see docs/features/log.feature,
   /// "Editing an existing day's log"). `isPeriodStart` on [log] is
   /// ignored and recomputed from whether the prior day already had a

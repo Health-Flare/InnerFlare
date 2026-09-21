@@ -5,7 +5,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'cycle_prediction_provider.g.dart';
 
 /// The predicted next period range and fertile window, derived from every
-/// period-start date on record — both are estimates, never a guarantee
+/// period-start date on record. Both are estimates, never a guarantee
 /// (docs/features/calendar.feature, "Predicted period and fertile window
 /// are shown on the calendar").
 class CyclePrediction {
@@ -14,7 +14,7 @@ class CyclePrediction {
   /// Null until there's at least one complete prior cycle to average.
   final PredictedPeriodRange? periodRange;
 
-  /// Null under the same condition as [periodRange] — both are derived
+  /// Null under the same condition as [periodRange]: both are derived
   /// from the same predicted next period start.
   final FertileWindow? fertileWindow;
 }

@@ -31,10 +31,10 @@ String _formatRange(DateTime start, DateTime end) {
 
 /// Cycle insights and predictions (docs/features/insights.feature): average
 /// cycle length, variability, and predicted next period/fertile window,
-/// all recomputed live from logged period starts — nothing is cached, so
+/// all recomputed live from logged period starts; nothing is cached, so
 /// editing a past entry is reflected the next time this screen builds.
 ///
-/// Not a medical device — predictions here are plain statistics over the
+/// Not a medical device: predictions here are plain statistics over the
 /// user's own logged dates, always shown with what they're based on, never
 /// as an opaque forecast (see CLAUDE.md, "Privacy-Centric").
 class InsightsScreen extends ConsumerWidget {
@@ -73,7 +73,7 @@ class _InsightsBody extends StatelessWidget {
         title: 'Not enough data yet',
         message:
             'Log your next period start and this screen will begin showing '
-            'estimates — nothing is guessed in the meantime.',
+            'estimates: nothing is guessed in the meantime.',
       );
     }
 
@@ -99,7 +99,7 @@ class _InsightsBody extends StatelessWidget {
           value: '${average.round()} days',
           caveat: insights.isIrregular
               ? 'Based on your last $cyclesUsed cycle${cyclesUsed == 1 ? '' : 's'}. '
-                    "These have varied by more than a week — treat this as "
+                    'These have varied by more than a week. Treat this as '
                     'a rough guide, not a fixed rule.'
               : 'Based on your last $cyclesUsed cycle${cyclesUsed == 1 ? '' : 's'}.',
         ),
@@ -111,7 +111,7 @@ class _InsightsBody extends StatelessWidget {
             value: '± ${insights.variability!.round()} days',
             caveat:
                 'How much your recent cycle lengths differ from the '
-                'average — higher means less predictable timing.',
+                'average; higher means less predictable timing.',
           ),
         ],
         if (insights.periodRange != null) ...[
@@ -135,7 +135,7 @@ class _InsightsBody extends StatelessWidget {
               insights.fertileWindow!.start,
               insights.fertileWindow!.end,
             ),
-            caveat: 'An estimate — not a reliable method of contraception.',
+            caveat: 'An estimate, not a reliable method of contraception.',
           ),
         ],
       ],

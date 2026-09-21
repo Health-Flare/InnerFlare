@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:inner_flare/core/theme/app_theme.dart';
 
-/// Explains what each calendar marking means — predictions are explicitly
+/// Explains what each calendar marking means: predictions are explicitly
 /// labeled as estimates, never confirmed events
 /// (docs/features/calendar.feature).
 class CalendarLegend extends StatelessWidget {

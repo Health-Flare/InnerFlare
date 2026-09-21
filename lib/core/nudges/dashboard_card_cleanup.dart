@@ -2,8 +2,8 @@
 /// (docs/features/dashboard_visualizations.feature, "The dashboard
 /// nudges toward cleanup once there are 6 or more cards" / "A cleanup
 /// nudge calls out duplicate cards by name"). The nudge's own
-/// dismiss/snooze behavior once triggered is generic — see
-/// lib/core/nudges/nudge_rules.dart — this file only decides *when* the
+/// dismiss/snooze behavior once triggered is generic; see
+/// lib/core/nudges/nudge_rules.dart. This file only decides *when* the
 /// cleanup nudge applies and *what* it should say.
 library;
 
@@ -23,7 +23,7 @@ bool hasEnoughCardsForCleanupNudge(
   return cards.length >= threshold;
 }
 
-/// Groups of 2+ cards configured identically — same kind, and for
+/// Groups of 2+ cards configured identically: same kind, and for
 /// gauge/trend cards, the same mode/metric (chart type doesn't count:
 /// the same metric shown as a bar and a line is still the same
 /// underlying data point twice). Quick stat, Calendar, and Insights

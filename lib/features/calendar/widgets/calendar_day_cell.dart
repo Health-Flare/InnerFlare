@@ -5,7 +5,7 @@ import 'package:inner_flare/models/period_flow.dart';
 
 /// A single day in the calendar month grid.
 ///
-/// Actual logged data always takes visual priority over a prediction — a
+/// Actual logged data always takes visual priority over a prediction: a
 /// day that's both logged and inside a predicted range only shows the
 /// logged state, so the estimate never looks like it overrides real data.
 class CalendarDayCell extends StatelessWidget {
@@ -116,16 +116,16 @@ class CalendarDayCell extends StatelessWidget {
     final dateLabel = '${date.month}/${date.day}';
     final flow = log?.periodFlow;
     if (flow != null) {
-      return '$dateLabel — period day (${_flowLabel(flow)})';
+      return '$dateLabel: period day (${_flowLabel(flow)})';
     }
     if (log?.symptoms.isNotEmpty ?? false) {
-      return '$dateLabel — symptoms logged';
+      return '$dateLabel: symptoms logged';
     }
     if (isPredictedPeriod) {
-      return '$dateLabel — predicted period (estimate)';
+      return '$dateLabel: predicted period (estimate)';
     }
     if (isPredictedFertile) {
-      return '$dateLabel — predicted fertile window (estimate)';
+      return '$dateLabel: predicted fertile window (estimate)';
     }
     return dateLabel;
   }

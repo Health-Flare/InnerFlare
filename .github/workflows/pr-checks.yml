@@ -1,6 +1,6 @@
 name: PR checks
 
-# Always runs on every PR to main, regardless of which paths changed — unlike
+# Always runs on every PR to main, regardless of which paths changed, unlike
 # ci.yml's path-filtered jobs, these are metadata/hygiene checks that should
 # never be silently skipped (and skipped path-filtered jobs can't be required
 # status checks, since GitHub leaves them permanently pending on PRs that

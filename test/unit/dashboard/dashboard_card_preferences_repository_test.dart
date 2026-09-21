@@ -1,6 +1,6 @@
 // Exercises docs/features/dashboard.feature and
 // docs/features/dashboard_visualizations.feature against the repository
-// directly (no widgets) — see
+// directly (no widgets). See
 // lib/data/repositories/dashboard_card_preferences_repository.dart.
 
 import 'package:flutter_test/flutter_test.dart';
@@ -29,7 +29,7 @@ void main() {
   tearDown(() => db.close());
 
   test('a fresh install auto-populates two quick stats, calendar, and '
-      'insights, visible, in enum order — but no gauge/trend card', () async {
+      'insights, visible, in enum order, but no gauge/trend card', () async {
     final all = await repository.getAll();
     expect(all.map((c) => c.kind), [
       DashboardCardKind.quickStat,
@@ -83,7 +83,7 @@ void main() {
   });
 
   test('removing a card (saveAll without it) doesn\'t bring it back on '
-      'the next getAll — unlike calendar/insights, gauge/trend cards are '
+      'the next getAll: unlike calendar/insights, gauge/trend cards are '
       'never auto-appended', () async {
     final initial = await repository.getAll();
     final gauge = newGaugeCardInstance(order: initial.length);
@@ -133,7 +133,7 @@ void main() {
       'backfilled from the old card_id and quick stats folded in', () async {
     // sqflite caches open databases by path, and every in-memory database
     // shares the literal ":memory:" path (see CLAUDE.md "sqflite on
-    // desktop test runners") — close the outer setUp's db first so this
+    // desktop test runners"). Close the outer setUp's db first so this
     // test's own openInMemoryTestDatabase call below doesn't silently
     // reuse it (which already has the post-migration schema applied).
     await db.close();
@@ -175,7 +175,7 @@ void main() {
 
     // sqflite only calls onUpgrade on a version bump through openDatabase's
     // own version-tracking, which the FFI in-memory helper doesn't expose
-    // directly — so call the real migration function against this exact
+    // directly, so call the real migration function against this exact
     // pre-v6 connection instead, the same call `openDatabase` would make.
     await onUpgrade(oldShapeDb, 5, schemaVersion);
 

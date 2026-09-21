@@ -47,19 +47,19 @@ void main() {
       expect(find.text('Unlock'), findsOneWidget);
 
       // Same visual language as the idle re-lock screen
-      // (AppLockScreen) — this shouldn't feel like a second, different
+      // (AppLockScreen): this shouldn't feel like a second, different
       // mechanism.
       final icon = tester.widget<Icon>(find.byIcon(Icons.lock_rounded));
       expect(icon.color, AppColors.softOrange);
 
-      // Sitting on this screen must never touch the database on its own —
-      // only a tap should.
+      // Sitting on this screen must never touch the database on its own.
+      // Only a tap should.
       await tester.pump(const Duration(seconds: 5));
       expect(openAttempts, 0);
     },
   );
 
-  testWidgets('gates whatever screen is on top, regardless of what it is — '
+  testWidgets('gates whatever screen is on top, regardless of what it is: '
       'onboarding on a first-ever launch just as much as the dashboard', (
     tester,
   ) async {
@@ -84,7 +84,7 @@ void main() {
   });
 
   testWidgets(
-    'tapping "Unlock" is what starts opening the database — exactly once',
+    'tapping "Unlock" is what starts opening the database, exactly once',
     (tester) async {
       var openAttempts = 0;
       final completer = Completer<Database>();
@@ -106,7 +106,7 @@ void main() {
 
       expect(openAttempts, 1);
       // While the attempt is in flight, the button is disabled and
-      // relabelled — same pattern as AppLockScreen — so it can't be
+      // relabelled (same pattern as AppLockScreen), so it can't be
       // tapped again to fire a second, overlapping attempt.
       expect(find.text('Unlocking…'), findsOneWidget);
       final button = tester.widget<FilledButton>(find.byType(FilledButton));
@@ -205,7 +205,7 @@ void main() {
     expect(find.text('Inner Flare is locked'), findsNothing);
 
     // Nothing about the passage of time alone should re-trigger the
-    // unlock screen — only an idle re-lock (docs/features/app_lock.feature)
+    // unlock screen. Only an idle re-lock (docs/features/app_lock.feature)
     // does that, and that's a separate, deliberate mechanism.
     await tester.pump(const Duration(seconds: 30));
     expect(find.text('Inner Flare is locked'), findsNothing);

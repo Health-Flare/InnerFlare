@@ -1,7 +1,7 @@
 /// How long the app can sit backgrounded before returning to it requires
 /// re-authentication (docs/features/app_lock.feature). User-configurable
 /// in Settings; the choice is persisted per-device, same as dashboard
-/// card layout — never synced.
+/// card layout, never synced.
 enum LockTimeout {
   immediately,
   after1Minute,

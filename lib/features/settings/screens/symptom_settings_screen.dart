@@ -6,7 +6,7 @@ import 'package:inner_flare/models/tracked_symptom.dart';
 /// Lets the user change, add, enable, and disable the symptoms offered on
 /// the log screen (docs/features/symptom_settings.feature). Disabling a
 /// symptom here never deletes it or touches a day already logged with
-/// it — it only stops offering that chip on future/other logging.
+/// it: it only stops offering that chip on future/other logging.
 class SymptomSettingsScreen extends ConsumerWidget {
   const SymptomSettingsScreen({super.key});
 

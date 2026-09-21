@@ -4,7 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'dashboard_card_preferences_provider.g.dart';
 
-/// The dashboard's customizable card layout — show/hide, order, add/remove,
+/// The dashboard's customizable card layout: show/hide, order, add/remove,
 /// and per-card mode config (docs/features/dashboard.feature,
 /// docs/features/dashboard_visualizations.feature). Backs both the
 /// dashboard screen's rendering and the customization/add-card screens'
@@ -64,7 +64,7 @@ class DashboardCardPreferencesNotifier
     await _persist([...current, instance]);
   }
 
-  /// Removes the instance identified by [id] entirely — for gauge/trend
+  /// Removes the instance identified by [id] entirely: for gauge/trend
   /// cards the user added, as opposed to hiding a default card. No-op for
   /// an id that isn't found (already removed).
   Future<void> removeCard(String id) async {
@@ -72,7 +72,7 @@ class DashboardCardPreferencesNotifier
     await _persist(current.where((instance) => instance.id != id).toList());
   }
 
-  /// Updates one config value on the instance identified by [id] — e.g.
+  /// Updates one config value on the instance identified by [id], e.g.
   /// switching a gauge's mode or a trend card's chart type (see "Switching
   /// a gauge card between its two supported modes", "A trend card can be
   /// switched from bar to line").
@@ -86,7 +86,7 @@ class DashboardCardPreferencesNotifier
     await _persist(updated);
   }
 
-  /// Applies a resize override to the instance identified by [id] — either
+  /// Applies a resize override to the instance identified by [id]: either
   /// dimension left null keeps that instance's current span (docs/features/
   /// dashboard_grid_layout.feature, "A card's cell size can be adjusted
   /// from Customize dashboard"). No-op for an id that isn't found.

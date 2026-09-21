@@ -1,17 +1,17 @@
 // Captures app-store screenshots against real, on-device rendering (see
-// docs/deployment — this is a one-off tool for producing store assets,
+// docs/deployment; this is a one-off tool for producing store assets,
 // not a correctness test, so it isn't part of `flutter test`'s default
 // run). Seeds the encrypted database with the same demo dataset as the
 // debug-only "Load demo data" control in Settings, via the same
 // repository real logging goes through, then pumps each primary screen
 // directly (rather than tapping/popping through in-app navigation,
 // which is already covered by the widget tests in test/widget/ and is
-// needlessly flaky here — iOS's full-width swipe-back gesture detector
+// needlessly flaky here: iOS's full-width swipe-back gesture detector
 // can still be layered over the screen for a frame or two after a pop
 // settles, stealing the next tap) and takes a screenshot of each.
 //
 // appDatabaseProvider is overridden to open with AlwaysAllowBiometricGate
-// instead of the real device biometric prompt — same fake the rest of
+// instead of the real device biometric prompt: same fake the rest of
 // the test suite uses (see lib/core/security/biometric_gate.dart) for
 // "any environment where a real biometric prompt would hang or isn't
 // meaningful", which an unattended screenshot run very much is. The
@@ -114,7 +114,7 @@ void main() {
 
 /// Pumps [screen] as the root of a fresh [MaterialApp] sharing
 /// [container], and settles it. Each screenshot gets its own root widget
-/// rather than reaching it via push/pop through the real app shell — see
+/// rather than reaching it via push/pop through the real app shell. See
 /// the file comment above for why.
 Future<void> _showScreen(
   WidgetTester tester,
@@ -136,7 +136,7 @@ Future<void> _showScreen(
 }
 
 /// Seeds [buildDemoCycleLogs] through the real repository, oldest first,
-/// then invalidates every provider that reads from it — same as
+/// then invalidates every provider that reads from it, same as
 /// lib/features/settings/screens/settings_screen.dart's debug-only
 /// "Load demo data" button, just driven directly from the test instead
 /// of tapping through Settings. Returns the most recent period's start
@@ -159,25 +159,25 @@ Future<DateTime> _seedDemoData(ProviderContainer container) async {
   container.invalidate(cycleDayLogEntryProvider);
 
   // isPeriodStart is computed by the repository on save, not set on the
-  // generator's own CycleDayLog values (which default it to false) — ask
+  // generator's own CycleDayLog values (which default it to false). Ask
   // the repository, the authoritative source, rather than guessing which
   // of [logs] became a period start.
   final periodStarts = await repository.getPeriodStartDates();
   return periodStarts.last;
 }
 
-/// Builds a dashboard layout that actually shows off customization — a
-/// gauge card, a trend card, and Calendar widened to full width — instead
+/// Builds a dashboard layout that actually shows off customization (a
+/// gauge card, a trend card, and Calendar widened to full width) instead
 /// of the bare four-cell default every fresh install starts with (see
 /// docs/features/dashboard_grid_layout.feature, "A card's cell size can
 /// be adjusted from Customize dashboard"). Saved through the same
 /// repository real customization goes through, then invalidates the
 /// provider that reads it, same pattern as [_seedDemoData].
 ///
-/// Drops any gauge/trend cards already present first — this runs against
+/// Drops any gauge/trend cards already present first: this runs against
 /// the real on-device database (see the file comment above), which may
 /// carry state left over from a previous run or from manually using the
-/// app on this device/simulator — so the layout this produces is the same
+/// app on this device/simulator, so the layout this produces is the same
 /// regardless of what was there before.
 Future<void> _seedCustomDashboardLayout(ProviderContainer container) async {
   final repository = await container.read(

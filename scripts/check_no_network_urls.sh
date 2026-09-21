@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Fails if a network URL (http:// or https://) is found in lib/, unless the
 # containing file is listed in .url-scan-ignore (one path per line, '#' comments
-# allowed). This app is offline-only — see CLAUDE.md "Must Pass" rule 3.
+# allowed). This app is offline-only: see CLAUDE.md "Must Pass" rule 3.
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 

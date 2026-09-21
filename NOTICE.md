@@ -43,7 +43,7 @@ isn't compiled into the shipped app and isn't listed here; see
 ## SQLCipher
 
 `sqflite_sqlcipher` links against **SQLCipher** (the encrypted SQLite
-extension actually used to encrypt the on-device database — see
+extension actually used to encrypt the on-device database; see
 "Encrypted, biometric-gated storage" in `CLAUDE.md`), which ships its own
 license separate from the Dart plugin wrapping it:
 
@@ -79,7 +79,7 @@ license separate from the Dart plugin wrapping it:
 > from zetetic.net/sqlcipher/license/ to diff against at the time this file
 > was written. Before a public release, verify it word-for-word against
 > <https://www.zetetic.net/sqlcipher/license/> and correct anything that
-> doesn't match exactly — this is a legal document, verbatim accuracy
+> doesn't match exactly: this is a legal document, verbatim accuracy
 > matters more than usual here.
 
 ## Regenerating this file

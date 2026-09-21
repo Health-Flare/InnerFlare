@@ -1,6 +1,6 @@
 // Exercises docs/features/dashboard_visualizations.feature's cleanup-
 // nudge scenarios against the pure trigger logic. No Flutter, no
-// database — see lib/core/nudges/dashboard_card_cleanup.dart.
+// database. See lib/core/nudges/dashboard_card_cleanup.dart.
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:inner_flare/core/nudges/dashboard_card_cleanup.dart';

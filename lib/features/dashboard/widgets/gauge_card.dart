@@ -7,10 +7,10 @@ import 'package:inner_flare/core/theme/app_theme.dart';
 import 'package:inner_flare/models/dashboard_card.dart';
 
 /// A gauge card on the dashboard (docs/features/dashboard_visualizations
-/// .feature) — shows either "days since last period" or "estimated days
+/// .feature), shows either "days since last period" or "estimated days
 /// until next period", filled relative to the user's own average cycle
 /// length rather than a fixed scale. No charting package: this is a
-/// [CustomPainter] arc, matching CLAUDE.md's "Lightweight by Default" —
+/// [CustomPainter] arc, matching CLAUDE.md's "Lightweight by Default":
 /// this is a simple enough shape not to justify a new dependency.
 class GaugeCard extends ConsumerWidget {
   const GaugeCard({super.key, required this.instance, this.onTap});
@@ -41,7 +41,7 @@ class GaugeCard extends ConsumerWidget {
       ),
     );
 
-    // Tappable only once it has real data behind it — see "A gauge card
+    // Tappable only once it has real data behind it, see "A gauge card
     // opens Insights once it has real data behind it" in
     // docs/features/dashboard_visualizations.feature. A thin-history
     // approximation isn't enough to summarize.
@@ -122,7 +122,7 @@ class _GaugeContent extends StatelessWidget {
                     ? 'Log a period start to see this.'
                     : display.isThinHistory
                     ? isEstimate
-                          ? 'A rough range — not enough cycle history yet '
+                          ? 'A rough range: not enough cycle history yet '
                                 'for a precise estimate.'
                           : 'days, counted from the period start'
                     : isEstimate

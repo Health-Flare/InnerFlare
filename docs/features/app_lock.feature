@@ -36,7 +36,7 @@ Feature: Idle app lock
     Then they can choose an idle-lock timeout of Immediately, 1 minute,
       5 minutes, 15 minutes, 30 minutes, 1 hour, or Never
     And the choice persists per-device across app restarts, same as
-      dashboard card layout — never synced
+      dashboard card layout, never synced
 
   Scenario: A shorter configured timeout re-locks sooner
     Given the user has set the idle-lock timeout to 1 minute

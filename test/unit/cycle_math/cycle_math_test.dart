@@ -1,6 +1,6 @@
 // Exercises docs/features/insights.feature and
 // docs/features/dashboard_visualizations.feature against the pure
-// cycle-math module. No Flutter, no database — see
+// cycle-math module. No Flutter, no database. See
 // lib/core/cycle_math/cycle_math.dart.
 
 import 'package:flutter_test/flutter_test.dart';
@@ -159,8 +159,8 @@ void main() {
         datesWithPeriodFlow: {
           DateTime.utc(2026, 8, 24),
           DateTime.utc(2026, 8, 25),
-          // Gap on the 26th, then an unrelated later logged day — should
-          // not be swept in as part of this period.
+          // Gap on the 26th, then an unrelated later logged day. It
+          // should not be swept in as part of this period.
           DateTime.utc(2026, 9, 10),
         },
       );
@@ -168,7 +168,7 @@ void main() {
     });
 
     test('flow still logged for today keeps extending the end date', () {
-      // A period still being logged has no fixed "end" yet — see
+      // A period still being logged has no fixed "end" yet. See
       // docs/features/quick_stats.feature, "A period still being logged
       // counts as ongoing, not yet ended".
       final end = lastLoggedPeriodEndDate(
@@ -260,7 +260,7 @@ void main() {
     });
   });
 
-  group('daysBetween — date/timezone edge cases', () {
+  group('daysBetween: date/timezone edge cases', () {
     final cases = <(DateTime, DateTime, int)>[
       // Crosses US spring-forward DST transition (2026-03-08).
       (DateTime(2026, 3, 1), DateTime(2026, 3, 29), 28),

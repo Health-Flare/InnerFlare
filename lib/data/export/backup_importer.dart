@@ -12,7 +12,7 @@ enum ImportStrategy { replace, merge }
 
 /// Validates and applies a backup file's contents to the local database
 /// (docs/features/export.feature). Nothing is written until the file has
-/// been fully parsed, decrypted (if needed), and version-checked — a
+/// been fully parsed, decrypted (if needed), and version-checked: a
 /// rejected file leaves the database untouched, matching "no partial data
 /// is written."
 class BackupImporter {
@@ -94,9 +94,9 @@ class BackupImporter {
   }
 
   /// Combines the two logs for the same date, if both exist. Whatever is
-  /// already entered on this device wins field-by-field — merge never
+  /// already entered on this device wins field-by-field (merge never
   /// overwrites data the user already has with something from the
-  /// imported file — except:
+  /// imported file) except:
   /// - symptom tags are unioned, since a set can hold both without either
   ///   being lost
   /// - a note present on both sides, and different, is concatenated so
@@ -131,7 +131,7 @@ class BackupImporter {
 }
 
 /// Thrown when a backup's `schema_version` is newer than this app version
-/// understands — importing it could silently drop fields this version
+/// understands: importing it could silently drop fields this version
 /// doesn't know about, so it's rejected rather than attempted.
 class UnsupportedBackupSchemaVersion implements Exception {
   const UnsupportedBackupSchemaVersion(this.fileSchemaVersion);

@@ -20,7 +20,7 @@ int daysBetween(DateTime from, DateTime to) {
 /// Cycle lengths (in days) between each consecutive pair of period start
 /// dates. [periodStarts] need not be sorted or deduplicated.
 ///
-/// A single period start produces no complete cycle length yet — the app
+/// A single period start produces no complete cycle length yet. The app
 /// should say "not enough data" rather than fabricate one (see
 /// docs/features/insights.feature: "First-ever cycle...").
 List<int> cycleLengthsFromPeriodStarts(Iterable<DateTime> periodStarts) {
@@ -40,7 +40,7 @@ double? averageCycleLength(List<int> cycleLengths, {int windowSize = 6}) {
 }
 
 /// Population standard deviation of the last [windowSize] cycle lengths.
-/// Returns null with fewer than 2 cycle lengths — variability is undefined
+/// Returns null with fewer than 2 cycle lengths: variability is undefined
 /// for a single data point.
 double? cycleLengthVariability(List<int> cycleLengths, {int windowSize = 6}) {
   final window = _lastN(cycleLengths, windowSize);
@@ -137,7 +137,7 @@ PredictedPeriodRange? predictNextPeriodRange({
 /// Whether the last [windowSize] cycle lengths vary by more than [thresholdDays]
 /// from each other (max - min), per docs/features/insights.feature,
 /// "Irregular cycles still produce an average, clearly caveated". Fewer than
-/// 2 cycle lengths in the window can't be irregular — there's nothing to vary
+/// 2 cycle lengths in the window can't be irregular: there's nothing to vary
 /// against.
 bool cycleLengthsAreIrregular(
   List<int> cycleLengths, {
@@ -150,7 +150,7 @@ bool cycleLengthsAreIrregular(
   return spread > thresholdDays;
 }
 
-/// Which point in a period `daysSinceLastPeriod` measures from — see
+/// Which point in a period `daysSinceLastPeriod` measures from; see
 /// docs/features/quick_stats.feature.
 enum PeriodReferencePoint { start, end }
 
@@ -159,7 +159,7 @@ enum PeriodReferencePoint { start, end }
 /// first day without flow, so an unrelated later logged day (e.g. the
 /// start of a *different* period) is never swept in.
 ///
-/// A period still being logged today has no fixed "end" yet — flow logged
+/// A period still being logged today has no fixed "end" yet. Flow logged
 /// for today keeps this walking forward one more day, landing on today
 /// itself (see "A period still being logged counts as ongoing, not yet
 /// ended").
@@ -195,7 +195,7 @@ int daysSinceLastPeriod({
 }
 
 /// Days from [now] to the predicted next period start. Negative once the
-/// predicted date has passed rather than clamping to zero — the caller
+/// predicted date has passed rather than clamping to zero. The caller
 /// decides how to present an overdue period. Null with no average cycle
 /// length to draw on yet (docs/features/quick_stats.feature, "Estimated
 /// days to next period needs at least one complete cycle").
@@ -213,7 +213,7 @@ int? estimatedDaysToNextPeriod({
 }
 
 /// Whether cycle-length history is too thin to show a single confident
-/// number for — fewer than 2 complete cycle lengths, or the last
+/// number for: fewer than 2 complete cycle lengths, or the last
 /// [windowSize] lengths vary by more than [thresholdDays] (see
 /// docs/features/dashboard_visualizations.feature, "Gauge shows a range
 /// instead of false precision when data is thin"). The same rule the
@@ -233,7 +233,7 @@ bool hasThinCycleHistory(
 }
 
 /// How full a gauge card should render, as a fraction of the user's own
-/// average cycle length — never a fixed or generic scale (see
+/// average cycle length, never a fixed or generic scale (see
 /// docs/features/dashboard_visualizations.feature, "the gauge fills
 /// relative to the user's own average cycle length"). Clamped to [0, 1]:
 /// an overdue period (more elapsed days than the average cycle length)
@@ -250,7 +250,7 @@ double? gaugeFillFraction({
 
 /// One row of the cycle-by-cycle detail table (docs/features/
 /// dashboard_visualizations.feature, "The cycle detail table lists every
-/// complete cycle and the gap since the one before it") — intended to be
+/// complete cycle and the gap since the one before it"), intended to be
 /// reviewed quickly, e.g. ahead of a healthcare provider conversation.
 class CycleDetailRow {
   const CycleDetailRow({
@@ -267,11 +267,11 @@ class CycleDetailRow {
 
   /// Signed difference from the cycle immediately before this one
   /// ([lengthDays] minus that cycle's length). Null for the oldest
-  /// complete cycle on record — there's nothing earlier to compare it to.
+  /// complete cycle on record. There's nothing earlier to compare it to.
   final int? differenceFromPreviousDays;
 }
 
-/// Every complete cycle derived from [periodStarts], most-recent-first —
+/// Every complete cycle derived from [periodStarts], most-recent-first,
 /// deliberately the opposite order from the trend chart itself, which
 /// stays chronological (oldest-first) so it reads naturally left to
 /// right. Empty with fewer than 2 period starts, same as

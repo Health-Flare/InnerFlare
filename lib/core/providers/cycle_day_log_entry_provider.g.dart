@@ -8,7 +8,7 @@ part of 'cycle_day_log_entry_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// The saved entry (if any) for a single date — backs the log-entry
+/// The saved entry (if any) for a single date. Backs the log-entry
 /// screen for today or any prior day (docs/features/log.feature,
 /// "Back-logging a missed day is exactly as fast as logging today").
 ///
@@ -18,7 +18,7 @@ part of 'cycle_day_log_entry_provider.dart';
 @ProviderFor(CycleDayLogEntry)
 final cycleDayLogEntryProvider = CycleDayLogEntryFamily._();
 
-/// The saved entry (if any) for a single date — backs the log-entry
+/// The saved entry (if any) for a single date. Backs the log-entry
 /// screen for today or any prior day (docs/features/log.feature,
 /// "Back-logging a missed day is exactly as fast as logging today").
 ///
@@ -26,7 +26,7 @@ final cycleDayLogEntryProvider = CycleDayLogEntryFamily._();
 /// calendar day always resolves to the same provider instance.
 final class CycleDayLogEntryProvider
     extends $AsyncNotifierProvider<CycleDayLogEntry, CycleDayLog?> {
-  /// The saved entry (if any) for a single date — backs the log-entry
+  /// The saved entry (if any) for a single date. Backs the log-entry
   /// screen for today or any prior day (docs/features/log.feature,
   /// "Back-logging a missed day is exactly as fast as logging today").
   ///
@@ -70,7 +70,7 @@ final class CycleDayLogEntryProvider
 
 String _$cycleDayLogEntryHash() => r'540824f2004759c731c176c974d0c204e4d79b83';
 
-/// The saved entry (if any) for a single date — backs the log-entry
+/// The saved entry (if any) for a single date. Backs the log-entry
 /// screen for today or any prior day (docs/features/log.feature,
 /// "Back-logging a missed day is exactly as fast as logging today").
 ///
@@ -95,7 +95,7 @@ final class CycleDayLogEntryFamily extends $Family
         isAutoDispose: true,
       );
 
-  /// The saved entry (if any) for a single date — backs the log-entry
+  /// The saved entry (if any) for a single date. Backs the log-entry
   /// screen for today or any prior day (docs/features/log.feature,
   /// "Back-logging a missed day is exactly as fast as logging today").
   ///
@@ -109,7 +109,7 @@ final class CycleDayLogEntryFamily extends $Family
   String toString() => r'cycleDayLogEntryProvider';
 }
 
-/// The saved entry (if any) for a single date — backs the log-entry
+/// The saved entry (if any) for a single date. Backs the log-entry
 /// screen for today or any prior day (docs/features/log.feature,
 /// "Back-logging a missed day is exactly as fast as logging today").
 ///

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:inner_flare/core/theme/app_theme.dart';
 
-/// A single labeled statistic or estimate on the insights screen — an
+/// A single labeled statistic or estimate on the insights screen: an
 /// average, a variability figure, or a predicted date range. [caveat], when
 /// set, is shown in a muted tone below the value (e.g. "Estimate based on
 /// your last 6 cycles" or an irregularity warning) so every number is

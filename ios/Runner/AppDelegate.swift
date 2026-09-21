@@ -14,7 +14,7 @@ import UIKit
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
 
     // Lets the Dart side mark the encrypted database file as excluded from
-    // iCloud/iTunes backups — it's already encrypted at rest, but backups
+    // iCloud/iTunes backups; it's already encrypted at rest, but backups
     // are an extra copy of the file outside our control, so we keep it off
     // this device only unless the user explicitly exports it.
     let backupChannel = FlutterMethodChannel(

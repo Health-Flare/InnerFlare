@@ -21,7 +21,7 @@ class LoadingScreen extends StatefulWidget {
   final Random? random;
 
   /// Resolves once local data has finished loading. Defaults to an
-  /// already-completed future — there is no local data to await yet.
+  /// already-completed future: there is no local data to await yet.
   final Future<void>? readyFuture;
 
   /// Floor on how long the quote stays on screen, so it's readable even
@@ -33,7 +33,7 @@ class LoadingScreen extends StatefulWidget {
   /// dashboard, per docs/features/loading.feature.
   final WidgetBuilder nextScreenBuilder;
 
-  /// Wrapped in [AppUnlockGate] — not any earlier — so the encrypted
+  /// Wrapped in [AppUnlockGate] (not any earlier) so the encrypted
   /// database's biometric/passcode prompt (docs/features/unlock.feature)
   /// only starts once this splash has had its own moment on screen,
   /// rather than firing before the app has shown any of its own branding.
@@ -71,7 +71,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            // Deep, desaturated teal — complementary to the logo's warm
+            // Deep, desaturated teal, complementary to the logo's warm
             // orange/cream so the mark reads clearly, while staying calm
             // and private rather than clinical.
             colors: [Color(0xFF17272C), Color(0xFF0B1416)],

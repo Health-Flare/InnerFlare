@@ -28,7 +28,7 @@ class _FixedResultGate implements BiometricGate {
 
 /// A gate whose authenticate() doesn't resolve until [complete] is called,
 /// so tests can fire lifecycle events while an authentication attempt is
-/// still in flight — mimicking the native biometric/passcode prompt being
+/// still in flight, mimicking the native biometric/passcode prompt being
 /// on screen.
 class _ControllableGate implements BiometricGate {
   final _completer = Completer<bool>();
@@ -45,7 +45,7 @@ class _FixedLockTimeoutNotifier extends LockTimeoutNotifier {
 }
 
 /// AppLockGate only eagerly warms lockTimeoutProvider once
-/// databaseUnlockedProvider is true (database_unlocked_provider.dart) —
+/// databaseUnlockedProvider is true (database_unlocked_provider.dart),
 /// which in the real app is only ever the case once the user has already
 /// unlocked once via AppUnlockGate. Tests that exercise idle re-lock
 /// (rather than the unlock gating itself) need to represent that
@@ -107,7 +107,7 @@ void main() {
       await tester.pump();
 
       expect(find.text('Inner Flare is locked'), findsOneWidget);
-      // The underlying content is still there — just covered — so
+      // The underlying content is still there, just covered, so
       // nothing downstream needs to know it might be locked.
       expect(find.text('dashboard content'), findsOneWidget);
     });
@@ -212,12 +212,12 @@ void main() {
         expect(find.text('Inner Flare is locked'), findsOneWidget);
 
         // Tapping Unlock starts an authentication attempt that won't
-        // resolve until we complete it below — standing in for the native
+        // resolve until we complete it below, standing in for the native
         // prompt being on screen.
         await tester.tap(find.text('Unlock'));
         await tester.pump();
 
-        // Presenting that prompt itself takes the app through `inactive` —
+        // Presenting that prompt itself takes the app through `inactive`,
         // exactly what Face ID's system sheet (or Android's separate
         // device-credential activity for a manual passcode) does, even
         // though the user never left the app.
@@ -233,7 +233,7 @@ void main() {
         // ...but the prompt's own dismissal resolves to `resumed` on the
         // app's lifecycle independently of (and here, after) that result.
         // Before the fix, this was mistaken for a real backgrounding and,
-        // with "Immediately" configured, re-locked the app right back —
+        // with "Immediately" configured, re-locked the app right back:
         // the unlock loop force-closing was the only escape from.
         WidgetsBinding.instance.handleAppLifecycleStateChanged(
           AppLifecycleState.resumed,

@@ -5,7 +5,7 @@ import 'package:inner_flare/features/dashboard/widgets/dashboard_chip.dart';
 import 'package:inner_flare/models/dashboard_card.dart';
 import 'package:inner_flare/models/quick_stat.dart';
 
-/// A quick stat card (docs/features/quick_stats.feature) — one of the
+/// A quick stat card (docs/features/quick_stats.feature), one of the
 /// grid's fixed default cells, alongside Calendar and Insights (docs/
 /// features/dashboard_grid_layout.feature).
 class QuickStatChip extends ConsumerWidget {

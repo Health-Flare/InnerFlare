@@ -13,7 +13,7 @@ part of 'app_lock_provider.dart';
 ///
 /// Starts unlocked: the very first unlock of a session happens through
 /// [AppDatabase]'s own biometric gate the first time data is read, not
-/// through this — this provider only covers re-locking after the app has
+/// through this; this provider only covers re-locking after the app has
 /// already been in use.
 
 @ProviderFor(AppLock)
@@ -24,7 +24,7 @@ final appLockProvider = AppLockProvider._();
 ///
 /// Starts unlocked: the very first unlock of a session happens through
 /// [AppDatabase]'s own biometric gate the first time data is read, not
-/// through this — this provider only covers re-locking after the app has
+/// through this; this provider only covers re-locking after the app has
 /// already been in use.
 final class AppLockProvider extends $NotifierProvider<AppLock, bool> {
   /// Whether the app-level lock screen is currently covering the app,
@@ -32,7 +32,7 @@ final class AppLockProvider extends $NotifierProvider<AppLock, bool> {
   ///
   /// Starts unlocked: the very first unlock of a session happens through
   /// [AppDatabase]'s own biometric gate the first time data is read, not
-  /// through this — this provider only covers re-locking after the app has
+  /// through this; this provider only covers re-locking after the app has
   /// already been in use.
   AppLockProvider._()
     : super(
@@ -68,7 +68,7 @@ String _$appLockHash() => r'd08f8dae5fd1c3f69b679f9bf413e41371f63070';
 ///
 /// Starts unlocked: the very first unlock of a session happens through
 /// [AppDatabase]'s own biometric gate the first time data is read, not
-/// through this — this provider only covers re-locking after the app has
+/// through this; this provider only covers re-locking after the app has
 /// already been in use.
 
 abstract class _$AppLock extends $Notifier<bool> {

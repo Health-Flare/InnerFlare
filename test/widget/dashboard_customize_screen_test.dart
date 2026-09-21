@@ -55,7 +55,7 @@ void main() {
     },
   );
 
-  testWidgets('hiding every card is allowed — none is unremovable', (
+  testWidgets('hiding every card is allowed: none is unremovable', (
     tester,
   ) async {
     await pumpTestApp(
@@ -237,7 +237,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        // Drag far down — more than enough steps to overshoot the row cap.
+        // Drag far down, more than enough steps to overshoot the row cap.
         await dragResizeHandle(tester, 'insights', const Offset(0, 500));
         var saved = await DashboardCardPreferencesRepository(openDb!).getAll();
         expect(

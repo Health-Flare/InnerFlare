@@ -12,7 +12,7 @@ class SymptomSelector extends StatelessWidget {
     required this.onChanged,
   });
 
-  /// The symptoms offered as chips, in display order — the caller decides
+  /// The symptoms offered as chips, in display order, the caller decides
   /// which ones that is (normally the enabled ones, see LogEntryScreen).
   final List<TrackedSymptom> options;
   final Set<String> selected;

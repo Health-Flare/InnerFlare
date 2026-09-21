@@ -16,10 +16,10 @@ import 'package:sqflite_common/sqlite_api.dart';
 
 /// App settings (docs/features/navigation.feature: "Settings is reachable
 /// without leaving the current task"). Currently the encrypted database's
-/// connection status (a diagnostic aid for real-device unlock issues —
+/// connection status (a diagnostic aid for real-device unlock issues,
 /// see lib/core/security/biometric_gate.dart), the idle-lock timeout
 /// (docs/features/app_lock.feature), and the symptom catalog
-/// (docs/features/symptom_settings.feature) — more settings land here as
+/// (docs/features/symptom_settings.feature), more settings land here as
 /// they're built.
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -29,7 +29,7 @@ class SettingsScreen extends ConsumerWidget {
     // Watched directly, independent of the auto-lock section below: if the
     // database is locked, lockTimeoutProvider (which reads a setting out of
     // that same database) will be in an error state too, and the database
-    // status — with its Unlock action — must still render regardless.
+    // status, with its Unlock action, must still render regardless.
     final dbAsync = ref.watch(appDatabaseProvider);
     final lockTimeoutAsync = ref.watch(lockTimeoutProvider);
 
@@ -171,7 +171,7 @@ class SettingsScreen extends ConsumerWidget {
             const Padding(
               padding: EdgeInsets.fromLTRB(20, 0, 20, 8),
               child: Text(
-                'Debug builds only, never shipped to users — fills the log '
+                'Debug builds only, never shipped to users: fills the log '
                 'with a few months of sample history for taking '
                 'screenshots.',
               ),
@@ -193,7 +193,7 @@ class SettingsScreen extends ConsumerWidget {
 /// Fills the log with [buildDemoCycleLogs] via the same repository real
 /// logging goes through, then invalidates every provider that reads from
 /// it so the dashboard/calendar/insights screens reflect it immediately.
-/// Debug-only — see the "Demo data" section above.
+/// Debug-only, see the "Demo data" section above.
 Future<void> _loadDemoData(BuildContext context, WidgetRef ref) async {
   final repository = await ref.read(cycleDayLogRepositoryProvider.future);
   final now = ref.read(nowProvider)();
@@ -222,7 +222,7 @@ class _DatabaseStatus extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return dbAsync.when(
-      // A static icon, not a spinner — see the comment on the loading
+      // A static icon, not a spinner, see the comment on the loading
       // branch of DatabaseStatusIndicator for why.
       loading: () => const Row(
         children: [

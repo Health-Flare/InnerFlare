@@ -5,7 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 /// Generates and retrieves the passphrase that encrypts the on-device
 /// SQLite file. The passphrase itself lives only in the platform's secure
-/// key store (iOS Keychain / Android Keystore-backed encrypted prefs) —
+/// key store (iOS Keychain / Android Keystore-backed encrypted prefs),
 /// never in the database file, never in plain app storage.
 class DbPassphraseStore {
   DbPassphraseStore({FlutterSecureStorage? storage})

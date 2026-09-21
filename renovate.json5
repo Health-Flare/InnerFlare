@@ -23,7 +23,7 @@
   packageRules: [
     // riverpod / flutter_riverpod / riverpod_annotation / riverpod_generator
     // must move together (they span both dependencies: and
-    // dev_dependencies:, and a partial bump doesn't build — see the
+    // dev_dependencies:, and a partial bump doesn't build: see the
     // riverpod_generator 2.x -> 4.x migration in git history). Group into
     // one PR.
     {
@@ -40,7 +40,7 @@
     },
 
     // GitHub Actions majors (actions/checkout, subosito/flutter-action,
-    // etc.) don't interact with each other — batch them into one PR instead
+    // etc.) don't interact with each other: batch them into one PR instead
     // of one-per-action.
     {
       groupName: 'github actions',

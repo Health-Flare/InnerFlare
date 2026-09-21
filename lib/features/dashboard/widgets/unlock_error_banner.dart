@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:inner_flare/core/theme/app_theme.dart';
 
-/// Shown when opening the encrypted database failed — most often because
+/// Shown when opening the encrypted database failed, most often because
 /// the biometric/passcode prompt was cancelled. Never silently retries:
 /// the user decides when to try unlocking again.
 class UnlockErrorBanner extends StatelessWidget {
@@ -10,7 +10,7 @@ class UnlockErrorBanner extends StatelessWidget {
   final VoidCallback onRetry;
 
   /// The underlying error, shown so a problem can be diagnosed without a
-  /// debugger attached — this is a local-only failure, never sent anywhere.
+  /// debugger attached. This is a local-only failure, never sent anywhere.
   final String? detail;
 
   @override

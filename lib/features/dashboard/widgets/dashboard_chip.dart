@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:inner_flare/core/theme/app_theme.dart';
 
 /// A single-grid-cell tile shared by quick stat, Calendar, and Insights
-/// cards (docs/features/dashboard_grid_layout.feature) — the same
+/// cards (docs/features/dashboard_grid_layout.feature), the same
 /// container and text treatment for all three, so none reads as more or
 /// less important than another. Exactly one of [icon] or [value] is
 /// expected: quick stats show a number ([value]); Calendar and Insights
@@ -27,7 +27,7 @@ class DashboardChip extends StatelessWidget {
   final String? value;
 
   /// False for a value that's really a message ("Not enough data yet")
-  /// rather than a number — rendered smaller so a longer line of text
+  /// rather than a number, rendered smaller so a longer line of text
   /// doesn't look absurd at the normal bold/headline size.
   final bool valueIsProminent;
   final String? subtitle;

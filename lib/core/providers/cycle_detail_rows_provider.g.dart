@@ -11,7 +11,7 @@ part of 'cycle_detail_rows_provider.dart';
 /// Every complete cycle, most-recent-first, backing the cycle detail
 /// table (docs/features/dashboard_visualizations.feature, "The cycle
 /// detail table lists every complete cycle..."). Shared by both trend
-/// cards that lead here — see [CycleDetailScreen] — since they present
+/// cards that lead here (see [CycleDetailScreen]), since they present
 /// the same underlying period-start data two different ways.
 
 @ProviderFor(cycleDetailRows)
@@ -20,7 +20,7 @@ final cycleDetailRowsProvider = CycleDetailRowsProvider._();
 /// Every complete cycle, most-recent-first, backing the cycle detail
 /// table (docs/features/dashboard_visualizations.feature, "The cycle
 /// detail table lists every complete cycle..."). Shared by both trend
-/// cards that lead here — see [CycleDetailScreen] — since they present
+/// cards that lead here (see [CycleDetailScreen]), since they present
 /// the same underlying period-start data two different ways.
 
 final class CycleDetailRowsProvider
@@ -36,7 +36,7 @@ final class CycleDetailRowsProvider
   /// Every complete cycle, most-recent-first, backing the cycle detail
   /// table (docs/features/dashboard_visualizations.feature, "The cycle
   /// detail table lists every complete cycle..."). Shared by both trend
-  /// cards that lead here — see [CycleDetailScreen] — since they present
+  /// cards that lead here (see [CycleDetailScreen]), since they present
   /// the same underlying period-start data two different ways.
   CycleDetailRowsProvider._()
     : super(

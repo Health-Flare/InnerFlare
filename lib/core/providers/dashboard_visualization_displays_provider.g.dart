@@ -10,7 +10,7 @@ part of 'dashboard_visualization_displays_provider.dart';
 // ignore_for_file: type=lint, type=warning
 /// Resolves [instance] (a gauge card) to its live display values, computed
 /// from the same period-start data as docs/features/insights.feature and
-/// docs/features/quick_stats.feature — no separate cached calculation to
+/// docs/features/quick_stats.feature: no separate cached calculation to
 /// drift out of sync.
 
 @ProviderFor(gaugeCardDisplay)
@@ -18,7 +18,7 @@ final gaugeCardDisplayProvider = GaugeCardDisplayFamily._();
 
 /// Resolves [instance] (a gauge card) to its live display values, computed
 /// from the same period-start data as docs/features/insights.feature and
-/// docs/features/quick_stats.feature — no separate cached calculation to
+/// docs/features/quick_stats.feature: no separate cached calculation to
 /// drift out of sync.
 
 final class GaugeCardDisplayProvider
@@ -31,7 +31,7 @@ final class GaugeCardDisplayProvider
     with $FutureModifier<GaugeCardDisplay>, $FutureProvider<GaugeCardDisplay> {
   /// Resolves [instance] (a gauge card) to its live display values, computed
   /// from the same period-start data as docs/features/insights.feature and
-  /// docs/features/quick_stats.feature — no separate cached calculation to
+  /// docs/features/quick_stats.feature: no separate cached calculation to
   /// drift out of sync.
   GaugeCardDisplayProvider._({
     required GaugeCardDisplayFamily super.from,
@@ -81,7 +81,7 @@ String _$gaugeCardDisplayHash() => r'18e9829904c6f5bdf2f4e22da5ef7af9ee11de51';
 
 /// Resolves [instance] (a gauge card) to its live display values, computed
 /// from the same period-start data as docs/features/insights.feature and
-/// docs/features/quick_stats.feature — no separate cached calculation to
+/// docs/features/quick_stats.feature: no separate cached calculation to
 /// drift out of sync.
 
 final class GaugeCardDisplayFamily extends $Family
@@ -101,7 +101,7 @@ final class GaugeCardDisplayFamily extends $Family
 
   /// Resolves [instance] (a gauge card) to its live display values, computed
   /// from the same period-start data as docs/features/insights.feature and
-  /// docs/features/quick_stats.feature — no separate cached calculation to
+  /// docs/features/quick_stats.feature: no separate cached calculation to
   /// drift out of sync.
 
   GaugeCardDisplayProvider call(DashboardCardInstance instance) =>
@@ -112,7 +112,7 @@ final class GaugeCardDisplayFamily extends $Family
 }
 
 /// Resolves [instance] (a trend card) to its live display values. Only
-/// [TrendCardMetric.previousCycleLengths] has real data behind it today —
+/// [TrendCardMetric.previousCycleLengths] has real data behind it today;
 /// see the TODO on [TrendCardMetric] in lib/models/dashboard_card.dart for
 /// what the other catalog entries still need before they can compute
 /// anything.
@@ -121,7 +121,7 @@ final class GaugeCardDisplayFamily extends $Family
 final trendCardDisplayProvider = TrendCardDisplayFamily._();
 
 /// Resolves [instance] (a trend card) to its live display values. Only
-/// [TrendCardMetric.previousCycleLengths] has real data behind it today —
+/// [TrendCardMetric.previousCycleLengths] has real data behind it today;
 /// see the TODO on [TrendCardMetric] in lib/models/dashboard_card.dart for
 /// what the other catalog entries still need before they can compute
 /// anything.
@@ -135,7 +135,7 @@ final class TrendCardDisplayProvider
         >
     with $FutureModifier<TrendCardDisplay>, $FutureProvider<TrendCardDisplay> {
   /// Resolves [instance] (a trend card) to its live display values. Only
-  /// [TrendCardMetric.previousCycleLengths] has real data behind it today —
+  /// [TrendCardMetric.previousCycleLengths] has real data behind it today;
   /// see the TODO on [TrendCardMetric] in lib/models/dashboard_card.dart for
   /// what the other catalog entries still need before they can compute
   /// anything.
@@ -186,7 +186,7 @@ final class TrendCardDisplayProvider
 String _$trendCardDisplayHash() => r'1e4e1479193c75f4fd9a46720227f1449163fad5';
 
 /// Resolves [instance] (a trend card) to its live display values. Only
-/// [TrendCardMetric.previousCycleLengths] has real data behind it today —
+/// [TrendCardMetric.previousCycleLengths] has real data behind it today;
 /// see the TODO on [TrendCardMetric] in lib/models/dashboard_card.dart for
 /// what the other catalog entries still need before they can compute
 /// anything.
@@ -207,7 +207,7 @@ final class TrendCardDisplayFamily extends $Family
       );
 
   /// Resolves [instance] (a trend card) to its live display values. Only
-  /// [TrendCardMetric.previousCycleLengths] has real data behind it today —
+  /// [TrendCardMetric.previousCycleLengths] has real data behind it today;
   /// see the TODO on [TrendCardMetric] in lib/models/dashboard_card.dart for
   /// what the other catalog entries still need before they can compute
   /// anything.
@@ -221,7 +221,7 @@ final class TrendCardDisplayFamily extends $Family
 
 /// Resolves [instance] (a quick stat card) to its live display value,
 /// from the same period-start and cycle-length data as
-/// docs/features/insights.feature — no separate cached calculation to
+/// docs/features/insights.feature: no separate cached calculation to
 /// keep in sync (see "Quick stats recompute live from the same data as
 /// Insights").
 
@@ -230,7 +230,7 @@ final quickStatCardDisplayProvider = QuickStatCardDisplayFamily._();
 
 /// Resolves [instance] (a quick stat card) to its live display value,
 /// from the same period-start and cycle-length data as
-/// docs/features/insights.feature — no separate cached calculation to
+/// docs/features/insights.feature: no separate cached calculation to
 /// keep in sync (see "Quick stats recompute live from the same data as
 /// Insights").
 
@@ -246,7 +246,7 @@ final class QuickStatCardDisplayProvider
         $FutureProvider<QuickStatCardDisplay> {
   /// Resolves [instance] (a quick stat card) to its live display value,
   /// from the same period-start and cycle-length data as
-  /// docs/features/insights.feature — no separate cached calculation to
+  /// docs/features/insights.feature: no separate cached calculation to
   /// keep in sync (see "Quick stats recompute live from the same data as
   /// Insights").
   QuickStatCardDisplayProvider._({
@@ -298,7 +298,7 @@ String _$quickStatCardDisplayHash() =>
 
 /// Resolves [instance] (a quick stat card) to its live display value,
 /// from the same period-start and cycle-length data as
-/// docs/features/insights.feature — no separate cached calculation to
+/// docs/features/insights.feature: no separate cached calculation to
 /// keep in sync (see "Quick stats recompute live from the same data as
 /// Insights").
 
@@ -319,7 +319,7 @@ final class QuickStatCardDisplayFamily extends $Family
 
   /// Resolves [instance] (a quick stat card) to its live display value,
   /// from the same period-start and cycle-length data as
-  /// docs/features/insights.feature — no separate cached calculation to
+  /// docs/features/insights.feature: no separate cached calculation to
   /// keep in sync (see "Quick stats recompute live from the same data as
   /// Insights").
 
