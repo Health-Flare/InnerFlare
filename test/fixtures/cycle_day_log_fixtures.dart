@@ -1,7 +1,7 @@
 import 'package:inner_flare/models/cycle_day_log.dart';
 import 'package:inner_flare/models/period_flow.dart';
 
-/// A day with no period flow and no symptoms — the "confirm with zero
+/// A day with no period flow and no symptoms, the "confirm with zero
 /// input" case from docs/features/log.feature.
 CycleDayLog emptyLog({DateTime? date}) {
   return CycleDayLog(date: date ?? DateTime.utc(2026, 1, 1));

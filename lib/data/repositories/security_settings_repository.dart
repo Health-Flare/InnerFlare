@@ -2,7 +2,7 @@ import 'package:inner_flare/data/database/schema.dart';
 import 'package:inner_flare/models/lock_timeout.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 
-/// Hand-written SQL access to `security_settings` — currently just the
+/// Hand-written SQL access to `security_settings`: currently just the
 /// idle-lock timeout (docs/features/app_lock.feature). A single-row
 /// table: there's one setting per device, not per-record.
 class SecuritySettingsRepository {

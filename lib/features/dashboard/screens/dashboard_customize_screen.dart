@@ -10,7 +10,7 @@ import 'package:inner_flare/models/quick_stat.dart';
 /// Lets the user show, hide, reorder, and (for gauge/trend cards) add,
 /// remove, and reconfigure dashboard cards (docs/features/dashboard.
 /// feature, docs/features/dashboard_visualizations.feature). Calendar and
-/// Insights can always be hidden but never removed outright — every other
+/// Insights can always be hidden but never removed outright. Every other
 /// card here was explicitly added via [AddDashboardCardScreen] and can be
 /// removed the same way it was added. The "log today" entry point isn't
 /// listed because it isn't a card; it's always on the dashboard regardless
@@ -24,7 +24,7 @@ class DashboardCustomizeScreen extends ConsumerWidget {
     ).push(MaterialPageRoute(builder: (_) => const AddDashboardCardScreen()));
   }
 
-  /// Renders a card for the resize preview grid — a lightweight,
+  /// Renders a card for the resize preview grid: a lightweight,
   /// data-independent stand-in for the real card (which the dashboard
   /// itself renders from the user's actual logged history). This is a
   /// sizing preview, not a place to read real values, so it never touches
@@ -84,7 +84,7 @@ class DashboardCustomizeScreen extends ConsumerWidget {
               .toList();
           // Built from CustomScrollView + SliverReorderableList directly
           // (the documented way to combine a reorderable list with other
-          // content in one scroll view — see [SliverReorderableList])
+          // content in one scroll view, see [SliverReorderableList])
           // rather than ReorderableListView.builder's own `header:`
           // support: that support's header/footer padding-splitting logic
           // was observed corrupting the list's item count across separate
@@ -108,7 +108,7 @@ class DashboardCustomizeScreen extends ConsumerWidget {
                       child: Text(
                         visibleCards.isEmpty
                             ? 'Show a card to resize it here.'
-                            : "Drag a card's corner to resize it — the "
+                            : "Drag a card's corner to resize it: the "
                                   'dashboard reflows to match.',
                       ),
                     ),

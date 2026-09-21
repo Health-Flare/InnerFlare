@@ -33,7 +33,7 @@ class TrackedSymptomsRepository {
     return symptom;
   }
 
-  /// Renames [id]'s label — the only field a built-in symptom's row can
+  /// Renames [id]'s label: the only field a built-in symptom's row can
   /// change; its `id` and `is_custom` are fixed forever.
   Future<void> rename(String id, String label) async {
     await _db.update(
@@ -59,7 +59,7 @@ class TrackedSymptomsRepository {
   /// catalog and reinserts [symptoms] exactly, then backfills any
   /// [builtInSymptoms] id missing from it. That backfill matters because a
   /// backup from an older app version only ever contains the built-ins
-  /// that existed when it was exported — without it, replacing onto a
+  /// that existed when it was exported. Without it, replacing onto a
   /// newer app version could make a since-added built-in symptom
   /// disappear entirely rather than just start out enabled-by-default.
   Future<void> replaceAll(List<TrackedSymptom> symptoms) async {
@@ -87,8 +87,8 @@ class TrackedSymptomsRepository {
 
   /// Import's "merge" strategy (docs/features/export.feature): adds each
   /// of [symptoms] whose id isn't already in the catalog (e.g. a custom
-  /// symptom created on the exporting device), leaving every existing row
-  /// — built-in or custom — exactly as this device already has it.
+  /// symptom created on the exporting device), leaving every existing row,
+  /// built-in or custom, exactly as this device already has it.
   Future<void> upsertIfAbsent(List<TrackedSymptom> symptoms) async {
     final existingIds = (await getAll()).map((s) => s.id).toSet();
     await _db.transaction((txn) async {

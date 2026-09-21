@@ -3,7 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'has_any_logs_provider.g.dart';
 
-/// Whether the user has ever logged a day — distinguishes "no data yet"
+/// Whether the user has ever logged a day. Distinguishes "no data yet"
 /// from "nothing in this particular month" for the calendar's empty state
 /// (docs/features/calendar.feature, "Empty calendar before any logging").
 @riverpod

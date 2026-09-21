@@ -20,7 +20,7 @@ void main() {
           nowProvider.overrideWithValue(() => DateTime(2026, 1, 1, 9)),
           // appDatabaseProvider gates the unlock screen (docs/features/unlock.feature);
           // cycleDayLogRepositoryProvider is what the dashboard's widgets
-          // actually read from — both need a database, so both point at
+          // actually read from. Both need a database, so both point at
           // one real in-memory one rather than touching platform channels
           // (biometrics, secure storage) this test env doesn't have.
           appDatabaseProvider.overrideWith(
@@ -38,7 +38,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 1400)); // min display time
     await tester.pump(const Duration(milliseconds: 500)); // page transition
 
-    // The dedicated unlock screen (docs/features/unlock.feature) — nothing
+    // The dedicated unlock screen (docs/features/unlock.feature): nothing
     // about the database is touched until this tap.
     expect(find.text('Inner Flare is locked'), findsOneWidget);
     await tester.tap(find.text('Unlock'));

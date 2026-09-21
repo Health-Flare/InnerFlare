@@ -7,7 +7,7 @@ part 'cycle_detail_rows_provider.g.dart';
 /// Every complete cycle, most-recent-first, backing the cycle detail
 /// table (docs/features/dashboard_visualizations.feature, "The cycle
 /// detail table lists every complete cycle..."). Shared by both trend
-/// cards that lead here — see [CycleDetailScreen] — since they present
+/// cards that lead here (see [CycleDetailScreen]), since they present
 /// the same underlying period-start data two different ways.
 @riverpod
 Future<List<cycle_math.CycleDetailRow>> cycleDetailRows(Ref ref) async {

@@ -115,7 +115,7 @@ void main() {
     final db = await openInMemoryTestDatabase(onCreate: onCreate);
     openDb = db;
     final repository = CycleDayLogRepository(db);
-    // Cycle lengths: 21, 35, 27 — a > 7 day spread within the window.
+    // Cycle lengths: 21, 35, 27 (a > 7 day spread within the window).
     for (final start in [
       DateTime.utc(2026, 1, 1),
       DateTime.utc(2026, 1, 22),

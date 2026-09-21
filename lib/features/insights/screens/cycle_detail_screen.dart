@@ -24,12 +24,12 @@ String _formatDate(DateTime date) {
   return '${_monthAbbreviations[date.month - 1]} ${date.day}, ${date.year}';
 }
 
-/// A cycle-by-cycle table — length and the gap versus the cycle before it
-/// — reachable from both the "previous cycle lengths" and "cycle length
+/// A cycle-by-cycle table (length and the gap versus the cycle before it)
+/// reachable from both the "previous cycle lengths" and "cycle length
 /// variability" trend cards (docs/features/dashboard_visualizations
 /// .feature, "The cycle detail table lists every complete cycle...").
 /// Meant to be quick to review, e.g. ahead of or during a conversation
-/// with a healthcare provider — see "The cycle detail table makes no
+/// with a healthcare provider, see "The cycle detail table makes no
 /// diagnostic claim": this screen states only what was logged, nothing
 /// interpreted or diagnosed.
 class CycleDetailScreen extends ConsumerWidget {
@@ -62,7 +62,7 @@ class _CycleDetailList extends StatelessWidget {
         child: Padding(
           padding: EdgeInsets.all(24),
           child: Text(
-            'Not enough cycles logged yet — this fills in once you have '
+            'Not enough cycles logged yet: this fills in once you have '
             'at least one complete cycle.',
             textAlign: TextAlign.center,
           ),
@@ -78,7 +78,7 @@ class _CycleDetailList extends StatelessWidget {
           return const Padding(
             padding: EdgeInsets.only(bottom: 16),
             child: Text(
-              'A record of what you\'ve logged — not a diagnosis or '
+              'A record of what you\'ve logged, not a diagnosis or '
               'medical assessment. Most recent cycle first.',
             ),
           );

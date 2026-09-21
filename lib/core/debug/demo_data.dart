@@ -4,20 +4,20 @@ import 'package:inner_flare/models/period_flow.dart';
 
 /// A deterministic set of [CycleDayLog]s used only to populate the app
 /// with realistic-looking history for taking app-store screenshots (see
-/// lib/features/settings/screens/settings_screen.dart, "Demo data" —
+/// lib/features/settings/screens/settings_screen.dart, "Demo data",
 /// debug builds only, never shipped). Pure and driven entirely by [now],
 /// same rule as lib/core/cycle_math/cycle_math.dart, so the generated
 /// history always ends near "today" no matter when this runs, and never
 /// logs a date in the future.
 ///
 /// The persona behind this dataset, for anyone reading a store
-/// screenshot or this file later, is "Jane Doe" — a placeholder name
+/// screenshot or this file later, is "Jane Doe", a placeholder name
 /// used only in our own screenshot tooling and its documentation.
 /// Inner Flare itself has no name/profile field anywhere (no accounts,
-/// per CLAUDE.md's "Privacy-Centric" — see docs/features/onboarding.
+/// per CLAUDE.md's "Privacy-Centric", see docs/features/onboarding.
 /// feature), so nothing here writes that name into the app or its data.
 ///
-/// Six period starts (five complete cycles, 27-30 days each — irregular
+/// Six period starts (five complete cycles, 27-30 days each, irregular
 /// enough to be believable, not so irregular it trips the "irregular
 /// cycles" caveat) ending 6 days ago, so "today" and yesterday are still
 /// unlogged on a fresh install of the demo data. Each complete cycle gets

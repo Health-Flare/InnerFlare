@@ -13,7 +13,7 @@ sharper question: **good for whom, doing what, under what constraints?**
 ## What these are, and what they aren't
 
 They are **fictional composites**, written to represent constraints that are
-well-documented in this product category — not real research participants, and
+well-documented in this product category, not real research participants, and
 not a substitute for talking to actual users. A finding sourced from a persona
 is a hypothesis with a name attached. It is worth acting on when the persona's
 reasoning holds up against the code, and worth discarding when it doesn't.
@@ -29,7 +29,7 @@ claims, Jean stresses who the product excludes.
 
 ## How to run a panel review
 
-1. Establish the app's current state first — what is actually implemented,
+1. Establish the app's current state first: what is actually implemented,
    not what the feature files specify. The gap between the two is usually
    where the best findings live.
 2. Brief each persona separately, with an explicit scope so they don't
@@ -46,7 +46,7 @@ claims, Jean stresses who the product excludes.
 ## Shared ground rules for all three
 
 - Each one asks "what does this screen show someone with **no** data,
-  **thin** data, or **messy** data?" — never just the happy path.
+  **thin** data, or **messy** data?", never just the happy path.
 - Each one reads the interface literally. If a label says something the app
   can't back up, that's a defect, not a wording preference.
 - Each one treats the privacy claim as a claim to be **verified**, not a
@@ -59,7 +59,7 @@ claims, Jean stresses who the product excludes.
 ## Adding a persona
 
 Keep the panel small. A fourth persona is worth adding only when there is an
-axis of the product that none of the three can reach — a partner or
+axis of the product that none of the three can reach: a partner or
 co-viewer, a trans or non-binary user for whom the app's framing is a daily
 friction, or a teenager tracking a first cycle would each qualify. A fourth
 persona who merely differs in age or occupation would not.

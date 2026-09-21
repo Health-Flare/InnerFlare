@@ -75,7 +75,7 @@ void main() {
     });
   });
 
-  group('import — replace', () {
+  group('import: replace', () {
     test(
       'wipes existing logs and symptoms, replacing them with the backup',
       () async {
@@ -134,7 +134,7 @@ void main() {
     );
   });
 
-  group('import — merge', () {
+  group('import: merge', () {
     test(
       'keeps existing data for a date and fills in an imported-only date',
       () async {
@@ -150,14 +150,14 @@ void main() {
           schemaVersion: schemaVersion,
           exportedAt: DateTime.utc(2026, 9, 15),
           cycleDayLogs: [
-            // Conflicting flow for the same date as the local entry above —
-            // local should win.
+            // Conflicting flow for the same date as the local entry above.
+            // Local should win.
             CycleDayLog(
               date: DateTime.utc(2026, 9, 1),
               periodFlow: PeriodFlow.heavy,
               note: 'imported note',
             ),
-            // A date only the backup has — should be added.
+            // A date only the backup has. It should be added.
             CycleDayLog(
               date: DateTime.utc(2026, 9, 2),
               periodFlow: PeriodFlow.medium,
@@ -248,7 +248,7 @@ void main() {
     );
   });
 
-  group('import — validation', () {
+  group('import: validation', () {
     test(
       'rejects a file that is not a valid backup and writes nothing',
       () async {

@@ -8,7 +8,7 @@ part 'biometric_gate_provider.g.dart';
 ///
 /// Deliberately separate from the gate [AppDatabase] uses internally to
 /// open the encrypted database: that connection, once opened, stays open
-/// for the process's lifetime — there's no passphrase to re-derive on an
+/// for the process's lifetime: there's no passphrase to re-derive on an
 /// idle-timeout relock. This provider only guards the app-level lock
 /// screen overlay, and exists as a provider (rather than being constructed
 /// inline) purely so tests can override it with [AlwaysAllowBiometricGate]

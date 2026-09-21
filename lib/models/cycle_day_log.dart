@@ -21,7 +21,7 @@ class CycleDayLog {
   final bool isPeriodStart;
 
   /// [TrackedSymptom.id] values (see lib/models/tracked_symptom.dart), not
-  /// the symptoms themselves — a day's log outlives any later rename or
+  /// the symptoms themselves: a day's log outlives any later rename or
   /// disabling of the symptom it references.
   final Set<String> symptoms;
   final String? note;

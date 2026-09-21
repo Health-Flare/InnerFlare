@@ -5,7 +5,7 @@ import 'package:inner_flare/models/dashboard_card.dart';
 
 /// The "add card" catalog (docs/features/dashboard_visualizations.feature,
 /// "Additional data points can be added as their own cards"). Every entry
-/// here creates a brand-new [DashboardCardInstance] — adding the same kind
+/// here creates a brand-new [DashboardCardInstance]: adding the same kind
 /// twice (e.g. two trend cards for different metrics) is expected and
 /// supported, unlike the fixed calendar/insights cards in
 /// [DashboardCustomizeScreen].

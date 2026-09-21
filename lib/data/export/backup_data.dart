@@ -7,7 +7,7 @@ import 'package:inner_flare/models/tracked_symptom.dart';
 /// (docs/features/export.feature). Deliberately narrower than the whole
 /// database: `dashboard_card_preferences`, `quick_stat_preferences`, and
 /// `security_settings` are per-device settings that never round-trip
-/// through a backup — see design decision 3 in export.feature. Only
+/// through a backup: see design decision 3 in export.feature. Only
 /// `cycle_day_logs` and the `symptoms` catalog (needed to make sense of the
 /// symptom ids a log references) travel with the data.
 class BackupData {
@@ -19,14 +19,14 @@ class BackupData {
   });
 
   /// The exporting app's `schema_version` at the time of export
-  /// (lib/data/database/schema.dart) — not this envelope's own format
+  /// (lib/data/database/schema.dart), not this envelope's own format
   /// version, which lives one level up in [BackupFile].
   final int schemaVersion;
   final DateTime exportedAt;
   final List<CycleDayLog> cycleDayLogs;
 
   /// Empty for a backup exported before the symptom catalog existed
-  /// (schema_version < 5) — importing one of those falls back to whatever
+  /// (schema_version < 5); importing one of those falls back to whatever
   /// built-in symptoms are already seeded on the importing device, since
   /// their ids are fixed forever (see builtInSymptoms in
   /// lib/models/tracked_symptom.dart).
@@ -42,7 +42,7 @@ class BackupData {
   }
 
   /// Throws [FormatException] for anything that isn't at least a
-  /// recognizable backup shape — the caller (BackupImporter) is
+  /// recognizable backup shape: the caller (BackupImporter) is
   /// responsible for turning that into the user-facing "not a valid
   /// export" rejection (docs/features/export.feature).
   static BackupData fromJson(Map<String, Object?> json) {
@@ -137,7 +137,7 @@ class BackupData {
     return dateOnly.toIso8601String().split('T').first;
   }
 
-  /// Parses a `YYYY-MM-DD` key back into a UTC-midnight [DateTime] —
+  /// Parses a `YYYY-MM-DD` key back into a UTC-midnight [DateTime]:
   /// `DateTime.parse` alone would interpret a bare date as *local*
   /// midnight, which is a different instant on every device not in UTC
   /// and contradicts [CycleDayLog.date]'s own "date-only (UTC midnight)"

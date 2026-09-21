@@ -47,7 +47,7 @@ class DashboardScreen extends ConsumerWidget {
     ).push(MaterialPageRoute(builder: (_) => const SettingsScreen()));
   }
 
-  /// Opens the single-screen log UI for [date] — whether that day is
+  /// Opens the single-screen log UI for [date]: whether that day is
   /// unlogged (starting blank) or already has an entry (pre-filled for
   /// editing). The screen itself persists every change; this only shows
   /// a confirmation once the user is done (docs/features/log.feature).
@@ -80,7 +80,7 @@ class DashboardScreen extends ConsumerWidget {
     return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 
-  /// Opens the calendar (docs/features/calendar.feature) — now the way to
+  /// Opens the calendar (docs/features/calendar.feature), now the way to
   /// reach back-logging, since tapping any day there opens the same
   /// single-screen log UI as "Log today" (see
   /// docs/features/log.feature, "Back-logging a missed day is exactly as
@@ -91,7 +91,7 @@ class DashboardScreen extends ConsumerWidget {
     ).push(MaterialPageRoute(builder: (_) => const CalendarScreen()));
   }
 
-  /// Opens insights (docs/features/insights.feature) — always navigable;
+  /// Opens insights (docs/features/insights.feature), always navigable;
   /// the screen itself shows the honest "not enough data yet" state when
   /// there's no history to draw statistics from.
   void _openInsights(BuildContext context) {
@@ -100,7 +100,7 @@ class DashboardScreen extends ConsumerWidget {
     ).push(MaterialPageRoute(builder: (_) => const InsightsScreen()));
   }
 
-  /// Builds the widget for a customizable card [instance] — the one place
+  /// Builds the widget for a customizable card [instance]: the one place
   /// that maps a [DashboardCardInstance] to its rendering.
   Widget _buildCard(
     BuildContext context,
@@ -138,7 +138,7 @@ class DashboardScreen extends ConsumerWidget {
   }
 
   /// Opens the cycle detail table (docs/features/dashboard_visualizations
-  /// .feature, "The cycle detail table lists every complete cycle...") —
+  /// .feature, "The cycle detail table lists every complete cycle..."),
   /// the destination for both the "previous cycle lengths" and "cycle
   /// length variability" trend cards, once they have enough history to
   /// be tappable at all (see [TrendCard]'s own tap-gating).

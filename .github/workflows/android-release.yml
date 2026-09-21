@@ -1,7 +1,7 @@
 name: Android build & release
 
 on:
-  # Manual "get me an APK now" run — download the artifact and sideload it.
+  # Manual "get me an APK now" run: download the artifact and sideload it.
   workflow_dispatch:
   push:
     # Signed release build for the Play Store, triggered by a version tag.

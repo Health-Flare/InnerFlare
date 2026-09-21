@@ -1,13 +1,13 @@
 // Exercises docs/features/dashboard_visualizations.feature end to end
 // through the real widgets (add-card flow, gauge/trend rendering,
-// mode/chart-type switching, persistence) — the pure fill/thin-history
+// mode/chart-type switching, persistence). The pure fill/thin-history
 // math itself is covered exhaustively in
 // test/unit/cycle_math/cycle_math_test.dart, and the repository's
 // add/remove/config persistence in
 // test/unit/dashboard/dashboard_card_preferences_repository_test.dart.
 //
 // Finders here deliberately scope into GaugeCard/TrendCard (via
-// find.descendant) rather than matching text globally — plain
+// find.descendant) rather than matching text globally: plain
 // find.text('Days since last period') also matches the Quick Stats row's
 // default tile (same label, docs/features/quick_stats.feature), and
 // find.text('10') can coincidentally match a quick stat's own value.
@@ -40,7 +40,7 @@ void main() {
 
   // sqflite caches open databases by path, and every in-memory test
   // database shares the same ":memory:" path (see CLAUDE.md "sqflite on
-  // desktop test runners") — one shared db per test for every table
+  // desktop test runners"). One shared db per test for every table
   // (cycle_day_logs, dashboard_card_preferences, ...) sidesteps any
   // ambiguity about whether separate openInMemoryTestDatabase calls
   // within one test return the same or different connections.
@@ -200,7 +200,7 @@ void main() {
           now: () => DateTime(2026, 8, 30, 9),
           seed: (db) async {
             final cycleLogs = CycleDayLogRepository(db);
-            // Three period starts, 28 days apart each — 2 complete cycle
+            // Three period starts, 28 days apart each: 2 complete cycle
             // lengths, enough to not be "thin" per hasThinCycleHistory.
             await savePeriod(cycleLogs, DateTime(2026, 6, 25));
             await savePeriod(cycleLogs, DateTime(2026, 7, 23));
@@ -225,12 +225,12 @@ void main() {
         );
         await tester.pumpAndSettle();
         // The dashboard's ListView only mounts children within its
-        // viewport/cache extent — a plain find.byType wouldn't see a card
+        // viewport/cache extent. A plain find.byType wouldn't see a card
         // this far down without scrolling to it first, same as the
         // existing "Calendar"/"Insights" checks elsewhere in this suite.
         await tester.scrollUntilVisible(find.byType(GaugeCard), 300);
 
-        // Aug 20 -> Aug 30 is 10 days, with 2 regular cycles behind it —
+        // Aug 20 -> Aug 30 is 10 days, with 2 regular cycles behind it:
         // not thin, so no "~" prefix (see GaugeCard's "$value" branch).
         expect(
           find.descendant(
@@ -251,7 +251,7 @@ void main() {
           now: () => DateTime(2026, 8, 30, 9),
           seed: (db) async {
             final cycleLogs = CycleDayLogRepository(db);
-            // Only one period start — fewer than 2 complete cycles.
+            // Only one period start, fewer than 2 complete cycles.
             await savePeriod(cycleLogs, DateTime(2026, 8, 20));
 
             final prefs = DashboardCardPreferencesRepository(db);
@@ -343,7 +343,7 @@ void main() {
         now: () => DateTime(2026, 8, 30, 9),
         seed: (db) async {
           final cycleLogs = CycleDayLogRepository(db);
-          // Only one period start — no complete cycle length yet.
+          // Only one period start, no complete cycle length yet.
           await savePeriod(cycleLogs, DateTime(2026, 8, 20));
 
           final prefs = DashboardCardPreferencesRepository(db);
@@ -480,7 +480,7 @@ void main() {
         now: () => DateTime(2026, 8, 30, 9),
         seed: (db) async {
           final cycleLogs = CycleDayLogRepository(db);
-          // Only two period starts — one complete cycle length, not
+          // Only two period starts: one complete cycle length, not
           // enough for the trend card yet.
           await savePeriod(cycleLogs, DateTime(2026, 6, 25));
           await savePeriod(cycleLogs, DateTime(2026, 7, 23));
@@ -527,7 +527,7 @@ void main() {
       await tester.tap(find.byTooltip('Done'));
       await tester.pumpAndSettle();
 
-      // Back to the dashboard — no manual refresh or re-navigation.
+      // Back to the dashboard, no manual refresh or re-navigation.
       await tester.tap(find.byTooltip('Back'));
       await tester.pumpAndSettle();
       await tester.scrollUntilVisible(find.byType(TrendCard), 300);

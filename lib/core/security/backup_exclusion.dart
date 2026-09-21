@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 
 /// Marks a file as excluded from iCloud/iTunes backups on iOS. The database
 /// is already encrypted at rest, but a backup is an extra copy of that file
-/// outside the app's control, so it's kept device-local by default — the
+/// outside the app's control, so it's kept device-local by default: the
 /// user still gets a copy off-device only via the explicit export feature.
 ///
 /// No-op on platforms without a corresponding native implementation
@@ -17,7 +17,7 @@ Future<void> excludeFromBackup(String path) async {
     await channel.invokeMethod<bool>('excludeFromBackup', {'path': path});
   } on MissingPluginException {
     // No native handler registered (e.g. running on macOS, or in a test
-    // harness) — nothing to do.
+    // harness): nothing to do.
   }
 }
 

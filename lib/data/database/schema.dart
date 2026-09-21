@@ -27,7 +27,7 @@ CREATE TABLE $cycleDayLogsTable (
 
 /// Per-device dashboard card show/hide + order + mode config
 /// (docs/features/dashboard.feature, docs/features/dashboard_visualizations
-/// .feature). Never synced — see "Card preferences are stored per-device
+/// .feature). Never synced: see "Card preferences are stored per-device
 /// in settings, not synced".
 ///
 /// `card_id` is the per-*instance* identity, not the card kind: calendar
@@ -52,7 +52,7 @@ CREATE TABLE $dashboardCardPreferencesTable (
 ''';
 
 /// Idle-lock timeout setting (docs/features/app_lock.feature). A
-/// single-row table — the `id = 0` check makes it a true singleton —
+/// single-row table (the `id = 0` check makes it a true singleton)
 /// since there's one setting per device, not per-record.
 /// `lock_timeout_minutes` is NULL for the "Never" choice, otherwise the
 /// number of minutes backgrounded before the app re-locks.
@@ -67,7 +67,7 @@ CREATE TABLE $securitySettingsTable (
 ''';
 
 /// Legacy home of quick stat configuration, pre-schema_version 7. No
-/// longer written to — quick stats are `dashboard_card_preferences` rows
+/// longer written to: quick stats are `dashboard_card_preferences` rows
 /// like every other card now (docs/features/dashboard_grid_layout
 /// .feature), migrated onto that shape once, in [onUpgrade]'s
 /// `oldVersion < 7` branch. Table (and its create statement) kept only so
@@ -84,7 +84,7 @@ CREATE TABLE $quickStatPreferencesTable (
 ''';
 
 /// The user's configurable symptom catalog (docs/features/symptom_settings.
-/// feature) — built-in defaults plus anything they've added, each with its
+/// feature): built-in defaults plus anything they've added, each with its
 /// own enabled state. `cycle_day_logs.symptoms` stores a comma-separated
 /// list of `id`s from this table.
 const String symptomsTable = 'symptoms';
@@ -180,7 +180,7 @@ Future<void> onUpgrade(Database db, int oldVersion, int newVersion) async {
     };
 
     // Make room at the front of the order for the two migrated quick
-    // stat cards — matches where quick stats have always appeared, just
+    // stat cards: matches where quick stats have always appeared, just
     // above Calendar/Insights/whatever else is already there.
     await db.execute(
       'UPDATE $dashboardCardPreferencesTable SET sort_order = sort_order + 2',

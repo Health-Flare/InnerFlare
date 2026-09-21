@@ -101,7 +101,7 @@ Feature: Dashboard visualization cards
     And the card itself stays off the dashboard until the user acts on
       the suggestion or adds it manually through "Add a card"
 
-    # The exact data threshold for "enough to suggest" is still open —
+    # The exact data threshold for "enough to suggest" is still open:
     # candidates include reusing the same bar the gauge/trend cards
     # already use for their own thin-history warning, or a lower one
     # (e.g. a single logged period is enough to suggest a gauge, even
@@ -136,7 +136,7 @@ Feature: Dashboard visualization cards
     When the user views the card
     Then it shows the same "not enough cycles logged yet" message as
       before
-    And tapping it does nothing — there's nothing yet to summarize
+    And tapping it does nothing: there's nothing yet to summarize
 
   Scenario: The cycle detail table lists every complete cycle and the gap since the one before it
     Given the user has logged at least 2 complete cycles
@@ -146,8 +146,8 @@ Feature: Dashboard visualization cards
       length in days, and how many days it differs from the cycle
       immediately before it
     And rows are ordered most-recent-first, since this table exists to
-      be reviewed quickly — e.g. ahead of or during a conversation with
-      a healthcare provider — unlike the trend chart itself, which stays
+      be reviewed quickly (e.g. ahead of or during a conversation with
+      a healthcare provider), unlike the trend chart itself, which stays
       chronological (oldest-first) to read naturally left to right
 
   Scenario: Both trend cards open the exact same cycle detail table
@@ -171,7 +171,7 @@ Feature: Dashboard visualization cards
       existing screen for real cycle history and predictions
 
     # Unlike the trend cards' cycle detail table, no dedicated gauge
-    # detail screen has been designed yet — routing to the existing
+    # detail screen has been designed yet: routing to the existing
     # Insights screen is a reasonable default for now, not a settled
     # product decision. Revisit if a more specific destination turns
     # out to be worth building.

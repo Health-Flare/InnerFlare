@@ -8,14 +8,14 @@ part of 'today_log_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Whether — and how — today has been logged. A thin wrapper over
+/// Whether and how today has been logged. A thin wrapper over
 /// [cycleDayLogEntryProvider] for today's date; backs the dashboard's
 /// persistent "log today" entry point (docs/features/log.feature).
 
 @ProviderFor(todayLog)
 final todayLogProvider = TodayLogProvider._();
 
-/// Whether — and how — today has been logged. A thin wrapper over
+/// Whether and how today has been logged. A thin wrapper over
 /// [cycleDayLogEntryProvider] for today's date; backs the dashboard's
 /// persistent "log today" entry point (docs/features/log.feature).
 
@@ -27,7 +27,7 @@ final class TodayLogProvider
           FutureOr<CycleDayLog?>
         >
     with $FutureModifier<CycleDayLog?>, $FutureProvider<CycleDayLog?> {
-  /// Whether — and how — today has been logged. A thin wrapper over
+  /// Whether and how today has been logged. A thin wrapper over
   /// [cycleDayLogEntryProvider] for today's date; backs the dashboard's
   /// persistent "log today" entry point (docs/features/log.feature).
   TodayLogProvider._()

@@ -11,8 +11,8 @@ import 'package:inner_flare/data/export/backup_importer.dart';
 
 /// Lets the user restore a previously exported backup file (docs/features/
 /// export.feature). Every step below happens only in response to the
-/// user's own taps — picking a file, entering a passphrase if needed,
-/// choosing replace or merge — and nothing is written to the database
+/// user's own taps: picking a file, entering a passphrase if needed,
+/// choosing replace or merge, and nothing is written to the database
 /// until all of that has happened and the file has validated successfully.
 class ImportScreen extends ConsumerStatefulWidget {
   const ImportScreen({super.key});

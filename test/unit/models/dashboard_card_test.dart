@@ -1,5 +1,5 @@
 // Exercises docs/features/dashboard_grid_layout.feature's resize scenarios
-// against the model directly (no widgets, no database) — see
+// against the model directly (no widgets, no database). See
 // lib/models/dashboard_card.dart.
 
 import 'package:flutter_test/flutter_test.dart';

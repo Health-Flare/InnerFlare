@@ -1,6 +1,6 @@
 # Inner Flare
 
-A menstrual cycle tracking companion for iOS and Android. Fully offline — no
+A menstrual cycle tracking companion for iOS and Android. Fully offline: no
 network calls, no cloud sync, no accounts. All data stays on-device in a
 SQLite database encrypted at rest, unlocked with biometrics where the device
 supports it.
@@ -30,19 +30,19 @@ xcrun simctl list devices available
 xcrun simctl boot "iPhone 17 Pro"
 open -a Simulator
 
-# Run the app on it (by name or UDID — `flutter devices` must show it first)
+# Run the app on it (by name or UDID; `flutter devices` must show it first)
 flutter devices
 flutter run -d "iPhone 17 Pro"
 ```
 
 If `flutter devices` doesn't pick up a freshly-booted simulator right away,
-give it a few seconds and try again — `flutter doctor -v` also lists
+give it a few seconds and try again. `flutter doctor -v` also lists
 connected devices.
 
 ### Running on a real iOS device / a locally-signed iOS build
 
 The Simulator needs no signing setup, but a physical device (or a signed
-local release build) does. The Xcode project doesn't hardcode a Team ID —
+local release build) does. The Xcode project doesn't hardcode a Team ID:
 it reads `DEVELOPMENT_TEAM` from `ios/Flutter/Local.xcconfig`, which is
 gitignored since it's specific to whichever Apple Developer account you
 build with:
@@ -78,7 +78,7 @@ flutter run -d macos
 ```
 
 Useful for quickly checking UI/layout changes, but **not** representative of
-the real biometric/Keychain flow — see "Known issues" below before relying
+the real biometric/Keychain flow; see "Known issues" below before relying
 on it to test the encrypted storage or logging feature.
 
 ## Testing
@@ -91,7 +91,7 @@ flutter test test/widget/dashboard_screen_test.dart   # a single file
 
 Widget tests that touch the database use `sqflite_common_ffi`'s
 **no-isolate** factory (`databaseFactoryFfiNoIsolate`, set up in
-`test/helpers/test_database.dart`) — the isolate-backed one hangs forever
+`test/helpers/test_database.dart`): the isolate-backed one hangs forever
 inside `testWidgets`' fake-async pumping. See `CLAUDE.md` → Troubleshooting
 for details.
 
@@ -100,7 +100,7 @@ for details.
 ### macOS: encrypted storage doesn't work out of the box
 
 The database is encrypted with SQLCipher, and the encryption passphrase is
-stored in the platform's secure key store (`flutter_secure_storage` — iOS
+stored in the platform's secure key store (`flutter_secure_storage`: iOS
 Keychain / Android Keystore), gated behind biometrics via `local_auth`. This
 works cleanly on iOS and Android.
 
@@ -110,34 +110,34 @@ while testing this locally:
 1. `flutter_secure_storage` needs a `keychain-access-groups` entitlement to
    write to the Keychain on macOS at all. Without it, every read/write
    throws `PlatformException(..., -34018, A required entitlement isn't
-   present., ...)` — this is what surfaces in the app as "Couldn't save."
+   present., ...)`. This is what surfaces in the app as "Couldn't save."
 2. Adding that entitlement in turn requires macOS to sign the app with a
    **real local development certificate** (a `DEVELOPMENT_TEAM` + resolvable
-   signing identity) — the default "Sign to Run Locally" ad-hoc signing this
+   signing identity): the default "Sign to Run Locally" ad-hoc signing this
    project uses isn't enough, since Keychain Sharing is a provisioned
    capability. If your Apple Developer team is an organization account, this
    also requires the specific Mac to be registered as a device under that
    team, which needs admin permission on the team account.
 
 Because macOS isn't a shipping target for this app (iOS and Android are),
-the entitlement is deliberately **not** included — `flutter run -d macos`
+the entitlement is deliberately **not** included. `flutter run -d macos`
 builds and runs fine, but tapping "Log today" there will fail to unlock the
 database with the error above. **Test the encrypted-storage and logging
-flow on an iOS Simulator, Android emulator, or a real device instead** —
-all three work without any of this friction.
+flow on an iOS Simulator, Android emulator, or a real device instead**.
+All three work without any of this friction.
 
 If macOS ever becomes a real target: add `<key>keychain-access-groups</key>
 <array/>` to both `macos/Runner/DebugProfile.entitlements` and
 `Release.entitlements`, then configure a working `DEVELOPMENT_TEAM` +
 `CODE_SIGN_IDENTITY` for the Runner target in Xcode (Signing & Capabilities)
-using a team that can register this Mac as a device — a personal/free
+using a team that can register this Mac as a device. A personal/free
 Apple ID team sidesteps the admin-approval requirement an organization team
 has.
 
 ### iOS deployment target
 
 `ios/Podfile` and the Xcode project target iOS 14.0, not the Flutter default
-of 13.0 — `file_picker_darwin` requires it. If a future `flutter create`
+of 13.0: `file_picker_darwin` requires it. If a future `flutter create`
 regeneration or template update resets this, bump both back to 14.0 or the
 build will fail during `pod install` with a "requires a higher minimum
 deployment target" error.
@@ -154,7 +154,7 @@ deployment target" error.
   unsigned iOS Simulator build on demand; pushing a `v*.*.*` tag builds a
   signed IPA and uploads it to App Store Connect (needs Apple signing
   secrets configured first). See `docs/deployment/ios-release.md`.
-- **F-Droid**: not CI of ours — see `docs/deployment/fdroid/README.md`.
+- **F-Droid**: not CI of ours; see `docs/deployment/fdroid/README.md`.
 - See `docs/deployment/release-tasklist.md` for the full Play
   Store/App Store/F-Droid launch checklist.
 
@@ -167,7 +167,7 @@ See `CONTRIBUTING.md` for the development workflow and the ground rules
 ## License
 
 Inner Flare is free software: you can redistribute it and/or modify it
-under the terms of the GNU General Public License v3.0 or later — see
+under the terms of the GNU General Public License v3.0 or later. See
 `LICENSE`. Third-party dependencies are under their own (permissive)
-licenses — see `NOTICE.md`, or Settings → "Open source licenses" in the
+licenses. See `NOTICE.md`, or Settings → "Open source licenses" in the
 app itself for the complete, auto-generated list.

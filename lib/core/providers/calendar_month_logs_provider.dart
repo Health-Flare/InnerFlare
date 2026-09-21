@@ -4,8 +4,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'calendar_month_logs_provider.g.dart';
 
-/// Every logged day in the month containing [month], keyed by date-only —
-/// backs the calendar's month view (docs/features/calendar.feature).
+/// Every logged day in the month containing [month], keyed by date-only.
+/// Backs the calendar's month view (docs/features/calendar.feature).
 ///
 /// [month] must be the first of the month (no time-of-day component) so
 /// the same month always resolves to the same provider instance.

@@ -14,7 +14,7 @@ import 'package:sqflite_sqlcipher/sqflite.dart' as sqlcipher;
 ///   Documents, which is user-visible via the Files app / file sharing),
 ///   under a name that doesn't advertise what it is.
 /// - Its contents are encrypted with a passphrase that itself never
-///   touches disk — it lives only in the platform secure key store (see
+///   touches disk; it lives only in the platform secure key store (see
 ///   [DbPassphraseStore]).
 /// - Opening it is gated behind [BiometricGate] wherever the device
 ///   supports biometrics/a passcode.

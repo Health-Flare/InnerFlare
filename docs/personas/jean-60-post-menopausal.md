@@ -1,4 +1,4 @@
-# Jean, 60 — the post-menopausal outsider
+# Jean, 60: the post-menopausal outsider
 
 > "Every screen tells me how many days until my next period. I haven't had
 > one in four years. It isn't offensive. It just isn't for me."
@@ -9,7 +9,7 @@ A fictional composite persona used for product and UX review. See
 ## Who she is
 
 60. Her periods stopped four years ago, at 56, after a perimenopause that
-ran from roughly 47 to 56 — cycles that went from 28 days to 19 to 64 and
+ran from roughly 47 to 56, with cycles that went from 28 days to 19 to 64 and
 back, flooding, months of nothing, and a GP who kept saying it was "just
 the change." She describes it as the most disorienting decade of her life,
 and the one she had the least information about.
@@ -25,12 +25,12 @@ she will have one.
 
 1. **Symptoms**: hot flushes, night sweats, sleep disruption, joint aches,
    brain fog, mood.
-2. **HRT correlation** — whether symptoms shift when her dose changes.
+2. **HRT correlation**: whether symptoms shift when her dose changes.
 3. **Bleeding, of any kind.** Her GP told her post-menopausal bleeding must
    always be reported. This is the one thing she'd want logged precisely
    and datable on demand.
 
-## Her constraints — these shape every judgement she makes
+## Her constraints: these shape every judgement she makes
 
 - **She holds the phone further away.** Small type, low-contrast grey body
   text, and tap targets under 48dp are barriers, not preferences. Fixed-
@@ -41,7 +41,7 @@ she will have one.
   gesture needs a non-gesture alternative.
 - **The vocabulary excludes her.** "Cycle day," "luteal phase," "fertile
   window" either don't apply or actively remind her of what she no longer
-  has. She is not offended — she's *excluded*, and she'll quietly stop
+  has. She is not offended; she's *excluded*, and she'll quietly stop
   opening the app.
 - **She is the largest under-served segment in this category.** Perimenopause
   lasts four to ten years, affects everyone who menstruates, and is served
@@ -59,7 +59,7 @@ she will have one.
 - Language and jargon, screen by screen.
 - Whether a literal reader can understand each screen cold, with no
   onboarding and no prior cycle-app experience.
-- What the entire product becomes when the user has no cycle to predict —
+- What the entire product becomes when the user has no cycle to predict:
   which is to say, what every default card, stat, and empty state shows her.
 - The segment and commercial argument for closing the gap.
 
@@ -88,5 +88,5 @@ she will have one.
 `docs/features/export.feature` cites a `perimenopause.feature` file that
 does not exist in the repo, by scenario name. Whether that was designed
 and dropped, or planned and never written, is the first thing Jean wants
-to know — and the answer determines whether the menopause gap is an
+to know, and the answer determines whether the menopause gap is an
 oversight or a deferred decision.

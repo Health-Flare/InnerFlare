@@ -4,7 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'cycle_day_log_entry_provider.g.dart';
 
-/// The saved entry (if any) for a single date — backs the log-entry
+/// The saved entry (if any) for a single date. Backs the log-entry
 /// screen for today or any prior day (docs/features/log.feature,
 /// "Back-logging a missed day is exactly as fast as logging today").
 ///
@@ -18,18 +18,18 @@ class CycleDayLogEntry extends _$CycleDayLogEntry {
     return repository.getByDate(date);
   }
 
-  /// Persists [log], replacing any existing entry for [date] — the
+  /// Persists [log], replacing any existing entry for [date]: the
   /// repository upserts by date, so there is only ever one row per date
   /// (docs/features/log.feature, "Editing an existing day's log").
   ///
   /// Only today's instance of this family has a standing watcher
-  /// ([todayLogProvider], via the dashboard); every other date — i.e. any
-  /// day edited from the calendar — has none. Without [ref.keepAlive],
+  /// ([todayLogProvider], via the dashboard); every other date, i.e. any
+  /// day edited from the calendar, has none. Without [ref.keepAlive],
   /// this autoDispose provider is eligible for disposal the moment it's
   /// created via `ref.read(...).notifier`, and the `await` below gives it
   /// the chance: disposal doesn't stop `repository.save` from completing
   /// (and actually writing the row), but assigning to `state` afterward
-  /// throws because the notifier is already gone — surfacing as a false
+  /// throws because the notifier is already gone, surfacing as a false
   /// "Couldn't save" to the caller even though the save succeeded. Holding
   /// the link across the whole method keeps the notifier alive long enough
   /// for that assignment to be safe, then releases it so a date with no

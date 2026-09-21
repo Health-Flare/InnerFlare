@@ -6,7 +6,7 @@ part 'cycle_insights_provider.g.dart';
 
 /// Everything the insights screen needs to render transparent statistics
 /// and estimates, per docs/features/insights.feature. Deliberately not
-/// persisted anywhere — it's recomputed live from period-start dates on
+/// persisted anywhere: it's recomputed live from period-start dates on
 /// every read, so an edited past log is reflected immediately with no
 /// separate cached row to keep in sync (see "Insights recompute live").
 ///
@@ -14,7 +14,7 @@ part 'cycle_insights_provider.g.dart';
 /// `fertileWindow`'s luteal phase length assumption are meant to be
 /// user-configurable ("N matches the cycle history window set in
 /// settings" / "the luteal phase length assumption is set in settings"),
-/// but there is no settings feature/provider yet — this still uses the
+/// but there is no settings feature/provider yet, so this still uses the
 /// hardcoded defaults in cycle_math.dart. Wire this up to real settings
 /// once lib/features/settings exists.
 class CycleInsights {
@@ -43,7 +43,7 @@ class CycleInsights {
   final double? averageCycleLength;
 
   /// Population standard deviation of the last N cycle lengths. Null with
-  /// fewer than 2 complete cycle lengths — shown once there are >= 3 per
+  /// fewer than 2 complete cycle lengths; shown once there are >= 3 per
   /// the feature file, since 2 lengths make variability technically
   /// defined but not yet a meaningful signal.
   final double? variability;
@@ -57,7 +57,7 @@ class CycleInsights {
   final PredictedPeriodRange? periodRange;
   final FertileWindow? fertileWindow;
 
-  /// No period start ever logged — the "not enough data yet" empty state,
+  /// No period start ever logged: the "not enough data yet" empty state,
   /// with no fabricated estimate of any kind.
   bool get hasNoHistory => periodStartsLogged == 0;
 
@@ -65,7 +65,7 @@ class CycleInsights {
   /// cycle to measure a length from yet.
   bool get needsSecondCycle => periodStartsLogged == 1;
 
-  /// >= 3 complete cycle lengths — enough for variability to mean anything.
+  /// >= 3 complete cycle lengths: enough for variability to mean anything.
   bool get hasVariabilityData => cycleLengths.length >= 3;
 }
 

@@ -1,4 +1,4 @@
-# Erin, 29 — the data-literate sceptic
+# Erin, 29: the data-literate sceptic
 
 > "Don't show me an average without a spread. And stop assuming I'm
 > trying to get pregnant."
@@ -9,7 +9,7 @@ A fictional composite persona used for product and UX review. See
 ## Who she is
 
 29. No children. Not trying to conceive, and genuinely undecided about
-whether she ever will be — she resents apps that quietly assume otherwise.
+whether she ever will be. She resents apps that quietly assume otherwise.
 Works as a data analyst, which means she reads statistics for a living and
 has an unusually low tolerance for false precision, unlabelled uncertainty,
 and numbers whose provenance she can't inspect.
@@ -25,11 +25,11 @@ part-way through a diagnostic process with a gynaecologist.
 2. **Understanding her own irregularity**, on her own terms, without an app
    telling her what it means.
 
-## Her constraints — these shape every judgement she makes
+## Her constraints: these shape every judgement she makes
 
 - **Her cycles are irregular enough to break most cycle apps.** An app that
   averages 24 and 52 into "38 days" and renders a confident prediction is
-  not merely unhelpful — it is making a false claim about her body. The
+  not merely unhelpful; it is making a false claim about her body. The
   handling of irregularity is the single thing she judges the product on.
 - **She is the panel's statistical conscience.** If a number is on screen
   she wants the sample size, the spread, the method, and the boundary
@@ -37,14 +37,14 @@ part-way through a diagnostic process with a gynaecologist.
 - **She reacts strongly to framing.** A cycle app that centres the fertile
   window has told her what it thinks she's for. Gendered visual language
   and pregnancy-default copy have the same effect.
-- **She needs to get data out.** Not as a philosophical matter — she has an
+- **She needs to get data out.** Not as a philosophical matter: she has an
   appointment on a specific date and needs something readable in her hand.
 
 ## What she reviews
 
 - Statistical honesty and the correctness of the cycle math, including the
   arithmetic at the boundaries.
-- How irregularity is handled end to end — not just whether a caveat string
+- How irregularity is handled end to end: not just whether a caveat string
   appears, but whether the output actually changes.
 - The fertile-window framing, and whether its contraceptive implications
   are adequately caveated wherever a user could act on them.
@@ -52,7 +52,7 @@ part-way through a diagnostic process with a gynaecologist.
   design philosophy sabotage it?
 - Symptom vocabulary: what's offered, what's missing, and whether an
   on/off toggle can carry the information she needs.
-- Chart and visualization design — axis honesty, reference lines, and what
+- Chart and visualization design: axis honesty, reference lines, and what
   a chart draws when the data is thin.
 - Tone, copy, and embedded assumptions.
 - The export format, judged as an analyst would judge any data
@@ -72,7 +72,7 @@ part-way through a diagnostic process with a gynaecologist.
 - What's the sample size behind this number, and is it on screen?
 - What does this render when the last three cycles are 24, 52, and 31?
 - Does `isIrregular` change the *output*, or just append a sentence?
-- What happens on day 40 of a 28-day average — is "overdue" handled, or
+- What happens on day 40 of a 28-day average: is "overdue" handled, or
   does it show a negative?
 - Where is the luteal phase length coming from, and can I change it?
 - If I walk into an appointment with this app, what do I actually show the

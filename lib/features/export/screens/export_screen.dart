@@ -5,7 +5,7 @@ import 'package:inner_flare/data/export/backup_file_io.dart';
 import 'package:share_plus/share_plus.dart';
 
 /// Lets the user create a backup file of their data (docs/features/
-/// export.feature). Never runs on its own — the only way this screen's
+/// export.feature). Never runs on its own: the only way this screen's
 /// export logic executes is the user tapping the button below, matching
 /// "export never happens automatically."
 class ExportScreen extends ConsumerStatefulWidget {
@@ -39,7 +39,7 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
           const Text(
             'Creates a single file with everything you\'ve logged and your '
             'symptom list, for moving to your own other device. Nothing is '
-            'sent anywhere automatically — the next screen is the OS share '
+            'sent anywhere automatically: the next screen is the OS share '
             'sheet, and you choose where the file goes from there.',
           ),
           const SizedBox(height: 24),
@@ -74,7 +74,7 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Inner Flare never stores this passphrase — if you forget it, '
+              'Inner Flare never stores this passphrase: if you forget it, '
               'this file can\'t be recovered.',
               style: Theme.of(
                 context,

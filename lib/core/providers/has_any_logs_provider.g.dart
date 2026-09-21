@@ -8,21 +8,21 @@ part of 'has_any_logs_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Whether the user has ever logged a day — distinguishes "no data yet"
+/// Whether the user has ever logged a day. Distinguishes "no data yet"
 /// from "nothing in this particular month" for the calendar's empty state
 /// (docs/features/calendar.feature, "Empty calendar before any logging").
 
 @ProviderFor(hasAnyLogs)
 final hasAnyLogsProvider = HasAnyLogsProvider._();
 
-/// Whether the user has ever logged a day — distinguishes "no data yet"
+/// Whether the user has ever logged a day. Distinguishes "no data yet"
 /// from "nothing in this particular month" for the calendar's empty state
 /// (docs/features/calendar.feature, "Empty calendar before any logging").
 
 final class HasAnyLogsProvider
     extends $FunctionalProvider<AsyncValue<bool>, bool, FutureOr<bool>>
     with $FutureModifier<bool>, $FutureProvider<bool> {
-  /// Whether the user has ever logged a day — distinguishes "no data yet"
+  /// Whether the user has ever logged a day. Distinguishes "no data yet"
   /// from "nothing in this particular month" for the calendar's empty state
   /// (docs/features/calendar.feature, "Empty calendar before any logging").
   HasAnyLogsProvider._()

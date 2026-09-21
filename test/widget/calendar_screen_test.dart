@@ -70,8 +70,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.byTooltip('1/1 — period day (light)'), findsOneWidget);
-      expect(find.byTooltip('1/2 — period day (heavy)'), findsOneWidget);
+      expect(find.byTooltip('1/1: period day (light)'), findsOneWidget);
+      expect(find.byTooltip('1/2: period day (heavy)'), findsOneWidget);
     },
   );
 
@@ -90,8 +90,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.byTooltip('1/3 — symptoms logged'), findsOneWidget);
-    expect(find.byTooltip('1/4 — period day (medium)'), findsOneWidget);
+    expect(find.byTooltip('1/3: symptoms logged'), findsOneWidget);
+    expect(find.byTooltip('1/4: period day (medium)'), findsOneWidget);
   });
 
   testWidgets(
@@ -157,12 +157,12 @@ void main() {
       expect(find.text('February 2026'), findsOneWidget);
       // Predicted next start: Jan 29 + 28 days = Feb 26.
       expect(
-        find.byTooltip('2/26 — predicted period (estimate)'),
+        find.byTooltip('2/26: predicted period (estimate)'),
         findsOneWidget,
       );
       // Predicted fertile window ends 14 days before that (ovulation day).
       expect(
-        find.byTooltip('2/12 — predicted fertile window (estimate)'),
+        find.byTooltip('2/12: predicted fertile window (estimate)'),
         findsOneWidget,
       );
     },
@@ -197,7 +197,7 @@ void main() {
     tester,
   ) async {
     // Regression test: cycleDayLogEntryProvider is only kept alive for
-    // today's date, via todayLogProvider on the dashboard — no widget
+    // today's date, via todayLogProvider on the dashboard. No widget
     // watches it for any other date. Editing a previous day from the
     // calendar used to hit that provider's autoDispose window mid-save:
     // the write to the database succeeded, but assigning the resulting
@@ -252,7 +252,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Edit a previous day'), findsNothing);
-      expect(find.byTooltip('1/2 — period day (heavy)'), findsOneWidget);
+      expect(find.byTooltip('1/2: period day (heavy)'), findsOneWidget);
     },
   );
 

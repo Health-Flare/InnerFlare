@@ -22,7 +22,7 @@ void main() {
   setUpAll(useInMemoryTestDatabaseFactory);
 
   // sqflite caches open databases by path, and every in-memory test
-  // database shares the same ":memory:" path — without closing it, the
+  // database shares the same ":memory:" path. Without closing it, the
   // next test's `openDatabase` call would silently reuse the previous
   // test's connection (and its rows).
   Database? openDb;
@@ -546,7 +546,7 @@ void main() {
         await tester.scrollUntilVisible(find.text('since it ended'), 200);
 
         // Default reference point is the end of the last period (the
-        // 26th) — 8 days before "now" (Sept 3rd).
+        // 26th), 8 days before "now" (Sept 3rd).
         expect(find.text('8'), findsOneWidget);
         expect(find.text('since it ended'), findsOneWidget);
         // Average cycle length is 28 days; 10 days after the last start
@@ -639,7 +639,7 @@ void main() {
       final db = await openInMemoryTestDatabase(onCreate: onCreate);
       openDb = db;
       final repository = CycleDayLogRepository(db);
-      // 28-day average; last start was 31 days before "now" — 3 days
+      // 28-day average; last start was 31 days before "now", 3 days
       // overdue.
       await savePeriod(repository, DateTime(2026, 7, 27), flowDays: 5);
       await savePeriod(repository, DateTime(2026, 8, 24), flowDays: 3);

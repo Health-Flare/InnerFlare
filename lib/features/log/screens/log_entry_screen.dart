@@ -8,23 +8,23 @@ import 'package:inner_flare/features/log/widgets/symptom_selector.dart';
 import 'package:inner_flare/models/cycle_day_log.dart';
 import 'package:inner_flare/models/period_flow.dart';
 
-/// The single-screen log UI for [date] — today or any prior day
-/// (docs/features/log.feature). No field is required to save — flow,
+/// The single-screen log UI for [date], today or any prior day
+/// (docs/features/log.feature). No field is required to save: flow,
 /// symptoms, and the note all persist as they're changed, so tapping
 /// "Done" with nothing touched still confirms an empty entry.
 ///
 /// If [date] already has an entry, pass it as [initialLog] to pre-fill
-/// every field — the caller fetches it (rather than this screen reading
+/// every field: the caller fetches it (rather than this screen reading
 /// provider state itself) so there's no dependency on some other widget
 /// having already resolved that date's provider first. Further changes
-/// update that same row rather than creating a new one — the repository
+/// update that same row rather than creating a new one: the repository
 /// upserts by date (docs/features/log.feature, "Editing an existing
 /// day's log" and "Back-logging a missed day is exactly as fast as
 /// logging today").
 class LogEntryScreen extends ConsumerStatefulWidget {
   const LogEntryScreen({super.key, required this.date, this.initialLog});
 
-  /// Date-only (no time-of-day component) — the day being logged.
+  /// Date-only (no time-of-day component), the day being logged.
   final DateTime date;
 
   /// The existing entry for [date], if any, already fetched by the
@@ -128,7 +128,7 @@ class _LogEntryScreenState extends ConsumerState<LogEntryScreen> {
             ),
             const SizedBox(height: 4),
             Text(
-              'Nothing here is required — tap what applies and leave the '
+              'Nothing here is required: tap what applies and leave the '
               'rest.',
               style: Theme.of(context).textTheme.bodySmall,
             ),
@@ -197,7 +197,7 @@ class _LogEntryScreenState extends ConsumerState<LogEntryScreen> {
   }
 
   /// The chip list to offer: enabled tracked symptoms, plus any symptom
-  /// already selected on this day even if it's since been disabled — so
+  /// already selected on this day even if it's since been disabled, so
   /// disabling one never silently hides it from a day it's already
   /// logged on (docs/features/symptom_settings.feature, "Disabling a
   /// symptom never touches days already logged with it").

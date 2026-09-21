@@ -35,7 +35,7 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   # Variable-size grid cells for the dashboard (docs/features/
-  # dashboard_grid_layout.feature) — StaggeredGrid's spannable-cell mode,
+  # dashboard_grid_layout.feature): StaggeredGrid's spannable-cell mode,
   # not its organic masonry mode. Zero dependencies of its own; last
   # released a while ago, but it only composes stable Flutter layout
   # primitives, so that's low risk (see the PR that added this).

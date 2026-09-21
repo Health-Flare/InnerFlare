@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:inner_flare/core/security/backup_encryption.dart';
 import 'package:inner_flare/data/export/backup_data.dart';
 
-/// Encodes/decodes the on-disk envelope around a [BackupData] payload —
+/// Encodes/decodes the on-disk envelope around a [BackupData] payload:
 /// the plain JSON structure for "no encryption" export, and the
 /// salt/nonce/mac/ciphertext structure for "encrypt export" (docs/features/
 /// export.feature, "Optional passphrase encrypts the export file at
@@ -17,7 +17,7 @@ class BackupFileCodec {
     : _encryption = encryption ?? BackupEncryption();
 
   /// Bumped only if the envelope shape itself changes (not on every
-  /// database schema_version bump, which lives inside the payload — see
+  /// database schema_version bump, which lives inside the payload, see
   /// [BackupData.schemaVersion]).
   static const _envelopeVersion = 1;
 
@@ -53,7 +53,7 @@ class BackupFileCodec {
   }
 
   /// Whether the file at [contents] is passphrase-encrypted, without
-  /// decrypting it — lets the import flow decide whether to prompt for a
+  /// decrypting it, lets the import flow decide whether to prompt for a
   /// passphrase before attempting [decode].
   ///
   /// Throws [InvalidBackupFile] if [contents] isn't a recognizable Inner
@@ -141,7 +141,7 @@ class InvalidBackupFile implements Exception {
 }
 
 /// Thrown by [BackupFileCodec.decode] when the file is encrypted but no
-/// passphrase was supplied — distinct from [IncorrectBackupPassphrase],
+/// passphrase was supplied, distinct from [IncorrectBackupPassphrase],
 /// which means a passphrase was supplied and it was wrong.
 class BackupPassphraseRequired implements Exception {
   const BackupPassphraseRequired();

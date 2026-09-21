@@ -2,7 +2,7 @@
 /// the built-in defaults or one they've added themselves
 /// (docs/features/symptom_settings.feature). Disabling one removes it from
 /// the log screen's chip list without touching any day already logged
-/// with it — see `TrackedSymptomsRepository.setEnabled`.
+/// with it; see `TrackedSymptomsRepository.setEnabled`.
 class TrackedSymptom {
   const TrackedSymptom({
     required this.id,
@@ -13,7 +13,7 @@ class TrackedSymptom {
   });
 
   /// Stable key stored in `cycle_day_logs.symptoms`. Never reused or
-  /// reassigned, even if the symptom is later renamed or disabled — only
+  /// reassigned, even if the symptom is later renamed or disabled; only
   /// its `label` and `enabled` state can change.
   final String id;
   final String label;
@@ -49,7 +49,7 @@ class TrackedSymptom {
 /// `symptoms` table on create/upgrade (see lib/data/database/schema.dart).
 /// IDs match the names of the fixed enum this table replaced, so
 /// `cycle_day_logs.symptoms` entries written before symptom settings
-/// existed still resolve correctly — an id here is fixed forever, since
+/// existed still resolve correctly; an id here is fixed forever, since
 /// changing one would orphan every log already saved with it.
 const List<(String id, String label)> builtInSymptoms = [
   ('cramps', 'Cramps'),

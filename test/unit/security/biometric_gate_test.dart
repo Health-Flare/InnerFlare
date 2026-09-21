@@ -65,7 +65,7 @@ void main() {
     });
 
     test(
-      'cancelling the prompt fails closed, not open — regression for the '
+      'cancelling the prompt fails closed, not open: regression for the '
       'bypass where a cancelled Android prompt still granted access',
       () async {
         final gate = LocalAuthBiometricGate(
@@ -98,7 +98,7 @@ void main() {
       });
     }
 
-    test('no credentials configured on the device fails open — there is '
+    test('no credentials configured on the device fails open: there is '
         'nothing to gate with', () async {
       final gate = LocalAuthBiometricGate(
         auth: _FakeLocalAuthentication(

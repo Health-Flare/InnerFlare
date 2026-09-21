@@ -8,8 +8,8 @@ part of 'calendar_month_logs_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Every logged day in the month containing [month], keyed by date-only —
-/// backs the calendar's month view (docs/features/calendar.feature).
+/// Every logged day in the month containing [month], keyed by date-only.
+/// Backs the calendar's month view (docs/features/calendar.feature).
 ///
 /// [month] must be the first of the month (no time-of-day component) so
 /// the same month always resolves to the same provider instance.
@@ -17,8 +17,8 @@ part of 'calendar_month_logs_provider.dart';
 @ProviderFor(calendarMonthLogs)
 final calendarMonthLogsProvider = CalendarMonthLogsFamily._();
 
-/// Every logged day in the month containing [month], keyed by date-only —
-/// backs the calendar's month view (docs/features/calendar.feature).
+/// Every logged day in the month containing [month], keyed by date-only.
+/// Backs the calendar's month view (docs/features/calendar.feature).
 ///
 /// [month] must be the first of the month (no time-of-day component) so
 /// the same month always resolves to the same provider instance.
@@ -33,8 +33,8 @@ final class CalendarMonthLogsProvider
     with
         $FutureModifier<Map<DateTime, CycleDayLog>>,
         $FutureProvider<Map<DateTime, CycleDayLog>> {
-  /// Every logged day in the month containing [month], keyed by date-only —
-  /// backs the calendar's month view (docs/features/calendar.feature).
+  /// Every logged day in the month containing [month], keyed by date-only.
+  /// Backs the calendar's month view (docs/features/calendar.feature).
   ///
   /// [month] must be the first of the month (no time-of-day component) so
   /// the same month always resolves to the same provider instance.
@@ -84,8 +84,8 @@ final class CalendarMonthLogsProvider
 
 String _$calendarMonthLogsHash() => r'd6bb99b23ec7f4eb1f16ccbf3f6dd841f302c3aa';
 
-/// Every logged day in the month containing [month], keyed by date-only —
-/// backs the calendar's month view (docs/features/calendar.feature).
+/// Every logged day in the month containing [month], keyed by date-only.
+/// Backs the calendar's month view (docs/features/calendar.feature).
 ///
 /// [month] must be the first of the month (no time-of-day component) so
 /// the same month always resolves to the same provider instance.
@@ -105,8 +105,8 @@ final class CalendarMonthLogsFamily extends $Family
         isAutoDispose: true,
       );
 
-  /// Every logged day in the month containing [month], keyed by date-only —
-  /// backs the calendar's month view (docs/features/calendar.feature).
+  /// Every logged day in the month containing [month], keyed by date-only.
+  /// Backs the calendar's month view (docs/features/calendar.feature).
   ///
   /// [month] must be the first of the month (no time-of-day component) so
   /// the same month always resolves to the same provider instance.

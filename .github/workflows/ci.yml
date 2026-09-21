@@ -3,7 +3,7 @@ name: CI
 # No top-level `paths:` filter: `analyze`/`test` are gated per-job below
 # instead, so this workflow (and its `required` gate job) always runs and
 # can be used as a required branch-protection status check. A workflow-level
-# paths filter would make the whole run — required job included — never
+# paths filter would make the whole run (required job included) never
 # start for a PR that doesn't touch a matching path, which leaves a
 # required status check permanently "Expected" and blocks the merge.
 

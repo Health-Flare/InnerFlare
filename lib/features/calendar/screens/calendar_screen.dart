@@ -12,8 +12,8 @@ import 'package:inner_flare/features/calendar/widgets/calendar_month_grid.dart';
 import 'package:inner_flare/features/log/screens/log_entry_screen.dart';
 
 /// The calendar/history view (docs/features/calendar.feature): a month
-/// grid marking period days, symptom-only days, and — once there's at
-/// least one complete prior cycle — the predicted next period and fertile
+/// grid marking period days, symptom-only days, and, once there's at
+/// least one complete prior cycle, the predicted next period and fertile
 /// window. Tapping any day, past or future, opens the same single-screen
 /// log UI used from the dashboard.
 class CalendarScreen extends ConsumerStatefulWidget {
@@ -143,7 +143,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
             if (hasAnyLogs.value == false) ...[
               const SizedBox(height: 28),
               Text(
-                "Nothing logged yet — tap any day above to add your first "
+                "Nothing logged yet. Tap any day above to add your first "
                 'entry.',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(

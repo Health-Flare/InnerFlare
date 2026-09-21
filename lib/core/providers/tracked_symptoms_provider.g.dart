@@ -8,23 +8,23 @@ part of 'tracked_symptoms_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// The user's full symptom catalog — built-in defaults plus anything
-/// they've added — and each one's enabled state
+/// The user's full symptom catalog (built-in defaults plus anything
+/// they've added) and each one's enabled state
 /// (docs/features/symptom_settings.feature). Backs both the log screen's
 /// chip list and the symptom settings screen.
 
 @ProviderFor(TrackedSymptomsNotifier)
 final trackedSymptomsProvider = TrackedSymptomsNotifierProvider._();
 
-/// The user's full symptom catalog — built-in defaults plus anything
-/// they've added — and each one's enabled state
+/// The user's full symptom catalog (built-in defaults plus anything
+/// they've added) and each one's enabled state
 /// (docs/features/symptom_settings.feature). Backs both the log screen's
 /// chip list and the symptom settings screen.
 final class TrackedSymptomsNotifierProvider
     extends
         $AsyncNotifierProvider<TrackedSymptomsNotifier, List<TrackedSymptom>> {
-  /// The user's full symptom catalog — built-in defaults plus anything
-  /// they've added — and each one's enabled state
+  /// The user's full symptom catalog (built-in defaults plus anything
+  /// they've added) and each one's enabled state
   /// (docs/features/symptom_settings.feature). Backs both the log screen's
   /// chip list and the symptom settings screen.
   TrackedSymptomsNotifierProvider._()
@@ -49,8 +49,8 @@ final class TrackedSymptomsNotifierProvider
 String _$trackedSymptomsNotifierHash() =>
     r'912c6e527fd5b59e9f1fb909e45e2e16e6062ceb';
 
-/// The user's full symptom catalog — built-in defaults plus anything
-/// they've added — and each one's enabled state
+/// The user's full symptom catalog (built-in defaults plus anything
+/// they've added) and each one's enabled state
 /// (docs/features/symptom_settings.feature). Backs both the log screen's
 /// chip list and the symptom settings screen.
 

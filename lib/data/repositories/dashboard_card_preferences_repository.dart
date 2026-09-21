@@ -6,7 +6,7 @@ import 'package:sqflite_common/sqlite_api.dart';
 
 /// Hand-written SQL access to `dashboard_card_preferences`. Maps rows
 /// to/from [DashboardCardInstance]; providers call this, never raw SQL
-/// directly. Stays type-agnostic about card kinds — `config` is persisted
+/// directly. Stays type-agnostic about card kinds: `config` is persisted
 /// as an opaque JSON string, never parsed here; only
 /// [DashboardCardInstance]'s getters (`gaugeMode`, `trendMetric`, ...) know
 /// what the keys mean.
@@ -18,7 +18,7 @@ class DashboardCardPreferencesRepository {
   /// The full set of card instances in display order, merging saved rows
   /// with any *default* [DashboardCardKind] not yet in the database (e.g.
   /// a default card added in a later app version) appended at the end,
-  /// visible by default — matching "every default card can be hidden, and
+  /// visible by default: matching "every default card can be hidden, and
   /// no card is marked as mandatory or unremovable". Gauge/trend cards are
   /// never auto-appended this way: they only exist once the user adds one
   /// via the add-card flow (see [addCard]).
@@ -33,7 +33,7 @@ class DashboardCardPreferencesRepository {
     var nextOrder = result.isEmpty ? 0 : result.last.order + 1;
     for (final kind in DashboardCardKind.values.where((k) => k.isDefault)) {
       if (kind == DashboardCardKind.quickStat) {
-        // Two fixed cards, not one — see defaultQuickStatCardInstances.
+        // Two fixed cards, not one: see defaultQuickStatCardInstances.
         for (final quickStat in defaultQuickStatCardInstances(
           firstOrder: nextOrder,
         )) {

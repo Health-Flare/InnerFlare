@@ -3,7 +3,7 @@ import 'package:inner_flare/models/quick_stat.dart';
 /// A customizable card on the dashboard (docs/features/dashboard.feature,
 /// docs/features/dashboard_grid_layout.feature,
 /// docs/features/dashboard_visualizations.feature). The "log today" entry
-/// point is not in this set — it is a persistent part of the dashboard
+/// point is not in this set: it is a persistent part of the dashboard
 /// shell, never hidden (see "Hiding every card still leaves the log entry
 /// point reachable").
 enum DashboardCardKind {
@@ -37,7 +37,7 @@ enum DashboardCardKind {
   /// dashboard_grid_layout.feature, "A newly added gauge or trend card
   /// defaults to a wider cell"). Quick stat/Calendar/Insights are all a
   /// single cell; gauge/trend need more room for a gauge or chart to read
-  /// clearly. This is every card's starting size, not a ceiling — see
+  /// clearly. This is every card's starting size, not a ceiling; see
   /// [DashboardCardInstance.columnSpan]/[rowSpan] for the user-adjustable
   /// override (docs/features/dashboard_grid_layout.feature, "A card's cell
   /// size can be adjusted from Customize dashboard").
@@ -51,7 +51,7 @@ enum DashboardCardKind {
   /// A rough "one row" pixel height for this kind, used only to size a
   /// card that's been resized taller than its default row span (see
   /// [DashboardCardGrid] in lib/features/dashboard/widgets/
-  /// dashboard_card_grid.dart) — a card at its default row span of 1 stays
+  /// dashboard_card_grid.dart): a card at its default row span of 1 stays
   /// on `StaggeredGridTile.fit` (auto-height from content) exactly as
   /// before, so this only needs to be a reasonable approximation, not
   /// pixel-perfect.
@@ -64,13 +64,13 @@ enum DashboardCardKind {
   };
 }
 
-/// Bounds for [DashboardCardInstance.columnSpan] — the grid is a fixed
+/// Bounds for [DashboardCardInstance.columnSpan]. The grid is a fixed
 /// `crossAxisCount: 2`, so a column span can only be half or full width.
 const dashboardGridMinColumnSpan = 1;
 const dashboardGridMaxColumnSpan = 2;
 
 /// Bounds for [DashboardCardInstance.rowSpan] (docs/features/
-/// dashboard_grid_layout.feature, "Cell size has sensible limits") — capped
+/// dashboard_grid_layout.feature, "Cell size has sensible limits"), capped
 /// so a resized card can't balloon to dominate the whole dashboard.
 const dashboardGridMinRowSpan = 1;
 const dashboardGridMaxRowSpan = 3;
@@ -90,7 +90,7 @@ enum GaugeCardMode {
 }
 
 /// Which data a trend card plots. Only [previousCycleLengths] has a real
-/// data source today — the others are named here so the add-card catalog
+/// data source today; the others are named here so the add-card catalog
 /// and per-instance config shape are already in place, but
 /// [lib/core/providers/dashboard_visualization_displays_provider.dart]
 /// only knows how to compute [previousCycleLengths] so far; see the TODO
@@ -112,7 +112,7 @@ enum TrendCardMetric {
   bool get isImplemented => this == TrendCardMetric.previousCycleLengths;
 }
 
-/// How a trend card's data is plotted — switchable per-card, per
+/// How a trend card's data is plotted, switchable per-card, per
 /// "A trend card can be switched from bar to line".
 enum TrendChartType {
   bar,
@@ -125,7 +125,7 @@ enum TrendChartType {
 }
 
 /// Config keys used inside [DashboardCardInstance.config]. The repository
-/// treats this map as opaque (see [DashboardCardPreferencesRepository]) —
+/// treats this map as opaque (see [DashboardCardPreferencesRepository]);
 /// only the provider/widget layer interprets it, keyed by [kind].
 class DashboardCardConfigKeys {
   static const gaugeMode = 'gauge_mode';
@@ -139,7 +139,7 @@ class DashboardCardConfigKeys {
 
 /// One card's show/hide state, position, and (for gauge/trend cards) mode
 /// config, as stored per-device. [id] is the stable identity used for
-/// persistence and UI keys — it is *not* the same as [kind], since a user
+/// persistence and UI keys; it is *not* the same as [kind], since a user
 /// can add more than one card of the same kind (e.g. two trend cards for
 /// different metrics). For the two default kinds (calendar, insights)
 /// there is always exactly one instance and its [id] equals [kind.name],
@@ -202,7 +202,7 @@ class DashboardCardInstance {
     );
   }
 
-  /// This instance's column span — the user's resize override if one is
+  /// This instance's column span: the user's resize override if one is
   /// stored, else [DashboardCardKind.defaultGridSpan]. Clamped defensively
   /// in case a stored or imported value falls outside today's bounds.
   int get columnSpan {
@@ -214,7 +214,7 @@ class DashboardCardInstance {
     );
   }
 
-  /// This instance's row span — the user's resize override if one is
+  /// This instance's row span: the user's resize override if one is
   /// stored, else [DashboardCardKind.defaultGridSpan]. Clamped defensively
   /// in case a stored or imported value falls outside today's bounds.
   int get rowSpan {
@@ -226,7 +226,7 @@ class DashboardCardInstance {
     );
   }
 
-  /// Value equality (not identity) — needed so the gauge/trend display
+  /// Value equality (not identity), needed so the gauge/trend display
   /// providers (family providers keyed on the instance itself) cache and
   /// invalidate correctly instead of treating every rebuild's instance as
   /// a brand-new cache key.
@@ -270,7 +270,7 @@ class DashboardCardInstance {
     return copyWith(config: {...config, key: value});
   }
 
-  /// Returns a copy with a resize override applied — either dimension left
+  /// Returns a copy with a resize override applied: either dimension left
   /// null keeps this instance's current [columnSpan]/[rowSpan]. Values are
   /// clamped to the grid's bounds before being stored.
   DashboardCardInstance withGridSpan({int? columnSpan, int? rowSpan}) {
@@ -292,7 +292,7 @@ class DashboardCardInstance {
   }
 }
 
-/// Builds a new gauge card instance with a fresh, stable [id] — distinct
+/// Builds a new gauge card instance with a fresh, stable [id], distinct
 /// from every other instance even if another gauge card already exists.
 DashboardCardInstance newGaugeCardInstance({
   required int order,
@@ -327,13 +327,13 @@ DashboardCardInstance newTrendCardInstance({
 
 /// The two quick stat cards' fixed identity and default configuration
 /// (docs/features/quick_stats.feature, "Default first/second quick
-/// stat") — used to auto-populate them the same way calendar/insights
+/// stat"), used to auto-populate them the same way calendar/insights
 /// are auto-populated when missing (see
 /// [DashboardCardPreferencesRepository.getAll]), and to migrate an
 /// existing install's old two-slot `quick_stat_preferences` rows onto
 /// this shape (see schema_version 7 in lib/data/database/schema.dart).
 /// Unlike gauge/trend, quick stat cards are never added or removed via
-/// the catalog — always exactly these two, matching the "keep Calendar
+/// the catalog: always exactly these two, matching the "keep Calendar
 /// and Insights as fixed defaults" rule extended to quick stats.
 List<DashboardCardInstance> defaultQuickStatCardInstances({
   required int firstOrder,
@@ -375,7 +375,7 @@ bool _mapEquals(Map<String, String> a, Map<String, String> b) {
 }
 
 /// A microsecond timestamp is unique enough here: cards are only ever
-/// added one at a time, by one user, on one device — there's no
+/// added one at a time, by one user, on one device: there's no
 /// concurrent-writer scenario an actual UUID would be guarding against,
 /// and pulling in a `uuid` dependency for that would cut against
 /// "Lightweight by Default" in CLAUDE.md for no real benefit.

@@ -1,7 +1,7 @@
 name: iOS build & release
 
 on:
-  # Manual "does the iOS build still work" check — no signing, no secrets
+  # Manual "does the iOS build still work" check: no signing, no secrets
   # needed. Produces a simulator-only .app, not something installable on
   # a real device (iOS requires signing for that even in debug).
   workflow_dispatch:
@@ -107,7 +107,7 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           APPLE_PROVISIONING_PROFILE_NAME: ${{ secrets.APPLE_PROVISIONING_PROFILE_NAME }}
         run: |
-          # DEVELOPMENT_TEAM in project.pbxproj is "$(DEVELOPMENT_TEAM)" — an
+          # DEVELOPMENT_TEAM in project.pbxproj is "$(DEVELOPMENT_TEAM)", an
           # unset variable with no value unless Local.xcconfig (already the
           # documented local-dev mechanism, see ios/Flutter/Local.xcconfig.example)
           # supplies one. Without it, `xcodebuild archive` has no team context

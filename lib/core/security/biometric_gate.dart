@@ -2,7 +2,7 @@ import 'package:local_auth/local_auth.dart';
 
 /// Gates access to the encrypted database behind the device's biometrics
 /// (or passcode fallback). Abstracted behind an interface so tests and
-/// desktop/CI runs — which have no biometric hardware — can supply a fake.
+/// desktop/CI runs, which have no biometric hardware, can supply a fake.
 abstract class BiometricGate {
   /// Returns true if the user is allowed through: either they authenticated
   /// successfully, or the device has no biometrics/passcode configured at
@@ -26,20 +26,20 @@ class LocalAuthBiometricGate implements BiometricGate {
     } on Exception {
       // Couldn't even determine whether biometrics are available (e.g. the
       // platform plugin isn't wired up). Fail open rather than locking the
-      // user out of their own on-device data over a capability check —
+      // user out of their own on-device data over a capability check:
       // the data is still encrypted at rest either way.
       return true;
     }
 
     if (!supported && !canCheck) {
-      // Nothing to gate with — the key is still protected at rest by
+      // Nothing to gate with: the key is still protected at rest by
       // the OS keystore, it just won't prompt on this device.
       return true;
     }
 
     try {
       // A cancelled/failed/locked-out prompt does NOT resolve to false on
-      // every platform — on Android in particular it throws a
+      // every platform: on Android in particular it throws a
       // LocalAuthException instead (see the catch clauses below), so that
       // must never be handled by the same catch-all as the capability
       // checks above. Conflating the two previously meant cancelling the
@@ -53,7 +53,7 @@ class LocalAuthBiometricGate implements BiometricGate {
     } on LocalAuthException catch (e) {
       if (e.code == LocalAuthExceptionCode.noCredentialsSet) {
         // The device has no biometrics enrolled and no passcode/PIN/pattern
-        // set at all — the same "nothing to gate with" case as above, not
+        // set at all: the same "nothing to gate with" case as above, not
         // a declined or failed authentication attempt.
         return true;
       }
@@ -69,7 +69,7 @@ class LocalAuthBiometricGate implements BiometricGate {
   }
 }
 
-/// Always succeeds without prompting — for tests and any environment where
+/// Always succeeds without prompting: for tests and any environment where
 /// a real biometric prompt would hang or isn't meaningful.
 class AlwaysAllowBiometricGate implements BiometricGate {
   const AlwaysAllowBiometricGate();

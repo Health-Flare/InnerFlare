@@ -5,7 +5,7 @@ import 'package:inner_flare/core/providers/dashboard_card_preferences_provider.d
 import 'package:inner_flare/models/dashboard_card.dart';
 
 /// The dashboard's masonry grid (docs/features/dashboard_grid_layout
-/// .feature) — shared between the real dashboard (read-only) and Customize
+/// .feature), shared between the real dashboard (read-only) and Customize
 /// dashboard's live resize preview, so both render cards identically and a
 /// resize made in the preview is confirmed by the exact layout engine the
 /// dashboard itself uses.
@@ -23,7 +23,7 @@ class DashboardCardGrid extends StatelessWidget {
   /// When true, each tile gets a draggable corner grip that resizes it
   /// (docs/features/dashboard_grid_layout.feature, "A card's cell size can
   /// be adjusted from Customize dashboard"). The real dashboard passes
-  /// false — resizing only happens from the Customize preview, never on
+  /// false: resizing only happens from the Customize preview, never on
   /// the primary, deliberately uncluttered dashboard.
   final bool resizable;
 
@@ -51,7 +51,7 @@ class DashboardCardGrid extends StatelessWidget {
 
     // `Stack`'s non-positioned child (`card`) determines the Stack's own
     // size, and a Stack under `StackFit.loose` gives that child a LOOSE
-    // width — so without forcing it to stretch, a content-sized card (e.g.
+    // width, so without forcing it to stretch, a content-sized card (e.g.
     // DashboardChip, which was only ever single-column before resizing
     // existed) shrinks the whole Stack to its own narrow content width
     // instead of the tile's full (possibly two-column) width, stranding
@@ -70,7 +70,7 @@ class DashboardCardGrid extends StatelessWidget {
         : card;
 
     // A card still at its default row span keeps the exact tile type used
-    // before resizing existed — auto-height from content — so no untouched
+    // before resizing existed (auto-height from content), so no untouched
     // card's default look changes. Only a card resized taller switches to
     // a fixed pixel height, `Center`-ed so the card doesn't need any
     // internal layout changes to sit nicely in the extra room.
@@ -86,13 +86,13 @@ class DashboardCardGrid extends StatelessWidget {
 }
 
 /// A pixel distance the user must drag past, on a given axis, before that
-/// axis's span steps by one unit — keeps the gesture from stepping on every
-/// tiny wobble of a real touch.
+/// axis's span steps by one unit. This keeps the gesture from stepping on
+/// every tiny wobble of a real touch.
 const _dragStepPx = 56.0;
 
 /// A bottom-right corner grip that resizes the card it's attached to. Uses
 /// long-press-then-drag rather than a plain pan so it doesn't fight the
-/// surrounding scroll gesture — the same idiom
+/// surrounding scroll gesture, the same idiom
 /// `ReorderableDragStartListener` relies on for reordering.
 class _ResizeHandle extends ConsumerStatefulWidget {
   const _ResizeHandle({required this.instance});
@@ -105,13 +105,13 @@ class _ResizeHandle extends ConsumerStatefulWidget {
 
 class _ResizeHandleState extends ConsumerState<_ResizeHandle> {
   // `LongPressMoveUpdateDetails.offsetFromOrigin` is cumulative from the
-  // start of the gesture, not a per-update delta — these track how much of
+  // start of the gesture, not a per-update delta: these track how much of
   // that cumulative offset has already been "spent" on a step, so a drag
   // can cross more than one threshold in a single continuous gesture.
   double _consumedDx = 0;
   double _consumedDy = 0;
 
-  // The span this gesture is stepping from — tracked locally (rather than
+  // The span this gesture is stepping from, tracked locally (rather than
   // read back off `widget.instance`) so a fast drag that crosses more than
   // one threshold before the provider's rebuild reaches this widget still
   // steps correctly instead of repeatedly comparing against a stale span.

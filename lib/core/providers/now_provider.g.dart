@@ -8,14 +8,14 @@ part of 'now_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// The current time, as a provider — so anything that needs "now" can be
+/// The current time, as a provider, so anything that needs "now" can be
 /// given a fixed value in tests instead of depending on [DateTime.now]
 /// directly (same rule CLAUDE.md sets for the pure cycle-math functions).
 
 @ProviderFor(now)
 final nowProvider = NowProvider._();
 
-/// The current time, as a provider — so anything that needs "now" can be
+/// The current time, as a provider, so anything that needs "now" can be
 /// given a fixed value in tests instead of depending on [DateTime.now]
 /// directly (same rule CLAUDE.md sets for the pure cycle-math functions).
 
@@ -27,7 +27,7 @@ final class NowProvider
           DateTime Function()
         >
     with $Provider<DateTime Function()> {
-  /// The current time, as a provider — so anything that needs "now" can be
+  /// The current time, as a provider, so anything that needs "now" can be
   /// given a fixed value in tests instead of depending on [DateTime.now]
   /// directly (same rule CLAUDE.md sets for the pure cycle-math functions).
   NowProvider._()

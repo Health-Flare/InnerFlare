@@ -4,8 +4,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'tracked_symptoms_provider.g.dart';
 
-/// The user's full symptom catalog — built-in defaults plus anything
-/// they've added — and each one's enabled state
+/// The user's full symptom catalog (built-in defaults plus anything
+/// they've added) and each one's enabled state
 /// (docs/features/symptom_settings.feature). Backs both the log screen's
 /// chip list and the symptom settings screen.
 @riverpod
@@ -26,7 +26,7 @@ class TrackedSymptomsNotifier extends _$TrackedSymptomsNotifier {
     state = AsyncData([...current, added]);
   }
 
-  /// Renames [id]'s label — works for both built-in and custom symptoms.
+  /// Renames [id]'s label. Works for both built-in and custom symptoms.
   Future<void> rename(String id, String label) async {
     final current = await future;
     final index = current.indexWhere((symptom) => symptom.id == id);

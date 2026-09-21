@@ -8,7 +8,7 @@ part of 'dashboard_card_preferences_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// The dashboard's customizable card layout — show/hide, order, add/remove,
+/// The dashboard's customizable card layout: show/hide, order, add/remove,
 /// and per-card mode config (docs/features/dashboard.feature,
 /// docs/features/dashboard_visualizations.feature). Backs both the
 /// dashboard screen's rendering and the customization/add-card screens'
@@ -20,7 +20,7 @@ part of 'dashboard_card_preferences_provider.dart';
 final dashboardCardPreferencesProvider =
     DashboardCardPreferencesNotifierProvider._();
 
-/// The dashboard's customizable card layout — show/hide, order, add/remove,
+/// The dashboard's customizable card layout: show/hide, order, add/remove,
 /// and per-card mode config (docs/features/dashboard.feature,
 /// docs/features/dashboard_visualizations.feature). Backs both the
 /// dashboard screen's rendering and the customization/add-card screens'
@@ -33,7 +33,7 @@ final class DashboardCardPreferencesNotifierProvider
           DashboardCardPreferencesNotifier,
           List<DashboardCardInstance>
         > {
-  /// The dashboard's customizable card layout — show/hide, order, add/remove,
+  /// The dashboard's customizable card layout: show/hide, order, add/remove,
   /// and per-card mode config (docs/features/dashboard.feature,
   /// docs/features/dashboard_visualizations.feature). Backs both the
   /// dashboard screen's rendering and the customization/add-card screens'
@@ -61,9 +61,9 @@ final class DashboardCardPreferencesNotifierProvider
 }
 
 String _$dashboardCardPreferencesNotifierHash() =>
-    r'34716856c4e1fddaae34d8862fd427b6d882515b';
+    r'227f0fdf0bc88eae7046af9a1391d3924205749c';
 
-/// The dashboard's customizable card layout — show/hide, order, add/remove,
+/// The dashboard's customizable card layout: show/hide, order, add/remove,
 /// and per-card mode config (docs/features/dashboard.feature,
 /// docs/features/dashboard_visualizations.feature). Backs both the
 /// dashboard screen's rendering and the customization/add-card screens'

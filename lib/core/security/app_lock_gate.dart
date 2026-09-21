@@ -11,7 +11,7 @@ import 'package:inner_flare/models/lock_timeout.dart';
 
 /// Wraps the whole app (via [MaterialApp.builder]) so that whatever screen
 /// is on top gets covered by [AppLockScreen] once the app has spent the
-/// user's configured [LockTimeout] or more backgrounded — see
+/// user's configured [LockTimeout] or more backgrounded; see
 /// docs/features/app_lock.feature. The wrapped [child] keeps running
 /// underneath; it's just visually and interactively covered, so nothing
 /// needs to know it might be locked.
@@ -45,10 +45,10 @@ class _AppLockGateState extends ConsumerState<AppLockGate>
     if (ref.read(reauthenticationFlagProvider).inProgress) {
       // AppLockScreen's own biometric/passcode prompt is what's causing
       // this transition (system sheet, or Android's separate
-      // device-credential activity for a manual passcode) — not the user
+      // device-credential activity for a manual passcode), not the user
       // actually backgrounding the app. Treating it as a real
       // backgrounding here would race with (and can undo) the unlock
-      // attempt already in flight — see reauthenticating_provider.dart.
+      // attempt already in flight; see reauthenticating_provider.dart.
       return;
     }
     final now = ref.read(nowProvider)();
@@ -56,7 +56,7 @@ class _AppLockGateState extends ConsumerState<AppLockGate>
       case AppLifecycleState.inactive:
       case AppLifecycleState.paused:
       case AppLifecycleState.hidden:
-        // Only record the first step away — a hop from resumed straight to
+        // Only record the first step away: a hop from resumed straight to
         // paused (or back and forth through inactive/hidden on the way
         // out) shouldn't reset the clock partway through leaving.
         _backgroundedAt ??= now;
@@ -64,7 +64,7 @@ class _AppLockGateState extends ConsumerState<AppLockGate>
         final backgroundedAt = _backgroundedAt;
         _backgroundedAt = null;
         // Falls back to the default timeout if the setting hasn't loaded
-        // yet — the setting lives behind the same encrypted database as
+        // yet: the setting lives behind the same encrypted database as
         // everything else, so there's nothing more sensitive to protect
         // by waiting on it here; defaulting keeps this check working even
         // before that read resolves.
@@ -88,12 +88,12 @@ class _AppLockGateState extends ConsumerState<AppLockGate>
   Widget build(BuildContext context) {
     final isLocked = ref.watch(appLockProvider);
     // Watched (not just read) so the setting is already loaded by the
-    // time didChangeAppLifecycleState needs it — this widget stays
+    // time didChangeAppLifecycleState needs it: this widget stays
     // mounted for the app's whole lifetime, so watching here keeps the
     // otherwise-autoDispose provider alive throughout. Gated on
     // databaseUnlockedProvider (a plain in-memory flag, not anything
     // database-backed): lockTimeoutProvider reads from the database, and
-    // this widget mounts on the very first frame — watching it
+    // this widget mounts on the very first frame: watching it
     // unconditionally used to open the database itself, before the user
     // had even seen the unlock screen, let alone tapped it (see
     // database_unlocked_provider.dart).
