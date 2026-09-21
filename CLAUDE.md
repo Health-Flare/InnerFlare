@@ -58,7 +58,8 @@ lib/
 └── models/               # Domain models (immutable, non-DB)
 
 docs/
-└── features/             # BDD feature files (Gherkin scenarios)
+├── features/             # BDD feature files (Gherkin scenarios)
+└── personas/             # Review personas (product/UX review panel)
 
 BRIEF.md                  # Product/technical brief (repo root)
 test/                     # Unit and widget tests
@@ -90,6 +91,16 @@ Cycle-math logic (average cycle length, variability, next-period/fertile-window 
 | Export/import | `docs/features/export.feature` |
 | Navigation | `docs/features/navigation.feature` |
 | Symptom tracking settings | `docs/features/symptom_settings.feature` |
+
+### Review Personas
+
+`docs/personas/` holds three standing personas used as a review panel for
+product/UX work — Maya (36, two children, time-poor sceptic), Erin (29, no
+children, data-literate sceptic with suspected PCOS), and Jean (60,
+post-menopausal). They're fictional composites, each chosen to stress a
+different axis: the logging loop under real-world interruption, the app's
+truth claims, and who the product excludes. See `docs/personas/README.md`
+for how to run a panel review and the evidence standard findings must meet.
 
 ## Code Patterns
 
