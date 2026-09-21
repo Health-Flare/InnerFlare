@@ -4,6 +4,7 @@ import 'package:inner_flare/core/providers/calendar_month_logs_provider.dart';
 import 'package:inner_flare/core/providers/cycle_day_log_repository_provider.dart';
 import 'package:inner_flare/core/providers/cycle_prediction_provider.dart';
 import 'package:inner_flare/core/providers/has_any_logs_provider.dart';
+import 'package:inner_flare/core/providers/log_data_invalidation.dart';
 import 'package:inner_flare/core/providers/now_provider.dart';
 import 'package:inner_flare/core/theme/app_theme.dart';
 import 'package:inner_flare/features/calendar/widgets/calendar_legend.dart';
@@ -62,10 +63,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     );
     if (saved != true) return;
 
-    ref
-      ..invalidate(calendarMonthLogsProvider)
-      ..invalidate(cyclePredictionProvider)
-      ..invalidate(hasAnyLogsProvider);
+    invalidateLogDependentProviders(ref);
   }
 
   static const _months = [

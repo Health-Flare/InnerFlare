@@ -470,5 +470,82 @@ void main() {
         );
       },
     );
+
+    testWidgets('back-logging an earlier period from the calendar updates the '
+        'trend card immediately, without navigating away and back '
+        '(regression: charts staying stale after adding old data)', (
+      tester,
+    ) async {
+      final overrides = await setUp(
+        now: () => DateTime(2026, 8, 30, 9),
+        seed: (db) async {
+          final cycleLogs = CycleDayLogRepository(db);
+          // Only two period starts — one complete cycle length, not
+          // enough for the trend card yet.
+          await savePeriod(cycleLogs, DateTime(2026, 6, 25));
+          await savePeriod(cycleLogs, DateTime(2026, 7, 23));
+
+          final prefs = DashboardCardPreferencesRepository(db);
+          final defaults = await prefs.getAll();
+          await prefs.saveAll([
+            ...defaults,
+            newTrendCardInstance(order: defaults.length),
+          ]);
+        },
+      );
+
+      await pumpTestApp(tester, const DashboardScreen(), overrides: overrides);
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(find.byType(TrendCard), 300);
+      expect(
+        find.descendant(
+          of: find.byType(TrendCard),
+          matching: find.textContaining('Not enough cycles logged yet'),
+        ),
+        findsOneWidget,
+      );
+
+      // Back-log an earlier period start (early May, well before June
+      // 25) via the calendar, exactly how a user would add old/
+      // historical data. A day early in the month is used so its cell
+      // renders within the test viewport without needing to scroll
+      // the (non-scrolling, shrink-wrapped) month grid.
+      await tester.tap(find.text('Log a previous day'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Previous month'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Previous month'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Previous month'));
+      await tester.pumpAndSettle();
+      expect(find.text('May 2026'), findsOneWidget);
+
+      await tester.tap(find.byKey(ValueKey(DateTime(2026, 5, 4))));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(ChoiceChip, 'Medium'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Done'));
+      await tester.pumpAndSettle();
+
+      // Back to the dashboard — no manual refresh or re-navigation.
+      await tester.tap(find.byTooltip('Back'));
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(find.byType(TrendCard), 300);
+
+      expect(
+        find.descendant(
+          of: find.byType(TrendCard),
+          matching: find.textContaining('Not enough cycles logged yet'),
+        ),
+        findsNothing,
+      );
+      expect(
+        find.descendant(
+          of: find.byType(TrendCard),
+          matching: find.byType(CustomPaint),
+        ),
+        findsWidgets,
+      );
+    });
   });
 }

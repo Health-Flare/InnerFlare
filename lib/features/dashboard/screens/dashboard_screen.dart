@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inner_flare/core/providers/cycle_day_log_repository_provider.dart';
 import 'package:inner_flare/core/providers/dashboard_card_preferences_provider.dart';
 import 'package:inner_flare/core/providers/has_any_logs_provider.dart';
+import 'package:inner_flare/core/providers/log_data_invalidation.dart';
 import 'package:inner_flare/core/providers/now_provider.dart';
 import 'package:inner_flare/core/providers/today_log_provider.dart';
 import 'package:inner_flare/features/calendar/screens/calendar_screen.dart';
@@ -67,6 +68,7 @@ class DashboardScreen extends ConsumerWidget {
     );
     if (!context.mounted || saved != true) return;
 
+    invalidateLogDependentProviders(ref);
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
