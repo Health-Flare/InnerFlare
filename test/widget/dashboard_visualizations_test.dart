@@ -407,5 +407,68 @@ void main() {
         findsWidgets,
       );
     });
+
+    testWidgets(
+      'shows a y-axis scale and a legend explaining the chart colors',
+      (tester) async {
+        final overrides = await setUp(
+          now: () => DateTime(2026, 8, 30, 9),
+          seed: (db) async {
+            final cycleLogs = CycleDayLogRepository(db);
+            await savePeriod(cycleLogs, DateTime(2026, 6, 25));
+            await savePeriod(cycleLogs, DateTime(2026, 7, 23));
+            await savePeriod(cycleLogs, DateTime(2026, 8, 20));
+
+            final prefs = DashboardCardPreferencesRepository(db);
+            final defaults = await prefs.getAll();
+            await prefs.saveAll([
+              ...defaults,
+              newTrendCardInstance(order: defaults.length),
+            ]);
+          },
+        );
+
+        await pumpTestApp(
+          tester,
+          const DashboardScreen(),
+          overrides: overrides,
+        );
+        await tester.pumpAndSettle();
+        await tester.scrollUntilVisible(find.byType(TrendCard), 300);
+
+        // Y-axis: "0d" at the bottom plus a padded max at the top (see
+        // "Bar and line charts are missing axis scales and legends").
+        expect(
+          find.descendant(
+            of: find.byType(TrendCard),
+            matching: find.text('0d'),
+          ),
+          findsOneWidget,
+        );
+        // Legend: what the series/latest colors and the dashed average
+        // line mean.
+        expect(
+          find.descendant(
+            of: find.byType(TrendCard),
+            matching: find.text('Cycle length'),
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.descendant(
+            of: find.byType(TrendCard),
+            matching: find.text('Latest'),
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.descendant(
+            of: find.byType(TrendCard),
+            matching: find.text('Average'),
+          ),
+          findsOneWidget,
+        );
+      },
+    );
   });
 }
