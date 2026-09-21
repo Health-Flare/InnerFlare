@@ -2,16 +2,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inner_flare/core/debug/demo_data.dart';
-import 'package:inner_flare/core/providers/calendar_month_logs_provider.dart';
-import 'package:inner_flare/core/providers/cycle_day_log_entry_provider.dart';
 import 'package:inner_flare/core/providers/cycle_day_log_repository_provider.dart';
-import 'package:inner_flare/core/providers/cycle_insights_provider.dart';
-import 'package:inner_flare/core/providers/cycle_prediction_provider.dart';
 import 'package:inner_flare/core/providers/database_provider.dart';
-import 'package:inner_flare/core/providers/has_any_logs_provider.dart';
 import 'package:inner_flare/core/providers/lock_timeout_provider.dart';
+import 'package:inner_flare/core/providers/log_data_invalidation.dart';
 import 'package:inner_flare/core/providers/now_provider.dart';
-import 'package:inner_flare/core/providers/today_log_provider.dart';
 import 'package:inner_flare/features/dashboard/widgets/database_status_indicator.dart';
 import 'package:inner_flare/features/export/screens/export_screen.dart';
 import 'package:inner_flare/features/export/screens/import_screen.dart';
@@ -208,12 +203,7 @@ Future<void> _loadDemoData(BuildContext context, WidgetRef ref) async {
     await repository.save(log);
   }
 
-  ref.invalidate(todayLogProvider);
-  ref.invalidate(hasAnyLogsProvider);
-  ref.invalidate(cycleInsightsProvider);
-  ref.invalidate(cyclePredictionProvider);
-  ref.invalidate(calendarMonthLogsProvider);
-  ref.invalidate(cycleDayLogEntryProvider);
+  invalidateLogDependentProviders(ref);
 
   if (!context.mounted) return;
   ScaffoldMessenger.of(context)
