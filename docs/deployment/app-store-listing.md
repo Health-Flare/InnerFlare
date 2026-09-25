@@ -62,6 +62,12 @@ Inner Flare is a tracking tool, not a diagnostic one, and it's not a substitute 
 
 ## Screenshots
 
+For 1.2.0 and later, regenerate the sets from the specs in `docs/marketing/`
+(shots, order, captions and pixel sizes: `specs/shots.yaml`,
+`specs/targets.yaml`). Only two App Store slots are used, iPhone 6.5" and
+iPad 13"; Google Play reuses those captures. The notes below describe the
+earlier hand-captured sets.
+
 `screenshots/app_store/iphone_6.5in/`: captured 2026-09-10 against the
 iPhone 11 Pro Max simulator specifically because that's the device whose
 native resolution (1242×2688) exactly matches one of the four pixel sizes

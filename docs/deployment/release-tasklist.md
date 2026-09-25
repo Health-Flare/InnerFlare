@@ -2,7 +2,10 @@
 
 Master checklist for getting Inner Flare live on all three stores, and the
 CI needed to push subsequent versions out. Each platform has its own doc
-with detail; this file is the index and tracks cross-cutting work.
+with detail; this file is the index and tracks cross-cutting work. The
+ordered, repeatable steps for shipping any version are in
+`docs/deployment/release-process.md`; per-version copy and checklists are in
+`docs/deployment/release-notes/`.
 
 | Platform | CI workflow | Status | Detail doc |
 |---|---|---|---|
@@ -13,11 +16,11 @@ with detail; this file is the index and tracks cross-cutting work.
 ## Cross-cutting, before any store submission
 
 - [x] Decide the public app name shown to users (`Inner Flare`) and the package/bundle ID it's keyed off: `org.healthflare.app.innerflare` now, confirmed and set on both Android (`applicationId`/`namespace`) and iOS (`PRODUCT_BUNDLE_IDENTIFIER`), matching the app already created in Play Console. F-Droid's package id (see `docs/deployment/fdroid/`) is derived from the same value.
-- [ ] Confirm `1.0.0+1` in `pubspec.yaml` is the intended v1 version/build number: Android's `versionCode`/`versionName` and iOS's `CFBundleVersion`/`CFBundleShortVersionString` both derive from it (`flutter.versionCode`/`flutter.versionName` in `android/app/build.gradle.kts`; Flutter's Xcode build phase does the equivalent for iOS).
+- [x] Version/build numbers in `pubspec.yaml` (currently `1.2.0+4` on the `release/v1.2.0` branch): Android's `versionCode`/`versionName` and iOS's `CFBundleVersion`/`CFBundleShortVersionString` both derive from it (`flutter.versionCode`/`flutter.versionName` in `android/app/build.gradle.kts`; Flutter's Xcode build phase does the equivalent for iOS).
 - [x] Write (or confirm final) app description / "what this app does" copy: Play Store short/full description written, see `docs/deployment/play-store-listing.md`. Still needed verbatim for the App Store listing and the F-Droid summary/description fields. Reuse the same copy rather than writing three different versions.
 - [ ] Publish a privacy policy and host it somewhere stable (e.g. GitHub Pages from this repo, or a plain page in `docs/`). Required by Play (non-negotiable for health data) and by Apple; F-Droid doesn't require one but it's good practice to link it from the metadata anyway.
 - [ ] Confirm the GitHub repo stays public: F-Droid requires buildable public source; Play/App Store don't require it but a dead/private source link would break the F-Droid submission later.
-- [ ] `screenshots/play_store/`, `screenshots/app_store/` already exist and look current (dashboard, calendar, insights, settings, log entry). Reuse the Play Store set as F-Droid's screenshots too rather than producing a fourth set.
+- [ ] Store screenshots current. The existing `screenshots/play_store/`, `screenshots/app_store/` sets predate the customizable dashboard and the lock screen shot. New sets are specced in `docs/marketing/` (iPhone 6.5" and iPad 13" capture devices; Play reuses them), pending the runner. Reuse the Play phone set as F-Droid's screenshots too rather than producing a fourth set.
 
 ## Google Play
 
@@ -55,6 +58,21 @@ See `docs/deployment/fdroid/README.md`. Summary:
 - [ ] Confirm no anti-features apply (no ads, no tracking, no non-free dependencies, no non-free network services; all true today per `NOTICE.md`, but F-Droid's reviewers check independently).
 - [ ] Open a merge request against `fdroid/fdroid-data` adding the metadata file, referencing this repo and the `v1.0.0` tag.
 - [ ] Respond to F-Droid reviewer feedback (their merge request review is usually the slowest part: budget weeks, not days).
+
+## v1.2.0 (first TestFlight release)
+
+Copy, version and per-version checklist: `docs/deployment/release-notes/v1.2.0.md`.
+Process: `docs/deployment/release-process.md`.
+
+- [x] Version bumped to `1.2.0+4`, release notes and store "What's new" written, F-Droid draft points at `v1.2.0`.
+- [ ] Upgrade test from a real 1.1.0 install (schema 5 to 7).
+- [ ] Release build confirmed free of debug-only UI.
+- [ ] Apple secrets added, so `release-ipa` can upload to App Store Connect (see above).
+- [ ] TestFlight: internal build tested, then external group for first testers.
+- [ ] Play: internal testing, then promote to production.
+- [ ] Marketing assets regenerated from `docs/marketing/`.
+- [ ] `v1.2.0` tag pushed from `main`.
+- [ ] F-Droid: metadata MR opened (blocked on the build spike).
 
 ## CI/CD summary
 
