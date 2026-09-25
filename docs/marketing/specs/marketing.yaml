@@ -1,0 +1,138 @@
+# Brand tokens, image layouts and per-shot copy for composed marketing
+# images. Store screenshots in shots.yaml are NOT composed: they are the raw
+# capture at exact size. This file only drives `screenshots/marketing/`.
+#
+# Copy rules: see ../README.md "Ground rules for content". Every line below
+# restates a claim already made in docs/deployment/*-listing.md. No em
+# dashes, no medical claims, no invented social proof.
+version: 1
+
+brand:
+  # Source of truth is lib/core/theme/app_theme.dart (AppColors).
+  colors:
+    cream: "#F3E9DB"
+    ember_orange: "#E0834A"
+    soft_orange: "#F2B183"
+    deep_teal: "#17272C"
+    mid_teal: "#2B4249"
+  logo: assets/images/Inner Flare Logo.png
+  logo_512: assets/images/Inner Flare Logo 512.png
+  fonts:
+    # Local files, same pairing as the website's Inner Flare page.
+    # See ../fonts/README.md.
+    headline: {family: Fraunces, file: docs/marketing/fonts/Fraunces-SemiBold.ttf, weight: 600}
+    subhead: {family: "DM Sans", file: docs/marketing/fonts/DMSans-Regular.ttf, weight: 400}
+    caption: {family: "DM Sans", file: docs/marketing/fonts/DMSans-Medium.ttf, weight: 500}
+  voice: "Calm, plain, specific. States what the app does. Never hypes."
+
+layouts:
+  - id: story
+    description: "Store 'story' screenshot: headline above, framed device below."
+    size_from: store_slots          # use the slot's pixel size
+    background: {type: solid, color: cream}
+    headline: {color: deep_teal, align: center, max_lines: 2, top_pct: 6}
+    subhead: {color: mid_teal, align: center, max_lines: 3, top_pct: 17}
+    device: {frame: simple_bezel, scale_pct: 82, anchor: bottom, bleed_bottom_pct: 8}
+    targets: [iphone_6_5]
+  - id: story_play
+    description: "The `story` layout at Play's phone size, from iPhone 6.5in captures."
+    pixels: [1080, 1920]
+    background: {type: solid, color: cream}
+    headline: {color: deep_teal, align: center, max_lines: 2, top_pct: 6}
+    subhead: {color: mid_teal, align: center, max_lines: 3, top_pct: 17}
+    device: {frame: simple_bezel, scale_pct: 78, anchor: bottom, bleed_bottom_pct: 8}
+    targets: [iphone_6_5]
+  - id: story_dark
+    description: "Same as story on the deep teal backdrop from the loading screen."
+    size_from: store_slots
+    background: {type: gradient, from: deep_teal, to: mid_teal, angle: 180}
+    headline: {color: cream, align: center, max_lines: 2, top_pct: 6}
+    subhead: {color: soft_orange, align: center, max_lines: 3, top_pct: 17}
+    device: {frame: simple_bezel, scale_pct: 82, anchor: bottom, bleed_bottom_pct: 8}
+    targets: [iphone_6_5]
+  - id: social_square
+    pixels: [1080, 1080]
+    background: {type: solid, color: cream}
+    headline: {color: deep_teal, align: left, max_lines: 3, top_pct: 10, left_pct: 8}
+    device: {frame: simple_bezel, scale_pct: 90, anchor: bottom_right, bleed_bottom_pct: 15}
+    targets: [iphone_6_5]
+  - id: feature_graphic
+    description: "Play feature graphic: not a screenshot. Logo and tagline."
+    pixels: [1024, 500]
+    background: {type: gradient, from: deep_teal, to: mid_teal, angle: 90}
+    logo: {height_pct: 40, anchor: left_center}
+    headline: {color: cream, align: left, max_lines: 2}
+    device: {frame: none, shots: [dashboard], scale_pct: 110, anchor: right_bleed}
+    targets: []                      # no capture device: composes from a shot
+  - id: landscape_video
+    description: "Video backdrop for web_landscape."
+    pixels: [1920, 1080]
+    background: {type: solid, color: cream}
+    device: {frame: simple_bezel, scale_pct: 88, anchor: center}
+    targets: [iphone_6_5]
+
+frames:
+  simple_bezel:
+    kind: drawn                      # drawn by the runner, no proprietary artwork
+    corner_radius_pct: 11
+    bezel_color: deep_teal
+    bezel_px_pct: 2.2
+    shadow: {blur_pct: 4, opacity: 0.25}
+
+# Per-shot copy. `headline` is at most ~36 characters so it fits two lines at
+# the story layout; `subhead` at most ~90.
+copy:
+  dashboard:
+    headline: "Your cycle data stays on your phone"
+    subhead: "No account, no cloud, no ads. Your data stays on this device."
+    grounded_in: "Listing: 'No account or sign-up, ever'; 'stored entirely on your device'"
+  log_entry:
+    headline: "Log a day in one screen"
+    subhead: "Flow, symptoms, a note. Nothing is required."
+    grounded_in: "log.feature; listing 'LOGGING THAT DOESN'T FEEL LIKE A CHORE'"
+  calendar:
+    headline: "Your history at a glance"
+    subhead: "Flow intensity shows on every day of the calendar."
+    grounded_in: "calendar.feature; listing 'A CALENDAR AND DASHBOARD...'"
+  insights:
+    headline: "Predictions you can check"
+    subhead: "Plain statistics from your own history, not a black box."
+    grounded_in: "insights.feature; listing 'PREDICTIONS YOU CAN ACTUALLY CHECK'"
+  customize:
+    headline: "Build the dashboard you want"
+    subhead: "Gauges, charts and stats. Show, hide, reorder and resize."
+    grounded_in: "dashboard.feature, dashboard_grid_layout.feature"
+  export:
+    headline: "Your data, on your terms"
+    subhead: "Export to one file whenever you choose. No cloud step."
+    grounded_in: "export.feature; listing 'YOUR DATA, PORTABLE ON YOUR TERMS'"
+  app_lock:
+    headline: "Encrypted, and locked when you step away"
+    subhead: "Unlocks with your device's biometrics, with your passcode as backup."
+    grounded_in: "app_lock.feature; unlock.feature; listing 'ENCRYPTED WHERE IT LIVES'"
+    note: "Platform-neutral on purpose: the same capture serves App Store and Play."
+  insights_empty:
+    headline: "Honest when there's not enough data"
+    subhead: "No guessing: it tells you what it needs first."
+    grounded_in: "Listing: 'tells you that honestly instead of guessing'; insights.feature"
+  feature_graphic:
+    headline: "Private cycle tracking. Offline and encrypted."
+    grounded_in: "Play short description"
+
+# Which shots each layout renders, and which copy applies.
+compositions:
+  - layout: story
+    shots: [dashboard, app_lock, log_entry, calendar, insights, customize, export]
+    stores: [app_store]
+  - layout: story_play
+    shots: [dashboard, app_lock, log_entry, calendar, insights, customize, export]
+    stores: [play_store]
+  - layout: story_dark
+    shots: [dashboard, app_lock]
+    stores: [web]
+  - layout: social_square
+    shots: [dashboard, log_entry, insights]
+    stores: [web]
+  - layout: feature_graphic
+    shots: [dashboard]
+    stores: [play_store]

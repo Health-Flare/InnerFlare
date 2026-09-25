@@ -1,6 +1,6 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:inner_flare/core/debug/debug_chrome.dart';
 import 'package:inner_flare/core/debug/demo_data.dart';
 import 'package:inner_flare/core/providers/cycle_day_log_repository_provider.dart';
 import 'package:inner_flare/core/providers/database_provider.dart';
@@ -13,25 +13,18 @@ import 'package:inner_flare/features/export/screens/import_screen.dart';
 import 'package:inner_flare/features/settings/screens/auto_lock_settings_screen.dart';
 import 'package:inner_flare/features/settings/screens/symptom_settings_screen.dart';
 import 'package:inner_flare/models/cycle_day_log.dart';
-import 'package:sqflite_common/sqlite_api.dart';
 
 /// App settings (docs/features/navigation.feature: "Settings is reachable
-/// without leaving the current task"). Currently the encrypted database's
-/// connection status (a diagnostic aid for real-device unlock issues,
-/// see lib/core/security/biometric_gate.dart), the idle-lock timeout
+/// without leaving the current task"). Currently the idle-lock timeout
 /// (docs/features/app_lock.feature, on its own page), and the symptom catalog
 /// (docs/features/symptom_settings.feature), more settings land here as
-/// they're built.
+/// they're built. Debug builds also show the encrypted database's connection
+/// status (see lib/core/security/biometric_gate.dart).
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Watched directly, independent of the auto-lock section below: if the
-    // database is locked, lockTimeoutProvider (which reads a setting out of
-    // that same database) will be in an error state too, and the database
-    // status, with its Unlock action, must still render regardless.
-    final dbAsync = ref.watch(appDatabaseProvider);
     final lockTimeoutAsync = ref.watch(lockTimeoutProvider);
 
     return Scaffold(
@@ -39,18 +32,22 @@ class SettingsScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: 8),
         children: [
-          const Padding(
-            padding: EdgeInsets.fromLTRB(20, 12, 20, 4),
-            child: Text(
-              'Database',
-              style: TextStyle(fontWeight: FontWeight.w600),
+          // Debug builds only: a diagnostic aid for real-device unlock
+          // issues, not something release/TestFlight users should see.
+          if (showDebugChrome) ...[
+            const Padding(
+              padding: EdgeInsets.fromLTRB(20, 12, 20, 4),
+              child: Text(
+                'Database',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
-            child: _DatabaseStatus(dbAsync: dbAsync),
-          ),
-          const Divider(height: 32),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(20, 0, 20, 8),
+              child: _DatabaseStatus(),
+            ),
+            const Divider(height: 32),
+          ],
           const Padding(
             padding: EdgeInsets.fromLTRB(20, 0, 20, 4),
             child: Text(
@@ -145,7 +142,7 @@ class SettingsScreen extends ConsumerWidget {
               applicationName: 'Inner Flare',
             ),
           ),
-          if (kDebugMode) ...[
+          if (showDebugChrome) ...[
             const Divider(height: 32),
             const Padding(
               padding: EdgeInsets.fromLTRB(20, 0, 20, 4),
@@ -221,12 +218,16 @@ Future<void> _loadDemoData(
 /// raw error (selectable, so it can be copied while debugging a real
 /// device) if locked, and a manual Unlock action.
 class _DatabaseStatus extends ConsumerWidget {
-  const _DatabaseStatus({required this.dbAsync});
-
-  final AsyncValue<Database> dbAsync;
+  const _DatabaseStatus();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Watched directly, independent of the auto-lock section: if the
+    // database is locked, lockTimeoutProvider (which reads a setting out of
+    // that same database) will be in an error state too, and the database
+    // status, with its Unlock action, must still render regardless.
+    final dbAsync = ref.watch(appDatabaseProvider);
+
     return dbAsync.when(
       // A static icon, not a spinner, see the comment on the loading
       // branch of DatabaseStatusIndicator for why.

@@ -1,0 +1,52 @@
+# Registry of screens the runner can show. `widget` is the class in `import`;
+# `args` names constructor arguments the runner must supply (value comes from
+# the shot's `params`). Screens are pumped as the root of a MaterialApp with
+# AppTheme.light unless the shot says `via: app_shell`.
+version: 1
+
+screens:
+  - id: dashboard
+    widget: DashboardScreen
+    import: features/dashboard/screens/dashboard_screen.dart
+    debug_chrome:
+      - widget: DatabaseStatusIndicator
+        where: AppBar actions
+        note: >
+          Shown in every debug build, which is every iOS Simulator run.
+          Hidden by running with --dart-define=SCREENSHOT_MODE=true
+          (showDebugChrome, lib/core/debug/debug_chrome.dart).
+  - id: calendar
+    widget: CalendarScreen
+    import: features/calendar/screens/calendar_screen.dart
+  - id: insights
+    widget: InsightsScreen
+    import: features/insights/screens/insights_screen.dart
+  - id: cycle_detail
+    widget: CycleDetailScreen
+    import: features/insights/screens/cycle_detail_screen.dart
+    note: "No constructor args: reads cycleDetailRowsProvider."
+  - id: log_entry
+    widget: LogEntryScreen
+    import: features/log/screens/log_entry_screen.dart
+    args: [date, initialLog]
+    note: "initialLog is looked up via getByDate(date) on the seeded repository."
+  - id: settings
+    widget: SettingsScreen
+    import: features/settings/screens/settings_screen.dart
+    debug_chrome:
+      - widget: "Database section and Demo data section"
+        where: Settings list
+        note: "Both hidden by SCREENSHOT_MODE, same as the dashboard."
+  - id: dashboard_customize
+    widget: DashboardCustomizeScreen
+    import: features/dashboard/screens/dashboard_customize_screen.dart
+  - id: export
+    widget: ExportScreen
+    import: features/export/screens/export_screen.dart
+  - id: app_lock
+    widget: AppLockScreen
+    import: features/security/screens/app_lock_screen.dart
+    note: >
+      The idle re-lock cover: dark teal gradient, lock icon, "Inner Flare is
+      locked". It does not auto-prompt, so pumping it is safe. Its Unlock
+      button calls real local_auth: capture only, never tap it.
