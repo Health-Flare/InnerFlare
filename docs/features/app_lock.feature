@@ -33,8 +33,12 @@ Feature: Idle app lock
 
   Scenario: The idle-lock timeout is configurable in Settings
     Given the user is on the Settings screen
-    Then they can choose an idle-lock timeout of Immediately, 1 minute,
+    Then the Auto-lock entry shows the current idle-lock timeout
+    When they open the Auto-lock entry
+    Then a page with the idle-lock timeout options is shown
+    And they can choose an idle-lock timeout of Immediately, 1 minute,
       5 minutes, 15 minutes, 30 minutes, 1 hour, or Never
+    And, back on Settings, the entry shows the new choice
     And the choice persists per-device across app restarts, same as
       dashboard card layout, never synced
 
