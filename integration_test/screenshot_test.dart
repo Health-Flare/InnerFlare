@@ -24,7 +24,12 @@
 //   flutter drive \
 //     --driver=test_driver/integration_test.dart \
 //     --target=integration_test/screenshot_test.dart \
+//     --dart-define=SCREENSHOT_MODE=true \
 //     -d <device-id>
+//
+// SCREENSHOT_MODE hides the debug-only UI (see lib/core/debug/
+// debug_chrome.dart) that a debug build, the only kind an iOS Simulator
+// can run, would otherwise show in every capture.
 //
 // Screenshots land under screenshots/raw/<device-id>/ via
 // test_driver/integration_test.dart's onScreenshot handler.

@@ -1,0 +1,152 @@
+# Video storyboards. A video is an ordered list of scenes; each scene is a
+# scripted run of real interactions in the real app shell (via: app_shell),
+# recorded from the device, then trimmed and timed here.
+# See ../README.md for constraints and open items.
+#
+# Finders (`text`, `tooltip`, `key`, `icon`, `type`) match what the UI
+# actually shows today. Ones marked `# verify` were not checked against the
+# widget tree and must be confirmed (or given a `Key`) when building the runner.
+version: 1
+
+defaults:
+  dataset: regular
+  layout: customized
+  theme: light
+  via: app_shell
+  lead_in_ms: 600        # trimmed from the head of every recording
+  tail_ms: 400           # trimmed from the tail
+  touch_indicator: true  # draw a soft circle where taps land
+  pace:
+    tap_settle_ms: 700
+    screen_hold_ms: 1600
+    scroll_ms: 900
+
+videos:
+  # Apple app preview: 15-30s, must show the app in use. No overlaid
+  # marketing footage. Captions are allowed but kept minimal.
+  - id: store_app_preview
+    purpose: "App Store app preview: the core loop in under 30 seconds."
+    formats: [app_preview_iphone_6_5, app_preview_ipad_13]
+    audio: none
+    captions: {style: lower_third, font_role: caption, color: deep_teal, background: cream}
+    scenes:
+      - id: open_dashboard
+        hold_ms: 2200
+        caption: "Your cycle, on your phone"
+        start: {screen: dashboard}
+      - id: log_today
+        caption: "Log a day in one screen"
+        actions:
+          - tap: {text: "Log today"}
+          - wait_ms: 900
+          - tap: {text: "Heavy"}         # verify: flow chip labels
+          - tap: {text: "Cramps"}        # verify: symptom chip labels
+          - wait_ms: 600
+          - tap: {tooltip: "Done"}
+          - wait_ms: 900
+      - id: calendar
+        caption: "See your history at a glance"
+        actions:
+          - tap: {text: "Calendar"}      # verify: dashboard card label
+          - wait_ms: 1400
+          - scroll: {by: month, direction: previous, count: 1}
+          - wait_ms: 1200
+      - id: insights
+        caption: "Predictions you can check"
+        actions:
+          - tap: {tooltip: "Back"}
+          - tap: {text: "Insights"}      # verify
+          - wait_ms: 1800
+      - id: customize
+        caption: "Make the dashboard yours"
+        actions:
+          - tap: {tooltip: "Back"}
+          - tap: {tooltip: "Customize dashboard"}
+          - wait_ms: 1600
+    target_duration_s: 26
+
+  # Short, vertical, privacy-first cut for social/web. Title cards allowed.
+  - id: social_privacy_15s
+    purpose: "15s vertical: what makes Inner Flare different."
+    formats: [social_vertical, social_square]
+    audio: none
+    captions: {style: centered_large, font_role: headline, color: cream, background: deep_teal}
+    scenes:
+      - id: title
+        kind: title_card
+        hold_ms: 2500
+        headline: "Your cycle data is yours"
+        background: {type: gradient, from: deep_teal, to: mid_teal}
+        logo: true
+      - id: dashboard
+        hold_ms: 2500
+        caption: "No account. No cloud. No ads."
+        start: {screen: dashboard}
+      - id: lock
+        hold_ms: 3000
+        caption: "Encrypted, and locked when you step away"
+        start: {screen: app_lock}
+        via: root             # the lock cover is not reachable on demand in the shell
+        note: "Capture only: never tap Unlock (real local_auth)."
+      - id: log
+        caption: "Log a day in one screen"
+        actions:
+          - tap: {text: "Log today"}
+          - wait_ms: 2200
+      - id: outro
+        kind: title_card
+        hold_ms: 2500
+        headline: "Inner Flare"
+        subhead: "Private cycle tracking. Offline and encrypted."
+        logo: true
+    target_duration_s: 15
+
+  # Longer horizontal walkthrough for the website / a landing page.
+  - id: web_walkthrough_landscape
+    purpose: "45s landscape tour of every top-level feature, phone centred."
+    formats: [web_landscape]
+    audio: none
+    layout_ref: landscape_video      # marketing.yaml
+    captions: {style: lower_third, font_role: caption, color: deep_teal, background: cream}
+    scenes:
+      - id: dashboard
+        hold_ms: 3500
+        caption: "Your dashboard, built your way"
+        start: {screen: dashboard}
+      - id: customize_resize
+        caption: "Show, hide, reorder and resize cards"
+        actions:
+          - tap: {tooltip: "Customize dashboard"}
+          - wait_ms: 3500
+      - id: log
+        caption: "Log a day in one screen. Nothing is required."
+        actions:
+          - tap: {tooltip: "Back"}          # verify
+          - tap: {text: "Log today"}
+          - wait_ms: 3500
+      - id: calendar
+        caption: "Flow intensity on every day"
+        actions:
+          - tap: {tooltip: "Done"}
+          - tap: {text: "Calendar"}         # verify
+          - wait_ms: 3500
+      - id: insights
+        caption: "Plain statistics from your own history"
+        actions:
+          - tap: {tooltip: "Back"}
+          - tap: {text: "Insights"}          # verify
+          - wait_ms: 3500
+      - id: export
+        caption: "Export whenever you choose. No cloud step."
+        start: {screen: export}
+        via: root
+        hold_ms: 3500
+    target_duration_s: 45
+
+# Rules the runner enforces on every video.
+constraints:
+  - "No real personal data, names or notifications on screen (see README)."
+  - "No debug chrome: DatabaseStatusIndicator, DEBUG banner, Demo data section."
+  - "No keyboard visible unless a scene is explicitly about typing a note."
+  - "Do not tap the app-lock Unlock button or any control that calls local_auth."
+  - "Captions restate claims grounded in marketing.yaml copy; no new claims."

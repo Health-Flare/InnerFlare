@@ -1,0 +1,131 @@
+# Output targets: devices to capture on, and the store slots / video formats
+# each output must satisfy. See ../README.md.
+#
+# Two capture devices only: iPhone 6.5in and iPad 13in. Google Play reuses
+# those captures rather than needing a set per Android device (see
+# `store_slots.play_store`). Pixel sizes marked `verify: true` are from
+# memory of Apple/Google requirements and must be confirmed in App Store
+# Connect / Play Console before upload. The 6.5in and iPad 13in sizes were
+# confirmed in docs/deployment/app-store-listing.md (captured 2026-09-10).
+version: 1
+
+# Fixed device state applied before any capture, restored afterwards.
+device_state:
+  ios:
+    status_bar:
+      time: "9:41"
+      battery_state: charged
+      battery_level: 100
+      wifi_bars: 3
+      cellular_bars: 4
+    do_not_disturb: true
+
+devices:
+  - id: iphone_6_5
+    platform: ios
+    simulator: "iPhone 11 Pro Max"
+    pixels: [1242, 2688]
+    note: >
+      Native size matches Apple's 6.5in slot exactly. Do not use the
+      iPhone 17 Pro (1206x2622): it matches no accepted size.
+  - id: ipad_13
+    platform: ios
+    simulator: "iPad Pro 13-inch (M4)"
+    pixels: [2064, 2752]
+
+# What each store accepts. `devices` are the capture devices whose native
+# resolution satisfies the slot with no scaling.
+store_slots:
+  app_store:
+    - id: iphone_6_5
+      devices: [iphone_6_5]
+      min: 1
+      max: 10
+      accepted_pixels: [[1242, 2688], [1284, 2778]]
+    - id: ipad_13
+      devices: [ipad_13]
+      min: 1
+      max: 10
+      accepted_pixels: [[2064, 2752], [2048, 2732]]
+  play_store:
+    # Play has no per-device slots, so it reuses the iOS captures. Two
+    # things to handle (verify: true, from memory of Play's rules):
+    #  - Play requires the long side to be at most 2x the short side.
+    #    iPhone 6.5in is 1242x2688 (2.16:1), so raw captures would be
+    #    rejected. Play phone images are therefore the composed `story`
+    #    layout at 1080x1920, not raw captures.
+    #  - Raw captures show the iOS status bar and home indicator, which
+    #    looks out of place on Play. The composed layout keeps the whole
+    #    screen; if that reads badly, crop the status bar in the frame.
+    - id: phone
+      source_device: iphone_6_5
+      composed_layout: story_play
+      pixels: [1080, 1920]
+      min: 2
+      max: 8
+      format: png
+      constraints: "each side 320-3840 px, long side at most 2x short side"
+      verify: true
+    - id: tablet_10
+      source_device: ipad_13
+      pixels: [2064, 2752]     # 1.33:1, inside Play's limits, so raw is fine
+      min: 1
+      max: 8
+      format: png
+      verify: true
+    - id: feature_graphic
+      pixels: [1024, 500]
+      format: png
+      note: "Required banner. Composed, not captured: see marketing.yaml layout `feature_graphic`."
+
+# Video formats. `codec`/`fps` are the render settings; the recording itself
+# comes from the capture device.
+video_formats:
+  - id: app_preview_iphone_6_5
+    store: app_store
+    slot: iphone_6_5
+    device: iphone_6_5
+    pixels: [886, 1920]
+    fps: 30
+    codec: h264
+    duration_s: [15, 30]
+    max_mb: 500
+    audio: none_required
+    verify: true   # Apple's 6.5in preview size
+    note: "App Store app previews must show the app in use; no marketing-only footage."
+  - id: app_preview_ipad_13
+    store: app_store
+    slot: ipad_13
+    device: ipad_13
+    pixels: [1200, 1600]
+    fps: 30
+    codec: h264
+    duration_s: [15, 30]
+    max_mb: 500
+    verify: true
+  - id: social_vertical
+    store: web
+    pixels: [1080, 1920]
+    fps: 30
+    codec: h264
+    duration_s: [15, 45]
+    device: iphone_6_5
+  - id: social_square
+    store: web
+    pixels: [1080, 1080]
+    fps: 30
+    codec: h264
+    duration_s: [15, 45]
+    device: iphone_6_5
+  - id: web_landscape
+    store: web
+    pixels: [1920, 1080]
+    fps: 30
+    codec: h264
+    duration_s: [20, 60]
+    device: iphone_6_5
+    note: "Phone centred on a brand background; see marketing.yaml layout `landscape_video`."
+
+recording:
+  ios: "xcrun simctl io <udid> recordVideo --codec h264"
+  # The runner owns start/stop sync with the driving test; specs only trim.

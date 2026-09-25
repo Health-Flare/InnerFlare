@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:inner_flare/core/debug/debug_chrome.dart';
 import 'package:inner_flare/core/providers/security_settings_repository_provider.dart';
 import 'package:inner_flare/core/providers/tracked_symptoms_repository_provider.dart';
 import 'package:inner_flare/data/database/schema.dart';
@@ -44,6 +45,20 @@ void main() {
     await tester.tap(find.widgetWithText(ListTile, 'Auto-lock'));
     await tester.pumpAndSettle();
   }
+
+  testWidgets('the Database and Demo data sections follow showDebugChrome, '
+      'so a SCREENSHOT_MODE capture never shows them', (tester) async {
+    await pumpTestApp(tester, const SettingsScreen(), overrides: overrides());
+    await tester.pumpAndSettle();
+
+    final matcher = showDebugChrome ? findsOneWidget : findsNothing;
+    expect(find.text('Database'), matcher);
+
+    // Last in the list, so off-screen (and unbuilt) until scrolled to.
+    await tester.drag(find.byType(ListView), const Offset(0, -2000));
+    await tester.pumpAndSettle();
+    expect(find.text('Demo data'), matcher);
+  });
 
   testWidgets('the Auto-lock entry shows the current timeout, defaulting to '
       '15 minutes with nothing saved yet', (tester) async {

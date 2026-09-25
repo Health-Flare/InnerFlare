@@ -1,0 +1,59 @@
+# What data is in the app when a shot or scene starts. See ../README.md.
+#
+# Dataset builders are pure functions of `now` in lib/core/debug/demo_data.dart.
+# The runner passes `clock.fixed` (never DateTime.now()) and seeds through the
+# real cycle-day-log repository, oldest first.
+version: 1
+
+clock:
+  # Overrides nowProvider. Any date works; what matters is that it is fixed.
+  # Chosen so the seeded history reads as a normal, recent one. Local time.
+  fixed: "2026-09-25T09:41:00"
+  timezone: "Australia/Sydney"
+  note: >
+    Fixing the clock keeps output reproducible. The calendar shows this
+    month, so the month name in shots is September 2026: re-date and
+    re-run when shots start to look stale in the store.
+
+datasets:
+  - id: regular
+    builder: buildDemoCycleLogs
+    persona: "Jane Doe (placeholder, never written into the app)"
+    description: >
+      Six period starts, five complete cycles of 27-30 days, ending 6 days
+      before the clock. Today and yesterday are unlogged. The most recent
+      (in-progress) cycle has only the period days that have happened.
+    use_for: [screenshots, videos]
+  - id: perimenopause
+    builder: buildPerimenopauseDemoCycleLogs
+    description: >
+      Irregular cycles, hot-flash and sleep symptoms in notes. Debug
+      exercise dataset, NOT for store assets: it would make the irregular-
+      cycle caveat the story of the shot.
+    use_for: []
+  - id: empty
+    builder: none
+    description: "Fresh install. For the 'not enough data yet' honesty shot."
+    use_for: [screenshots]
+
+# Dashboard layouts, saved through dashboardCardPreferencesRepositoryProvider
+# after seeding. A layout id is applied with the setup step `seed_layout`.
+# Every layout first drops gauge/trend cards already present, so output does
+# not depend on leftover state on the device.
+layouts:
+  - id: default
+    description: "Bare fresh-install layout: quick stats, calendar, insights."
+    steps: []
+  - id: customized
+    description: "Shows off customization: a gauge, a trend chart, wide Calendar."
+    steps:
+      - widen: {card_id: calendar, column_span: 2}
+      - add_gauge: {mode: estimatedDaysUntilNextPeriod}
+      - add_trend:
+          metric: previousCycleLengths
+          chart_type: line
+          row_span: 2
+    # Matches _seedCustomDashboardLayout in integration_test/screenshot_test.dart.
+    note: >
+      Only TrendCardMetric.previousCycleLengths is implemented
+      (TrendCardMetric.isImplemented). Do not use the other metrics.
