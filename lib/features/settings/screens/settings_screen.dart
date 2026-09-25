@@ -10,6 +10,7 @@ import 'package:inner_flare/core/providers/now_provider.dart';
 import 'package:inner_flare/features/dashboard/widgets/database_status_indicator.dart';
 import 'package:inner_flare/features/export/screens/export_screen.dart';
 import 'package:inner_flare/features/export/screens/import_screen.dart';
+import 'package:inner_flare/features/settings/screens/auto_lock_settings_screen.dart';
 import 'package:inner_flare/features/settings/screens/symptom_settings_screen.dart';
 import 'package:inner_flare/models/cycle_day_log.dart';
 import 'package:inner_flare/models/lock_timeout.dart';
@@ -19,7 +20,7 @@ import 'package:sqflite_common/sqlite_api.dart';
 /// without leaving the current task"). Currently the encrypted database's
 /// connection status (a diagnostic aid for real-device unlock issues,
 /// see lib/core/security/biometric_gate.dart), the idle-lock timeout
-/// (docs/features/app_lock.feature), and the symptom catalog
+/// (docs/features/app_lock.feature, on its own page), and the symptom catalog
 /// (docs/features/symptom_settings.feature), more settings land here as
 /// they're built.
 class SettingsScreen extends ConsumerWidget {
@@ -54,43 +55,28 @@ class SettingsScreen extends ConsumerWidget {
           const Padding(
             padding: EdgeInsets.fromLTRB(20, 0, 20, 4),
             child: Text(
-              'Auto-lock',
+              'Security',
               style: TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
-          const Padding(
-            padding: EdgeInsets.fromLTRB(20, 0, 20, 8),
-            child: Text(
-              'How long Inner Flare can sit in the background before you '
-              'need to unlock it again.',
-            ),
-          ),
-          lockTimeoutAsync.when(
-            loading: () => const Padding(
-              padding: EdgeInsets.all(20),
-              child: Center(child: CircularProgressIndicator()),
-            ),
-            error: (error, _) => Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Text("Couldn't load: $error"),
-            ),
-            data: (current) => RadioGroup<LockTimeout>(
-              groupValue: current,
-              onChanged: (value) {
-                if (value != null) {
-                  ref.read(lockTimeoutProvider.notifier).setLockTimeout(value);
-                }
-              },
-              child: Column(
-                children: [
-                  for (final timeout in LockTimeout.values)
-                    RadioListTile<LockTimeout>(
-                      title: Text(timeout.label),
-                      value: timeout,
-                    ),
-                ],
+          ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+            title: const Text('Auto-lock'),
+            subtitle: Text(
+              lockTimeoutAsync.when(
+                loading: () => 'Loading…',
+                error: (_, _) => "Couldn't load",
+                data: (current) => current.label,
               ),
             ),
+            trailing: const Icon(Icons.chevron_right_rounded),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const AutoLockSettingsScreen(),
+                ),
+              );
+            },
           ),
           const Divider(height: 32),
           const Padding(

@@ -8,6 +8,7 @@ import 'package:inner_flare/data/repositories/security_settings_repository.dart'
 import 'package:inner_flare/data/repositories/tracked_symptoms_repository.dart';
 import 'package:inner_flare/features/export/screens/export_screen.dart';
 import 'package:inner_flare/features/export/screens/import_screen.dart';
+import 'package:inner_flare/features/settings/screens/auto_lock_settings_screen.dart';
 import 'package:inner_flare/features/settings/screens/settings_screen.dart';
 import 'package:inner_flare/features/settings/screens/symptom_settings_screen.dart';
 import 'package:inner_flare/models/lock_timeout.dart';
@@ -39,14 +40,32 @@ void main() {
     ];
   }
 
-  testWidgets('defaults to 15 minutes with nothing saved yet', (tester) async {
+  Future<void> openAutoLock(WidgetTester tester) async {
+    await tester.tap(find.widgetWithText(ListTile, 'Auto-lock'));
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('the Auto-lock entry shows the current timeout, defaulting to '
+      '15 minutes with nothing saved yet', (tester) async {
     await pumpTestApp(tester, const SettingsScreen(), overrides: overrides());
     await tester.pumpAndSettle();
 
-    final radio = tester.widget<RadioListTile<LockTimeout>>(
-      find.widgetWithText(RadioListTile<LockTimeout>, 'After 15 minutes'),
+    final tile = find.widgetWithText(ListTile, 'Auto-lock');
+    expect(
+      find.descendant(of: tile, matching: find.text('After 15 minutes')),
+      findsOneWidget,
     );
-    expect(radio.value, LockTimeout.after15Minutes);
+    // The options live on their own page, not inline.
+    expect(find.byType(RadioListTile<LockTimeout>), findsNothing);
+  });
+
+  testWidgets('opening Auto-lock shows its own page with the current option '
+      'selected', (tester) async {
+    await pumpTestApp(tester, const SettingsScreen(), overrides: overrides());
+    await tester.pumpAndSettle();
+    await openAutoLock(tester);
+
+    expect(find.byType(AutoLockSettingsScreen), findsOneWidget);
 
     // RadioGroup reports the selected value on the ancestor, not the tile.
     final group = tester.widget<RadioGroup<LockTimeout>>(
@@ -55,13 +74,28 @@ void main() {
     expect(group.groupValue, LockTimeout.after15Minutes);
   });
 
-  testWidgets('picking a timeout persists it immediately to the database', (
+  testWidgets('every timeout choice is offered on the Auto-lock page', (
     tester,
   ) async {
     await pumpTestApp(tester, const SettingsScreen(), overrides: overrides());
     await tester.pumpAndSettle();
+    await openAutoLock(tester);
 
-    await tester.tap(find.text('Never'));
+    for (final timeout in LockTimeout.values) {
+      expect(
+        find.widgetWithText(RadioListTile<LockTimeout>, timeout.label),
+        findsOneWidget,
+      );
+    }
+  });
+
+  testWidgets('picking a timeout persists it immediately to the database and '
+      'updates the entry on Settings', (tester) async {
+    await pumpTestApp(tester, const SettingsScreen(), overrides: overrides());
+    await tester.pumpAndSettle();
+    await openAutoLock(tester);
+
+    await tester.tap(find.widgetWithText(RadioListTile<LockTimeout>, 'Never'));
     await tester.pumpAndSettle();
 
     final group = tester.widget<RadioGroup<LockTimeout>>(
@@ -71,15 +105,16 @@ void main() {
 
     final saved = await SecuritySettingsRepository(openDb!).getLockTimeout();
     expect(saved, LockTimeout.never);
-  });
 
-  testWidgets('every timeout choice is offered', (tester) async {
-    await pumpTestApp(tester, const SettingsScreen(), overrides: overrides());
+    await tester.pageBack();
     await tester.pumpAndSettle();
-
-    for (final timeout in LockTimeout.values) {
-      expect(find.text(timeout.label), findsOneWidget);
-    }
+    expect(
+      find.descendant(
+        of: find.widgetWithText(ListTile, 'Auto-lock'),
+        matching: find.text('Never'),
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('the symptoms entry point opens symptom settings '
