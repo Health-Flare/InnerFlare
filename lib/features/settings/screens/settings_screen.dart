@@ -12,6 +12,7 @@ import 'package:inner_flare/features/export/screens/export_screen.dart';
 import 'package:inner_flare/features/export/screens/import_screen.dart';
 import 'package:inner_flare/features/settings/screens/auto_lock_settings_screen.dart';
 import 'package:inner_flare/features/settings/screens/symptom_settings_screen.dart';
+import 'package:inner_flare/models/cycle_day_log.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 
 /// App settings (docs/features/navigation.feature: "Settings is reachable
@@ -157,15 +158,31 @@ class SettingsScreen extends ConsumerWidget {
               padding: EdgeInsets.fromLTRB(20, 0, 20, 8),
               child: Text(
                 'Debug builds only, never shipped to users: fills the log '
-                'with a few months of sample history for taking '
-                'screenshots.',
+                'with sample history. The regular set is a few months of '
+                'steady cycles for taking screenshots; the perimenopause '
+                'set is eight months of shifting cycle lengths, varying '
+                'flow and hot-flash/sleep symptoms for exercising the '
+                'irregular-cycle handling. Loading one over the other '
+                'overwrites any day they share.',
               ),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: OutlinedButton(
-                onPressed: () => _loadDemoData(context, ref),
+                onPressed: () =>
+                    _loadDemoData(context, ref, buildDemoCycleLogs),
                 child: const Text('Load demo data'),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+              child: OutlinedButton(
+                onPressed: () => _loadDemoData(
+                  context,
+                  ref,
+                  buildPerimenopauseDemoCycleLogs,
+                ),
+                child: const Text('Load perimenopause demo data'),
               ),
             ),
           ],
@@ -175,15 +192,19 @@ class SettingsScreen extends ConsumerWidget {
   }
 }
 
-/// Fills the log with [buildDemoCycleLogs] via the same repository real
-/// logging goes through, then invalidates every provider that reads from
-/// it so the dashboard/calendar/insights screens reflect it immediately.
+/// Fills the log with the dataset [buildLogs] generates (see
+/// lib/core/debug/demo_data.dart) via the same repository real logging
+/// goes through, then invalidates every provider that reads from it so
+/// the dashboard/calendar/insights screens reflect it immediately.
 /// Debug-only, see the "Demo data" section above.
-Future<void> _loadDemoData(BuildContext context, WidgetRef ref) async {
+Future<void> _loadDemoData(
+  BuildContext context,
+  WidgetRef ref,
+  List<CycleDayLog> Function({required DateTime now}) buildLogs,
+) async {
   final repository = await ref.read(cycleDayLogRepositoryProvider.future);
   final now = ref.read(nowProvider)();
-  final logs = buildDemoCycleLogs(now: now)
-    ..sort((a, b) => a.date.compareTo(b.date));
+  final logs = buildLogs(now: now)..sort((a, b) => a.date.compareTo(b.date));
   for (final log in logs) {
     await repository.save(log);
   }
