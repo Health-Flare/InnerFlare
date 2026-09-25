@@ -7,7 +7,7 @@ import 'package:sqflite_common/sqlite_api.dart';
 /// Bumped whenever the schema changes; every bump needs a matching branch
 /// in [onUpgrade] so exported backups from older versions still import
 /// cleanly (see BRIEF.md §4.2).
-const int schemaVersion = 7;
+const int schemaVersion = 8;
 
 const String cycleDayLogsTable = 'cycle_day_logs';
 
@@ -51,18 +51,24 @@ CREATE TABLE $dashboardCardPreferencesTable (
 )
 ''';
 
-/// Idle-lock timeout setting (docs/features/app_lock.feature). A
-/// single-row table (the `id = 0` check makes it a true singleton)
-/// since there's one setting per device, not per-record.
+/// Per-device security and first-run settings
+/// (docs/features/app_lock.feature, docs/features/first_run_disclaimer.feature).
+/// A single-row table (the `id = 0` check makes it a true singleton)
+/// since there's one setting per device, not per-record. Never exported:
+/// see export.feature design decision 3.
+///
 /// `lock_timeout_minutes` is NULL for the "Never" choice, otherwise the
 /// number of minutes backgrounded before the app re-locks.
+/// `disclaimer_acknowledged` is 1 once the user has continued past the
+/// first-run privacy and not-a-medical-device statement.
 const String securitySettingsTable = 'security_settings';
 
 const String _createSecuritySettingsTable =
     '''
 CREATE TABLE $securitySettingsTable (
   id INTEGER PRIMARY KEY CHECK (id = 0),
-  lock_timeout_minutes INTEGER
+  lock_timeout_minutes INTEGER,
+  disclaimer_acknowledged INTEGER NOT NULL DEFAULT 0
 )
 ''';
 
@@ -208,4 +214,34 @@ Future<void> onUpgrade(Database db, int oldVersion, int newVersion) async {
       });
     }
   }
+  if (oldVersion < 8) {
+    await _addDisclaimerAcknowledgedColumn(db);
+  }
+}
+
+/// Adds [security_settings.disclaimer_acknowledged] for installs that
+/// already have the pre-v8 table. Fresh installs and upgrades from
+/// before the table existed create it via [_createSecuritySettingsTable],
+/// which already includes the column. A partial fixture that calls
+/// [onUpgrade] without ever creating `security_settings` (see the
+/// schema-5 dashboard migration test) is left alone.
+Future<void> _addDisclaimerAcknowledgedColumn(Database db) async {
+  final tables = await db.rawQuery(
+    "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?",
+    [securitySettingsTable],
+  );
+  if (tables.isEmpty) return;
+
+  final columns = await db.rawQuery(
+    'PRAGMA table_info($securitySettingsTable)',
+  );
+  final hasColumn = columns.any(
+    (column) => column['name'] == 'disclaimer_acknowledged',
+  );
+  if (hasColumn) return;
+
+  await db.execute(
+    'ALTER TABLE $securitySettingsTable '
+    'ADD COLUMN disclaimer_acknowledged INTEGER NOT NULL DEFAULT 0',
+  );
 }

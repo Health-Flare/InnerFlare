@@ -11,6 +11,7 @@ import 'package:inner_flare/features/dashboard/widgets/database_status_indicator
 import 'package:inner_flare/features/export/screens/export_screen.dart';
 import 'package:inner_flare/features/export/screens/import_screen.dart';
 import 'package:inner_flare/features/settings/screens/auto_lock_settings_screen.dart';
+import 'package:inner_flare/features/settings/screens/privacy_disclaimer_screen.dart';
 import 'package:inner_flare/features/settings/screens/symptom_settings_screen.dart';
 import 'package:inner_flare/models/cycle_day_log.dart';
 import 'package:sqflite_common/sqlite_api.dart';
@@ -20,8 +21,9 @@ import 'package:sqflite_common/sqlite_api.dart';
 /// connection status (a diagnostic aid for real-device unlock issues,
 /// see lib/core/security/biometric_gate.dart), the idle-lock timeout
 /// (docs/features/app_lock.feature, on its own page), and the symptom catalog
-/// (docs/features/symptom_settings.feature), more settings land here as
-/// they're built.
+/// (docs/features/symptom_settings.feature), and the privacy disclaimer
+/// (docs/features/first_run_disclaimer.feature). More settings land here
+/// as they're built.
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
@@ -136,6 +138,21 @@ class SettingsScreen extends ConsumerWidget {
           const Padding(
             padding: EdgeInsets.fromLTRB(20, 0, 20, 4),
             child: Text('About', style: TextStyle(fontWeight: FontWeight.w600)),
+          ),
+          ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+            title: const Text('Privacy and disclaimer'),
+            subtitle: const Text(
+              'What this app is, and what happens to your data.',
+            ),
+            trailing: const Icon(Icons.chevron_right_rounded),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const PrivacyDisclaimerScreen(),
+                ),
+              );
+            },
           ),
           ListTile(
             title: const Text('Open source licenses'),

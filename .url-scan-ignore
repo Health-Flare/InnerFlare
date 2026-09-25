@@ -1,0 +1,4 @@
+# User-initiated open of the published privacy policy in the system
+# browser. Inner Flare does not request internet permission and does not
+# fetch the page itself. See lib/core/privacy/open_privacy_policy.dart.
+lib/core/privacy/privacy_policy_url.dart
