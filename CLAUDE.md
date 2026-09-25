@@ -180,8 +180,12 @@ Use `pump(Duration(milliseconds: 500))` instead of `pumpAndSettle()` when provid
   tag builds a signed IPA and uploads it to App Store Connect; see
   `docs/deployment/ios-release.md` for the one-time Apple Developer/App
   Store Connect setup, the repo secrets it needs, and the pre-launch App
-  Store checklist. As of writing this job can't actually run to completion
-  yet: the Apple secrets it depends on haven't been created.
+  Store checklist. The Apple secrets are configured and the job has
+  uploaded signed builds to App Store Connect (v1.0.1 build 2, v1.1.0
+  build 3). App Store Connect rejects a build number it has already seen
+  (`ENTITY_ERROR.ATTRIBUTE.INVALID.DUPLICATE`), so re-running a tag without
+  bumping the `+N` in `pubspec.yaml` fails at the upload step, which is
+  what happened to the second v1.1.0 run.
 - **F-Droid**: no CI of ours; see `docs/deployment/fdroid/README.md` and
   `docs/deployment/release-tasklist.md` for the submission plan; F-Droid
   builds from a tagged commit on its own infrastructure via a metadata

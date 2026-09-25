@@ -10,7 +10,7 @@ ordered, repeatable steps for shipping any version are in
 | Platform | CI workflow | Status | Detail doc |
 |---|---|---|---|
 | Google Play | `.github/workflows/android-release.yml` | Built, signs on `v*.*.*` tag push | `docs/deployment/android-release.md` |
-| Apple App Store | `.github/workflows/ios-release.yml` | Scaffolded, needs Apple credentials in repo secrets before it can sign/upload | `docs/deployment/ios-release.md` |
+| Apple App Store | `.github/workflows/ios-release.yml` | Working: Apple secrets are configured; signed IPAs uploaded to App Store Connect for v1.0.1 and v1.1.0 | `docs/deployment/ios-release.md` |
 | F-Droid | none (F-Droid builds from source on its own infra) | Not started, metadata PR to `fdroid/fdroid-data` | `docs/deployment/fdroid/README.md` |
 
 ## Cross-cutting, before any store submission
@@ -38,11 +38,11 @@ Signing vs. self-managed.
 See `docs/deployment/ios-release.md` for full detail. Summary of what's
 left:
 
-- [ ] Enroll in the Apple Developer Program ($99/yr) if not already done.
-- [ ] Register the `org.healthflare.app.innerflare` bundle ID and create the app record in App Store Connect.
-- [ ] Generate a Distribution certificate + App Store provisioning profile (or switch the Xcode project to automatic signing with a CI-usable Apple ID/API key, see the doc for the tradeoff).
-- [ ] Generate an App Store Connect API key for CI uploads (avoids storing an Apple ID password/2FA in CI).
-- [ ] Add the resulting secrets to the repo (`APPLE_CERTIFICATE_BASE64`, `APPLE_CERTIFICATE_PASSWORD`, `APPLE_PROVISIONING_PROFILE_BASE64`, `APPLE_PROVISIONING_PROFILE_NAME`, `APPLE_TEAM_ID`, `APP_STORE_CONNECT_KEY_ID`, `APP_STORE_CONNECT_ISSUER_ID`, `APP_STORE_CONNECT_API_KEY_BASE64`). See the doc for exact names, matching the `ios-release.yml` workflow.
+- [x] Enroll in the Apple Developer Program ($99/yr) if not already done.
+- [x] Register the `org.healthflare.app.innerflare` bundle ID and create the app record in App Store Connect.
+- [x] Generate a Distribution certificate + App Store provisioning profile (or switch the Xcode project to automatic signing with a CI-usable Apple ID/API key, see the doc for the tradeoff).
+- [x] Generate an App Store Connect API key for CI uploads (avoids storing an Apple ID password/2FA in CI).
+- [x] Add the resulting secrets to the repo (`APPLE_CERTIFICATE_BASE64`, `APPLE_CERTIFICATE_PASSWORD`, `APPLE_PROVISIONING_PROFILE_BASE64`, `APPLE_PROVISIONING_PROFILE_NAME`, `APPLE_TEAM_ID`, `APP_STORE_CONNECT_KEY_ID`, `APP_STORE_CONNECT_ISSUER_ID`, `APP_STORE_CONNECT_API_KEY_BASE64`). See the doc for exact names, matching the `ios-release.yml` workflow.
 - [ ] Fill in App Privacy ("nutrition label") in App Store Connect: should be "Data Not Collected" given the offline design, but every category still needs an explicit answer.
 - [x] Set the export compliance answer for using encryption (SQLCipher): `ITSAppUsesNonExemptEncryption` is now in `ios/Runner/Info.plist` so this doesn't have to be answered manually on every upload (re-verify the `false` value against Apple's current guidance before first submission, see doc).
 - [ ] Complete the age rating questionnaire and write App Store listing copy (subtitle, promotional text, keywords; Play doesn't have exact equivalents for these).
@@ -67,7 +67,7 @@ Process: `docs/deployment/release-process.md`.
 - [x] Version bumped to `1.2.0+4`, release notes and store "What's new" written, F-Droid draft points at `v1.2.0`.
 - [ ] Upgrade test from a real 1.1.0 install (schema 5 to 7).
 - [ ] Release build confirmed free of debug-only UI.
-- [ ] Apple secrets added, so `release-ipa` can upload to App Store Connect (see above).
+- [x] Apple secrets are in the repo and `release-ipa` uploads to App Store Connect. Build number `4` is higher than the last upload (`3`), which is the only thing that would fail the upload step.
 - [ ] TestFlight: internal build tested, then external group for first testers.
 - [ ] Play: internal testing, then promote to production.
 - [ ] Marketing assets regenerated from `docs/marketing/`.
@@ -78,6 +78,6 @@ Process: `docs/deployment/release-process.md`.
 
 - [x] `ci.yml`: format/analyze/URL-scan/test on every push and PR to `main`.
 - [x] `android-release.yml`: debug APK on manual dispatch; signed AAB+APK GitHub Release on `v*.*.*` tag.
-- [ ] `ios-release.yml`: scaffolded (simulator build works with no secrets today; the signed TestFlight/App Store upload job needs the Apple secrets listed above before it will run end-to-end).
+- [x] `ios-release.yml`: simulator build on manual dispatch; signed IPA uploaded to App Store Connect on `v*.*.*` tag (working since v1.0.1). Build numbers must strictly increase per upload.
 - [ ] F-Droid has no CI of ours to build. It clones the tagged commit and builds independently. Our job is just making sure the tag builds cleanly with only what's checked into the repo (no CI-only secrets baked into the app itself, which is already true here).
 - [ ] Once both stores are live, decide whether `v*.*.*` tags should trigger *both* release jobs together (simplest) or whether Android/iOS ever need to ship out of step (e.g. an iOS-only hotfix). If so, consider platform-scoped tags (`android-v1.0.1`, `ios-v1.0.1`) instead. Not needed for v1; revisit if it comes up.
