@@ -12,8 +12,10 @@ import 'helpers/test_database.dart';
 void main() {
   setUpAll(useInMemoryTestDatabaseFactory);
 
-  testWidgets('app boots through the loading screen, unlock screen, and '
-      'into the dashboard', (WidgetTester tester) async {
+  testWidgets('app boots through the loading screen, unlock screen, '
+      'first-run disclaimer, and into the dashboard', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -42,7 +44,17 @@ void main() {
     // about the database is touched until this tap.
     expect(find.text('Inner Flare is locked'), findsOneWidget);
     await tester.tap(find.text('Unlock'));
-    await tester.pumpAndSettle(); // flush the dashboard's async providers
+    await tester.pumpAndSettle();
+
+    // First launch stops on the disclaimer until Continue
+    // (docs/features/first_run_disclaimer.feature).
+    expect(find.text('Welcome to Inner Flare'), findsOneWidget);
+    expect(
+      find.textContaining('not a medical or diagnostic device'),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('Continue'));
+    await tester.pumpAndSettle();
 
     expect(find.text('Inner Flare'), findsOneWidget);
     expect(find.text('Log today'), findsWidgets);

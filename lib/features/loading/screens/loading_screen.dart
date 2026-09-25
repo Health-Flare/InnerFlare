@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:inner_flare/core/security/app_unlock_gate.dart';
 import 'package:inner_flare/features/dashboard/screens/dashboard_screen.dart';
+import 'package:inner_flare/features/first_run/screens/first_run_screen.dart';
 import 'package:inner_flare/features/loading/loading_quotes.dart';
 
 /// Splash screen shown while local data is read on launch, with a random
@@ -29,16 +30,21 @@ class LoadingScreen extends StatefulWidget {
   /// or [readyFuture] takes longer.
   final Duration minDisplayDuration;
 
-  /// Builds the screen to show once loading completes: onboarding or the
-  /// dashboard, per docs/features/loading.feature.
+  /// Builds the screen to show once loading completes. The default path
+  /// unlocks the database, shows the first-run disclaimer until it has
+  /// been acknowledged, then the dashboard (docs/features/loading.feature,
+  /// docs/features/first_run_disclaimer.feature). Full onboarding remains
+  /// deferred.
   final WidgetBuilder nextScreenBuilder;
 
   /// Wrapped in [AppUnlockGate] (not any earlier) so the encrypted
   /// database's biometric/passcode prompt (docs/features/unlock.feature)
   /// only starts once this splash has had its own moment on screen,
   /// rather than firing before the app has shown any of its own branding.
+  /// [FirstRunGate] sits inside that gate because the acknowledgement
+  /// flag is stored in the encrypted database.
   static Widget _defaultNextScreen(BuildContext context) =>
-      const AppUnlockGate(child: DashboardScreen());
+      const AppUnlockGate(child: FirstRunGate(child: DashboardScreen()));
 
   @override
   State<LoadingScreen> createState() => _LoadingScreenState();

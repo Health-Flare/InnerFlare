@@ -54,6 +54,10 @@ dependencies:
   riverpod: ^3.4.3
   sqflite_common: ^2.5.8
   cryptography: ^2.9.0
+  # Hands a user-tapped link to the system browser. Not a network client:
+  # release builds still request no internet permission, and the only URL
+  # (the privacy policy) is listed in .url-scan-ignore.
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:

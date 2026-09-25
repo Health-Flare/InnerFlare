@@ -32,8 +32,9 @@
 #
 # 3. "All cycle_day_logs and settings" in the first scenario below means
 #    portable data, not every row in the database. dashboard_card_preferences,
-#    quick_stat_preferences, and security_settings (the idle-lock timeout)
-#    are each documented elsewhere as per-device state: see "Card
+#    quick_stat_preferences, and security_settings (the idle-lock timeout
+#    and whether the first-run disclaimer has been acknowledged) are each
+#    documented elsewhere as per-device state: see "Card
 #    preferences are stored per-device in settings, not synced"
 #    (dashboard.feature), "Quick stat preferences are stored per-device, not
 #    synced" (quick_stats.feature), and app_lock.feature's idle-lock timeout
