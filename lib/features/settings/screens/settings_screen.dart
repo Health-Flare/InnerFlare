@@ -13,7 +13,6 @@ import 'package:inner_flare/features/export/screens/import_screen.dart';
 import 'package:inner_flare/features/settings/screens/auto_lock_settings_screen.dart';
 import 'package:inner_flare/features/settings/screens/symptom_settings_screen.dart';
 import 'package:inner_flare/models/cycle_day_log.dart';
-import 'package:inner_flare/models/lock_timeout.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 
 /// App settings (docs/features/navigation.feature: "Settings is reachable
