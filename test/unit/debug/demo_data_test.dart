@@ -7,6 +7,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:inner_flare/core/cycle_math/cycle_math.dart';
 import 'package:inner_flare/core/debug/demo_data.dart';
+import 'package:inner_flare/models/cycle_day_log.dart';
 
 void main() {
   final now = DateTime.utc(2026, 9, 8);
@@ -50,5 +51,52 @@ void main() {
     expect(lengths.length, greaterThanOrEqualTo(4));
     expect(averageCycleLength(lengths), isNotNull);
     expect(cycleLengthsAreIrregular(lengths), isFalse);
+  });
+
+  group('perimenopause dataset', () {
+    List<DateTime> periodStartsOf(List<CycleDayLog> logs) {
+      final logsByDate = {for (final log in logs) log.date: log};
+      return [
+        for (final log in logs)
+          if (log.periodFlow != null &&
+              logsByDate[log.date.subtract(const Duration(days: 1))]
+                      ?.periodFlow ==
+                  null)
+            log.date,
+      ]..sort();
+    }
+
+    test('never logs a day after now', () {
+      for (final log in buildPerimenopauseDemoCycleLogs(now: now)) {
+        expect(log.date.isAfter(now), isFalse, reason: '${log.date} is future');
+      }
+    });
+
+    test('never logs the same date twice', () {
+      final logs = buildPerimenopauseDemoCycleLogs(now: now);
+      expect(logs.map((log) => log.date).toSet(), hasLength(logs.length));
+    });
+
+    test('leaves today and yesterday unlogged', () {
+      final dates = buildPerimenopauseDemoCycleLogs(
+        now: now,
+      ).map((log) => log.date).toSet();
+      expect(dates.contains(now), isFalse);
+      expect(dates.contains(now.subtract(const Duration(days: 1))), isFalse);
+    });
+
+    test('produces the intended irregular cycle lengths', () {
+      final logs = buildPerimenopauseDemoCycleLogs(now: now);
+      final lengths = cycleLengthsFromPeriodStarts(periodStartsOf(logs));
+      expect(lengths, [26, 24, 31, 27, 45, 35, 58]);
+      expect(cycleLengthsAreIrregular(lengths), isTrue);
+    });
+
+    test('is deterministic for a given now', () {
+      expect(
+        buildPerimenopauseDemoCycleLogs(now: now),
+        buildPerimenopauseDemoCycleLogs(now: now),
+      );
+    });
   });
 }
