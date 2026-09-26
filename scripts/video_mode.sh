@@ -12,6 +12,10 @@
 #   --keep-data    keep the app's existing data instead of replacing it with
 #                  the demo dataset. By default this REPLACES all logs and the
 #                  dashboard layout in the simulator's copy of the app.
+#   --fresh        out-of-box experience with zero data: UNINSTALLS the app
+#                  from the simulator first (deleting its database and
+#                  settings), then launches with nothing seeded and the
+#                  first-run disclaimer unacknowledged. Overrides --keep-data.
 #   --fixed-clock  freeze "now" at 2026-09-25 09:41 (docs/marketing/specs)
 #
 # Record with Cmd+R in the Simulator app (File > Record Screen), or
@@ -23,10 +27,12 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 target="iphone"
+fresh=0
 defines=(--dart-define=SCREENSHOT_MODE=true)
 for arg in "$@"; do
   case "$arg" in
     --keep-data) defines+=(--dart-define=VIDEO_RESEED=false) ;;
+    --fresh) fresh=1; defines+=(--dart-define=VIDEO_FRESH=true) ;;
     --fixed-clock) defines+=(--dart-define=VIDEO_FIXED_CLOCK=true) ;;
     -*) echo "Unknown flag: $arg" >&2; exit 2 ;;
     *) target="$arg" ;;
@@ -65,7 +71,11 @@ xcrun simctl status_bar "$udid" override --time 9:41 \
   --batteryState charged --batteryLevel 100 --wifiBars 3 --cellularBars 4
 trap 'xcrun simctl status_bar "$udid" clear' EXIT
 
-if [[ " ${defines[*]} " != *VIDEO_RESEED=false* ]]; then
+if [ "$fresh" = 1 ]; then
+  echo "Fresh: uninstalling Inner Flare from this simulator so it starts as a first install."
+  xcrun simctl terminate "$udid" org.healthflare.app.innerflare 2>/dev/null || true
+  xcrun simctl uninstall "$udid" org.healthflare.app.innerflare 2>/dev/null || true
+elif [[ " ${defines[*]} " != *VIDEO_RESEED=false* ]]; then
   echo "Replacing this simulator's Inner Flare data with the demo dataset (use --keep-data to skip)."
 fi
 

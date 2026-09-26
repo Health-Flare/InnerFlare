@@ -150,6 +150,7 @@ scripts/video_mode.sh ipad         # iPad Pro 13-inch (M4)
 scripts/video_mode.sh "iPhone 17"  # any simulator name or UDID
 scripts/video_mode.sh --fixed-clock  # freeze "now" at the spec's clock
 scripts/video_mode.sh --keep-data    # don't replace the app's data
+scripts/video_mode.sh --fresh        # out-of-box experience, zero data
 ```
 
 It runs `tool/video_mode.dart` with `SCREENSHOT_MODE`, so there is no debug
@@ -157,7 +158,11 @@ chrome or DEBUG ribbon, seeds the demo dataset and the `customized`
 dashboard layout, uses the always-allow biometric gate (no Face ID prompt;
 tapping Unlock is safe), acknowledges the first-run disclaimer, and sets
 the status bar to 9:41. By default it **replaces** the simulator app's logs
-and dashboard layout; use `--keep-data` to avoid that. The greeting on the
+and dashboard layout; use `--keep-data` to avoid that. `--fresh` goes the other way: it
+uninstalls the app from the simulator first, then launches with nothing
+seeded and the first-run disclaimer unacknowledged, so you can record the
+first launch (unlock screen, disclaimer, empty dashboard). It deletes that
+simulator's Inner Flare data and overrides `--keep-data`. The greeting on the
 dashboard follows the real time of day ("Good morning" vs "Winding down?"),
 so use `--fixed-clock` if the take should read as morning.
 

@@ -20,6 +20,11 @@
 // Dart defines (via the script's flags):
 //   VIDEO_RESEED=false     keep whatever is already in the app's database
 //                          instead of replacing it with the demo data
+//   VIDEO_FRESH=true       out-of-box experience: seed nothing and leave the
+//                          first-run disclaimer unacknowledged, so the app
+//                          starts as on a first install (the script also
+//                          uninstalls the app first, so its database and
+//                          settings are gone)
 //   VIDEO_FIXED_CLOCK=true freeze "now" at the spec's 2026-09-25 09:41
 //                          (docs/marketing/specs/datasets.yaml)
 
@@ -36,6 +41,7 @@ import 'package:inner_flare/main.dart';
 import '../integration_test/capture_helpers.dart';
 
 const _reseed = bool.fromEnvironment('VIDEO_RESEED', defaultValue: true);
+const _fresh = bool.fromEnvironment('VIDEO_FRESH');
 const _fixedClock = bool.fromEnvironment('VIDEO_FIXED_CLOCK');
 
 Future<void> main() async {
@@ -53,20 +59,24 @@ Future<void> main() async {
     ],
   );
 
-  if (_reseed) {
-    await seedDemoData(container);
-    await seedDashboardLayout(container, customized: true);
-  }
+  // Fresh: touch nothing, so the database isn't even opened until the
+  // user taps Unlock, exactly as on a first install.
+  if (!_fresh) {
+    if (_reseed) {
+      await seedDemoData(container);
+      await seedDashboardLayout(container, customized: true);
+    }
 
-  // Auto-disposed provider: hold a listener so acknowledge() can still
-  // set its state after its awaited write.
-  final acknowledgement = container.listen(
-    disclaimerAcknowledgedProvider,
-    (_, _) {},
-  );
-  await container.read(disclaimerAcknowledgedProvider.future);
-  await container.read(disclaimerAcknowledgedProvider.notifier).acknowledge();
-  acknowledgement.close();
+    // Auto-disposed provider: hold a listener so acknowledge() can still
+    // set its state after its awaited write.
+    final acknowledgement = container.listen(
+      disclaimerAcknowledgedProvider,
+      (_, _) {},
+    );
+    await container.read(disclaimerAcknowledgedProvider.future);
+    await container.read(disclaimerAcknowledgedProvider.notifier).acknowledge();
+    acknowledgement.close();
+  }
 
   runApp(
     UncontrolledProviderScope(
