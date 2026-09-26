@@ -139,6 +139,33 @@ that a debug build would otherwise show: the dashboard status indicator and
 Settings' Database and Demo data sections. The iOS Simulator can only run
 debug builds, so this is what keeps those captures clean.
 
+## Recording your own videos
+
+`scripts/video_mode.sh` launches the app on a simulator looking like a
+release build, for screen recordings made by hand:
+
+```bash
+scripts/video_mode.sh              # iPhone 11 Pro Max (App Store 6.5")
+scripts/video_mode.sh ipad         # iPad Pro 13-inch (M4)
+scripts/video_mode.sh "iPhone 17"  # any simulator name or UDID
+scripts/video_mode.sh --fixed-clock  # freeze "now" at the spec's clock
+scripts/video_mode.sh --keep-data    # don't replace the app's data
+```
+
+It runs `tool/video_mode.dart` with `SCREENSHOT_MODE`, so there is no debug
+chrome or DEBUG ribbon, seeds the demo dataset and the `customized`
+dashboard layout, uses the always-allow biometric gate (no Face ID prompt;
+tapping Unlock is safe), acknowledges the first-run disclaimer, and sets
+the status bar to 9:41. By default it **replaces** the simulator app's logs
+and dashboard layout; use `--keep-data` to avoid that. The greeting on the
+dashboard follows the real time of day ("Good morning" vs "Winding down?"),
+so use `--fixed-clock` if the take should read as morning.
+
+Record with Cmd+R in the Simulator (File > Record Screen) or
+`xcrun simctl io booted recordVideo out.mov`. Turn on Do Not Disturb by
+hand; `simctl` can't. This does not replace the scripted storyboards in
+`specs/videos.yaml` (see #72).
+
 ## Decisions made
 
 - **Capture devices:** iPhone 6.5" and iPad 13" only. Play reuses them.

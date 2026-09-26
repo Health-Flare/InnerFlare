@@ -37,28 +37,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:inner_flare/core/debug/demo_data.dart';
-import 'package:inner_flare/core/providers/calendar_month_logs_provider.dart';
-import 'package:inner_flare/core/providers/cycle_day_log_entry_provider.dart';
 import 'package:inner_flare/core/providers/cycle_day_log_repository_provider.dart';
-import 'package:inner_flare/core/providers/cycle_insights_provider.dart';
-import 'package:inner_flare/core/providers/cycle_prediction_provider.dart';
-import 'package:inner_flare/core/providers/dashboard_card_preferences_provider.dart';
-import 'package:inner_flare/core/providers/dashboard_card_preferences_repository_provider.dart';
 import 'package:inner_flare/core/providers/database_provider.dart';
-import 'package:inner_flare/core/providers/has_any_logs_provider.dart';
 import 'package:inner_flare/core/providers/now_provider.dart';
-import 'package:inner_flare/core/providers/today_log_provider.dart';
 import 'package:inner_flare/core/security/biometric_gate.dart';
 import 'package:inner_flare/core/theme/app_theme.dart';
 import 'package:inner_flare/data/database/app_database.dart';
 import 'package:inner_flare/features/calendar/screens/calendar_screen.dart';
 import 'package:inner_flare/features/dashboard/screens/dashboard_customize_screen.dart';
 import 'package:inner_flare/features/dashboard/screens/dashboard_screen.dart';
+import 'package:inner_flare/features/export/screens/export_screen.dart';
 import 'package:inner_flare/features/insights/screens/insights_screen.dart';
 import 'package:inner_flare/features/log/screens/log_entry_screen.dart';
+import 'package:inner_flare/features/security/screens/app_lock_screen.dart';
 import 'package:inner_flare/features/settings/screens/settings_screen.dart';
-import 'package:inner_flare/models/dashboard_card.dart';
+import 'capture_helpers.dart';
 import 'package:integration_test/integration_test.dart';
 
 void main() {
@@ -67,6 +60,7 @@ void main() {
   testWidgets('capture app store screenshots', (tester) async {
     final container = ProviderContainer(
       overrides: [
+        nowProvider.overrideWithValue(() => fixedNow),
         appDatabaseProvider.overrideWith(
           (ref) => AppDatabase(
             biometricGate: const AlwaysAllowBiometricGate(),
@@ -76,7 +70,10 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    final periodStartDate = await _seedDemoData(container);
+    // The database is the real on-device file, so it may carry logs from
+    // a previous run or manual use: start from empty every time, so the
+    // output depends on the dataset alone.
+    final periodStartDate = await seedDemoData(container);
 
     // Android needs the Flutter surface converted to a plain image view
     // before takeScreenshot() can capture it; a no-op on every other
@@ -84,17 +81,27 @@ void main() {
     await binding.convertFlutterSurfaceToImage();
     await tester.pumpAndSettle();
 
+    // Shot ids and order follow docs/marketing/specs/shots.yaml. The
+    // default layout is captured first, before customizing.
+    await seedDashboardLayout(container, customized: false);
     await _showScreen(tester, container, const DashboardScreen());
-    await binding.takeScreenshot('01_dashboard');
+    await binding.takeScreenshot('dashboard_default');
 
-    await _showScreen(tester, container, const CalendarScreen());
-    await binding.takeScreenshot('02_calendar');
+    await seedDashboardLayout(container, customized: true);
+    await _showScreen(tester, container, const DashboardScreen());
+    // shots.yaml's hero must show a gauge or trend card with real
+    // numbers, which sit below the fold on a phone: scroll them into view.
+    await tester.scrollUntilVisible(
+      find.text('Previous cycle lengths'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+    await binding.takeScreenshot('dashboard');
 
-    await _showScreen(tester, container, const InsightsScreen());
-    await binding.takeScreenshot('03_insights');
-
-    await _showScreen(tester, container, const SettingsScreen());
-    await binding.takeScreenshot('04_settings');
+    // Capture only: never tap Unlock (real local_auth).
+    await _showScreen(tester, container, const AppLockScreen());
+    await binding.takeScreenshot('app_lock');
 
     final repository = await container.read(
       cycleDayLogRepositoryProvider.future,
@@ -105,15 +112,28 @@ void main() {
       container,
       LogEntryScreen(date: periodStartDate, initialLog: loggedDay),
     );
-    await binding.takeScreenshot('05_log_entry');
+    await binding.takeScreenshot('log_entry');
 
-    await _seedCustomDashboardLayout(container);
+    await _showScreen(tester, container, const CalendarScreen());
+    await binding.takeScreenshot('calendar');
 
-    await _showScreen(tester, container, const DashboardScreen());
-    await binding.takeScreenshot('06_dashboard_customized');
+    await _showScreen(tester, container, const InsightsScreen());
+    await binding.takeScreenshot('insights');
 
     await _showScreen(tester, container, const DashboardCustomizeScreen());
-    await binding.takeScreenshot('07_customize_resize');
+    await binding.takeScreenshot('customize');
+
+    await _showScreen(tester, container, const ExportScreen());
+    await binding.takeScreenshot('export');
+
+    await _showScreen(tester, container, const SettingsScreen());
+    await binding.takeScreenshot('settings');
+
+    // Honesty shot: a fresh install's "not enough data yet".
+    await repository.deleteAll();
+    invalidateLogDependentProviders(container);
+    await _showScreen(tester, container, const InsightsScreen());
+    await binding.takeScreenshot('insights_empty');
   });
 }
 
@@ -138,76 +158,4 @@ Future<void> _showScreen(
     ),
   );
   await tester.pumpAndSettle();
-}
-
-/// Seeds [buildDemoCycleLogs] through the real repository, oldest first,
-/// then invalidates every provider that reads from it, same as
-/// lib/features/settings/screens/settings_screen.dart's debug-only
-/// "Load demo data" button, just driven directly from the test instead
-/// of tapping through Settings. Returns the most recent period's start
-/// date, so the caller can show [LogEntryScreen] for a day that actually
-/// has something logged.
-Future<DateTime> _seedDemoData(ProviderContainer container) async {
-  final repository = await container.read(cycleDayLogRepositoryProvider.future);
-  final now = container.read(nowProvider)();
-  final logs = buildDemoCycleLogs(now: now)
-    ..sort((a, b) => a.date.compareTo(b.date));
-  for (final log in logs) {
-    await repository.save(log);
-  }
-
-  container.invalidate(todayLogProvider);
-  container.invalidate(hasAnyLogsProvider);
-  container.invalidate(cycleInsightsProvider);
-  container.invalidate(cyclePredictionProvider);
-  container.invalidate(calendarMonthLogsProvider);
-  container.invalidate(cycleDayLogEntryProvider);
-
-  // isPeriodStart is computed by the repository on save, not set on the
-  // generator's own CycleDayLog values (which default it to false). Ask
-  // the repository, the authoritative source, rather than guessing which
-  // of [logs] became a period start.
-  final periodStarts = await repository.getPeriodStartDates();
-  return periodStarts.last;
-}
-
-/// Builds a dashboard layout that actually shows off customization (a
-/// gauge card, a trend card, and Calendar widened to full width) instead
-/// of the bare four-cell default every fresh install starts with (see
-/// docs/features/dashboard_grid_layout.feature, "A card's cell size can
-/// be adjusted from Customize dashboard"). Saved through the same
-/// repository real customization goes through, then invalidates the
-/// provider that reads it, same pattern as [_seedDemoData].
-///
-/// Drops any gauge/trend cards already present first: this runs against
-/// the real on-device database (see the file comment above), which may
-/// carry state left over from a previous run or from manually using the
-/// app on this device/simulator, so the layout this produces is the same
-/// regardless of what was there before.
-Future<void> _seedCustomDashboardLayout(ProviderContainer container) async {
-  final repository = await container.read(
-    dashboardCardPreferencesRepositoryProvider.future,
-  );
-  final current = await repository.getAll();
-  final withCalendarWidened = [
-    for (final instance in current)
-      if (instance.kind != DashboardCardKind.gauge &&
-          instance.kind != DashboardCardKind.trend)
-        if (instance.id == 'calendar')
-          instance.withGridSpan(columnSpan: dashboardGridMaxColumnSpan)
-        else
-          instance,
-  ];
-  final gauge = newGaugeCardInstance(
-    order: withCalendarWidened.length,
-    mode: GaugeCardMode.estimatedDaysUntilNextPeriod,
-  );
-  final trend = newTrendCardInstance(
-    order: withCalendarWidened.length + 1,
-    metric: TrendCardMetric.previousCycleLengths,
-    chartType: TrendChartType.line,
-  ).withGridSpan(rowSpan: 2);
-
-  await repository.saveAll([...withCalendarWidened, gauge, trend]);
-  container.invalidate(dashboardCardPreferencesProvider);
 }

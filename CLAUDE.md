@@ -17,6 +17,10 @@ See `BRIEF.md` for the product/technical brief this project started from. Note t
 # Run the app
 flutter run
 
+# Run on a simulator in a clean demo mode, for recording videos by hand
+# (no debug chrome, demo data, no Face ID prompt); see docs/marketing/README.md
+scripts/video_mode.sh
+
 # Run all tests
 flutter test
 
