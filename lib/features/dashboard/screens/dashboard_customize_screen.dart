@@ -165,37 +165,45 @@ class _CardTile extends ConsumerWidget {
       _ => instance.kind.label,
     };
 
-    return Column(
-      key: ValueKey('${instance.id}-column'),
-      children: [
-        SwitchListTile(
-          title: Text(title),
-          subtitle: instance.kind.isDefault ? null : Text(instance.kind.label),
-          value: instance.visible,
-          onChanged: (_) => notifier.toggleVisibility(instance.id),
-          secondary: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (!instance.kind.isDefault)
-                IconButton(
-                  tooltip: 'Remove card',
-                  icon: const Icon(Icons.delete_outline_rounded),
-                  onPressed: () => notifier.removeCard(instance.id),
+    // While a tile is being dragged, ReorderableList lifts it into the
+    // Overlay, outside the Scaffold's Material. Without its own Material the
+    // ListTiles inside throw "No Material widget found" mid-drag.
+    return Material(
+      type: MaterialType.transparency,
+      child: Column(
+        key: ValueKey('${instance.id}-column'),
+        children: [
+          SwitchListTile(
+            title: Text(title),
+            subtitle: instance.kind.isDefault
+                ? null
+                : Text(instance.kind.label),
+            value: instance.visible,
+            onChanged: (_) => notifier.toggleVisibility(instance.id),
+            secondary: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (!instance.kind.isDefault)
+                  IconButton(
+                    tooltip: 'Remove card',
+                    icon: const Icon(Icons.delete_outline_rounded),
+                    onPressed: () => notifier.removeCard(instance.id),
+                  ),
+                ReorderableDragStartListener(
+                  index: index,
+                  child: const Icon(Icons.drag_handle_rounded),
                 ),
-              ReorderableDragStartListener(
-                index: index,
-                child: const Icon(Icons.drag_handle_rounded),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-        if (instance.kind == DashboardCardKind.gauge)
-          _GaugeModeSelector(instance: instance),
-        if (instance.kind == DashboardCardKind.trend)
-          _TrendChartTypeSelector(instance: instance),
-        if (instance.kind == DashboardCardKind.quickStat)
-          _QuickStatSelector(instance: instance),
-      ],
+          if (instance.kind == DashboardCardKind.gauge)
+            _GaugeModeSelector(instance: instance),
+          if (instance.kind == DashboardCardKind.trend)
+            _TrendChartTypeSelector(instance: instance),
+          if (instance.kind == DashboardCardKind.quickStat)
+            _QuickStatSelector(instance: instance),
+        ],
+      ),
     );
   }
 }

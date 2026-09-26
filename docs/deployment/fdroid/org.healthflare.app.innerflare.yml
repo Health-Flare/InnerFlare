@@ -1,6 +1,6 @@
 # DRAFT: not yet submitted to fdroid/fdroid-data.
 #
-# Points at v1.2.0 (pubspec 1.2.0+4), the first version intended for F-Droid.
+# Points at v1.2.1 (pubspec 1.2.1+5); v1.2.0 was the first version intended for F-Droid.
 # Bump versionName/versionCode/commit/CurrentVersion together each release
 # (docs/deployment/release-process.md).
 #
@@ -31,9 +31,9 @@ RepoType: git
 Repo: https://github.com/Health-Flare/InnerFlare.git
 
 Builds:
-  - versionName: '1.2.0'
-    versionCode: 4
-    commit: v1.2.0
+  - versionName: '1.2.1'
+    versionCode: 5
+    commit: v1.2.1
     subdir: android
     sudo:
       - apt-get update
@@ -49,5 +49,5 @@ Builds:
 
 AutoUpdateMode: None
 UpdateCheckMode: Tags
-CurrentVersion: '1.2.0'
-CurrentVersionCode: 4
+CurrentVersion: '1.2.1'
+CurrentVersionCode: 5

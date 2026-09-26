@@ -145,6 +145,39 @@ void main() {
     expect(insightsPref.visible, isFalse);
   });
 
+  testWidgets('dragging a card by its handle does not throw (the drag proxy is '
+      'built in the Overlay, outside the Scaffold)', (tester) async {
+    await pumpTestApp(
+      tester,
+      const DashboardCustomizeScreen(),
+      overrides: overrides(),
+    );
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.widgetWithText(SwitchListTile, 'Insights'),
+      200,
+    );
+
+    final handle = find
+        .descendant(
+          of: find.byKey(const ValueKey('quick-stat-0-column')),
+          matching: find.byIcon(Icons.drag_handle_rounded),
+        )
+        .first;
+    final gesture = await tester.startGesture(tester.getCenter(handle));
+    await tester.pump(const Duration(milliseconds: 100));
+    await gesture.moveBy(const Offset(0, 40));
+    await tester.pump(const Duration(milliseconds: 100));
+    await gesture.moveBy(const Offset(0, 40));
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(tester.takeException(), isNull);
+
+    await gesture.up();
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+  });
+
   group('resizing (docs/features/dashboard_grid_layout.feature)', () {
     /// Simulates the resize handle's long-press-then-drag gesture: presses
     /// at the handle, waits past the long-press threshold, drags by
