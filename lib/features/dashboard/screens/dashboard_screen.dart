@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:inner_flare/core/debug/debug_chrome.dart';
 import 'package:inner_flare/core/providers/cycle_day_log_repository_provider.dart';
 import 'package:inner_flare/core/providers/dashboard_card_preferences_provider.dart';
 import 'package:inner_flare/core/providers/has_any_logs_provider.dart';
@@ -180,7 +181,7 @@ class DashboardScreen extends ConsumerWidget {
           ],
         ),
         actions: [
-          const DatabaseStatusIndicator(),
+          if (showDebugChrome) const DatabaseStatusIndicator(),
           IconButton(
             tooltip: 'Customize dashboard',
             icon: const Icon(Icons.tune_rounded),

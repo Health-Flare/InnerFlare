@@ -1,0 +1,106 @@
+# The shot list. One entry = one captured screen state, reused by store
+# screenshots, marketing images, and (as reference frames) videos.
+# See ../README.md for the setup step and selector vocabulary.
+#
+# Order within a store slot follows `order`. Apple shows the first 3 in
+# search results, so the first three carry the pitch: your data on your
+# phone, encrypted and locked, and logging in one screen.
+version: 1
+
+defaults:
+  dataset: regular
+  layout: default
+  theme: light
+  via: root            # root: pump screen as MaterialApp home; app_shell: real app
+  targets: [iphone_6_5, ipad_13]
+  stores: [app_store, play_store]
+
+shots:
+  - id: dashboard
+    order: 1
+    screen: dashboard
+    layout: customized
+    purpose: "The hero: your dashboard, your data, on your phone."
+    must_show: ["Quick stats", "gauge or trend card with real numbers", "Log today button"]
+    must_not_show: ["DatabaseStatusIndicator lock icon", "DEBUG banner", "empty cards"]
+
+  - id: app_lock
+    order: 2
+    screen: app_lock
+    purpose: "Encrypted at rest, and it re-locks itself when you step away. The privacy claim, made visible."
+    must_show: ["'Inner Flare is locked'", "the lock icon", "Unlock button"]
+    must_not_show: ["any real biometric sheet", "an 'Unlocking...' state"]
+    note: "Capture only: never tap Unlock (real local_auth)."
+
+  - id: log_entry
+    order: 3
+    screen: log_entry
+    params: {date: latest_period_start}
+    setup:
+      - wait_ms: 300
+    purpose: "Logging is one screen and nothing is required."
+    must_show: ["'Nothing here is required' helper text", "Flow chips", "Symptom chips", "note field"]
+    must_not_show: ["keyboard", "placeholder-only empty state"]
+
+  - id: calendar
+    order: 4
+    screen: calendar
+    purpose: "Flow intensity readable at a glance across months."
+    must_show: ["current month with several logged period days"]
+
+  - id: insights
+    order: 5
+    screen: insights
+    purpose: "Predictions are plain statistics from your own history."
+    must_show: ["cycle length average", "what the estimate is based on"]
+    must_not_show: ["any wording that reads as a diagnosis"]
+
+  - id: customize
+    order: 6
+    screen: dashboard_customize
+    layout: customized
+    purpose: "Show, hide, reorder and resize cards."
+    must_show: ["resize controls", "at least one gauge/trend card row"]
+
+  - id: dashboard_default
+    order: 7
+    screen: dashboard
+    layout: default
+    purpose: "What a fresh install looks like: simple, calm."
+    stores: [app_store]
+    status: needs_review
+
+  - id: export
+    order: 8
+    screen: export
+    purpose: "Your data, portable on your terms: no cloud step."
+    must_show: ["Encrypt export toggle", "the explanation that nothing is sent automatically"]
+    status: needs_review
+
+  - id: settings
+    order: 9
+    screen: settings
+    purpose: "Auto-lock and symptom settings. Not used in store sets by default."
+    stores: []          # capture for reference only
+    status: needs_review
+
+  - id: insights_empty
+    order: 10
+    screen: insights
+    dataset: empty
+    purpose: "Honesty shot: 'not enough data yet' instead of a guess."
+    stores: []          # marketing/web only, opt in per layout in marketing.yaml
+    status: needs_review
+
+# Which shots go in which store slot, in upload order. The runner writes
+# these as screenshots/store/<store>/<slot>/<NN>_<shot_id>.png.
+# Play needs at least 2 phone shots; App Store allows up to 10 per slot.
+store_sets:
+  app_store:
+    iphone_6_5: [dashboard, app_lock, log_entry, calendar, insights, customize, export]
+    ipad_13: [dashboard, app_lock, log_entry, calendar, insights, customize]
+  play_store:
+    # Composed from the iphone_6_5 captures (see targets.yaml).
+    phone: [dashboard, app_lock, log_entry, calendar, insights, customize, export]
+    # Raw ipad_13 captures.
+    tablet_10: [dashboard, app_lock, calendar, insights, customize]

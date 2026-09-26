@@ -58,7 +58,7 @@ copy-paste-ready file, since their schema does evolve.
       own reviewers check independently and can flag things a normal store
       review wouldn't (e.g. a permissive-but-non-OSI-approved license
       buried in a transitive dependency).
-- [ ] `v1.0.0` tag exists and builds cleanly from a clean checkout with no
+- [ ] The tag the metadata points at (`v1.2.0` today) exists and builds cleanly from a clean checkout with no
       repo secrets or CI-only environment assumptions (true today: the
       Android/iOS release workflows only add signing material, they don't
       change what's compiled).

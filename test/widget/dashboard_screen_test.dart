@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:inner_flare/core/debug/debug_chrome.dart';
 import 'package:inner_flare/core/providers/cycle_day_log_repository_provider.dart';
 import 'package:inner_flare/core/providers/dashboard_card_preferences_repository_provider.dart';
 import 'package:inner_flare/core/providers/now_provider.dart';
@@ -10,6 +11,7 @@ import 'package:inner_flare/data/repositories/cycle_day_log_repository.dart';
 import 'package:inner_flare/data/repositories/dashboard_card_preferences_repository.dart';
 import 'package:inner_flare/data/repositories/tracked_symptoms_repository.dart';
 import 'package:inner_flare/features/dashboard/screens/dashboard_screen.dart';
+import 'package:inner_flare/features/dashboard/widgets/database_status_indicator.dart';
 import 'package:inner_flare/models/cycle_day_log.dart';
 import 'package:inner_flare/models/period_flow.dart';
 import 'package:inner_flare/models/quick_stat.dart';
@@ -86,6 +88,25 @@ void main() {
       );
     }
   }
+
+  // showDebugChrome is a compile-time constant, so this runs under both
+  // plain `flutter test` (shown) and `--dart-define=SCREENSHOT_MODE=true`
+  // (hidden), and checks the screen honors whichever it was built with.
+  testWidgets('the database status indicator follows showDebugChrome', (
+    tester,
+  ) async {
+    await pumpTestApp(
+      tester,
+      const DashboardScreen(),
+      overrides: overridesFor(() => DateTime(2026, 1, 1, 9)),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byType(DatabaseStatusIndicator),
+      showDebugChrome ? findsOneWidget : findsNothing,
+    );
+  });
 
   testWidgets('shows a greeting, the log-today entry point, and honest '
       'empty states for calendar and insights', (tester) async {
