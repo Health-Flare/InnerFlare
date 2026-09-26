@@ -74,6 +74,13 @@ Process: `docs/deployment/release-process.md`.
 - [ ] `v1.2.0` tag pushed from `main`.
 - [ ] F-Droid: metadata MR opened (blocked on the build spike).
 
+## v1.2.1 (patch: Customize dashboard drag fix)
+
+Copy, version and per-version checklist: `docs/deployment/release-notes/v1.2.1.md`.
+
+- [x] Version bumped to `1.2.1+5`, release notes written, F-Droid draft points at `v1.2.1`.
+- [ ] `v1.2.1` tag pushed from `main`.
+
 ## CI/CD summary
 
 - [x] `ci.yml`: format/analyze/URL-scan/test on every push and PR to `main`.
