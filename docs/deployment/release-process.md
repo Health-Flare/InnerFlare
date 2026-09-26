@@ -55,13 +55,15 @@ git push <remote> vX.Y.Z
 ```
 
 The `release-bundle` job attaches `app-release.aab` and `app-release.apk` to
-a GitHub Release. The `release-ipa` job signs and uploads the IPA to App
+a GitHub Release and uploads the `.aab` to Play's internal testing track. The `release-ipa` job signs and uploads the IPA to App
 Store Connect. Watch both; a failure in one does not stop the other.
 
 ## 3. Google Play
 
-1. Upload the `.aab` to Play Console. Use the **Internal testing** track
-   first and install from it on a device.
+1. CI has already uploaded the `.aab` to the **Internal testing** track
+   (needs the `PLAY_SERVICE_ACCOUNT_JSON` secret, see `android-release.md`).
+   Install from it on a device. If the upload step failed, upload the `.aab`
+   from the GitHub Release by hand.
 2. Paste "What's new" from the release notes.
 3. Promote the same release to **Production** (or **Closed/Open testing**
    first, if you want testers before everyone). Play reviews each release.

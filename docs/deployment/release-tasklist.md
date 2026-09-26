@@ -9,7 +9,7 @@ ordered, repeatable steps for shipping any version are in
 
 | Platform | CI workflow | Status | Detail doc |
 |---|---|---|---|
-| Google Play | `.github/workflows/android-release.yml` | Built, signs on `v*.*.*` tag push | `docs/deployment/android-release.md` |
+| Google Play | `.github/workflows/android-release.yml` | Signs on `v*.*.*` tag push and uploads to the internal track (needs `PLAY_SERVICE_ACCOUNT_JSON`) | `docs/deployment/android-release.md` |
 | Apple App Store | `.github/workflows/ios-release.yml` | Working: Apple secrets are configured; signed IPAs uploaded to App Store Connect for v1.0.1 and v1.1.0 | `docs/deployment/ios-release.md` |
 | F-Droid | none (F-Droid builds from source on its own infra) | Not started, metadata PR to `fdroid/fdroid-data` | `docs/deployment/fdroid/README.md` |
 
@@ -77,7 +77,7 @@ Process: `docs/deployment/release-process.md`.
 ## CI/CD summary
 
 - [x] `ci.yml`: format/analyze/URL-scan/test on every push and PR to `main`.
-- [x] `android-release.yml`: debug APK on manual dispatch; signed AAB+APK GitHub Release on `v*.*.*` tag.
+- [x] `android-release.yml`: debug APK on manual dispatch; signed AAB+APK GitHub Release plus Play internal-track upload on `v*.*.*` tag (upload step needs the `PLAY_SERVICE_ACCOUNT_JSON` secret, not yet set).
 - [x] `ios-release.yml`: simulator build on manual dispatch; signed IPA uploaded to App Store Connect on `v*.*.*` tag (working since v1.0.1). Build numbers must strictly increase per upload.
 - [ ] F-Droid has no CI of ours to build. It clones the tagged commit and builds independently. Our job is just making sure the tag builds cleanly with only what's checked into the repo (no CI-only secrets baked into the app itself, which is already true here).
 - [ ] Once both stores are live, decide whether `v*.*.*` tags should trigger *both* release jobs together (simplest) or whether Android/iOS ever need to ship out of step (e.g. an iOS-only hotfix). If so, consider platform-scoped tags (`android-v1.0.1`, `ios-v1.0.1`) instead. Not needed for v1; revisit if it comes up.

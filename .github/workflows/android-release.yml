@@ -4,7 +4,8 @@ on:
   # Manual "get me an APK now" run: download the artifact and sideload it.
   workflow_dispatch:
   push:
-    # Signed release build for the Play Store, triggered by a version tag.
+    # Signed release build, GitHub Release, and Play internal-track upload,
+    # triggered by a version tag.
     tags:
       - "v*.*.*"
 
@@ -112,3 +113,29 @@ jobs:
             build/app/outputs/bundle/release/app-release.aab
             build/app/outputs/flutter-apk/app-release.apk
           generate_release_notes: true
+
+      # Same approach as HealthFlare's release-playstore.yaml: upload the
+      # signed AAB to the Play *internal testing* track. Promotion to
+      # production stays a deliberate step in Play Console.
+      # Each upload needs a higher versionCode (the "+N" in pubspec.yaml's
+      # `version:`) than any build already on Play, or Play rejects it.
+      # Placed after the GitHub release so a Play failure never costs the
+      # release assets.
+      - name: Check Play service account secret is configured
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          if [[ -z "$PLAY_SERVICE_ACCOUNT_JSON" ]]; then
+            echo "Missing repo secret: PLAY_SERVICE_ACCOUNT_JSON" >&2
+            echo "See docs/deployment/android-release.md for how to set it up." >&2
+            exit 1
+          fi
+
+      - name: Upload to Play Store (internal track)
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: org.healthflare.app.innerflare
+          releaseFiles: build/app/outputs/bundle/release/app-release.aab
+          track: internal
+          status: completed
