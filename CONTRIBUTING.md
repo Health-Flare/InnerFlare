@@ -36,7 +36,7 @@ dart run build_runner build --delete-conflicting-outputs
 flutter run
 ```
 
-See `README.md` for simulator/emulator setup and known platform quirks
+See `docs/development.md` for simulator/emulator setup and known platform quirks
 (macOS Keychain friction in particular; it's expected, not a bug), and
 `CLAUDE.md` for the full architecture and conventions reference.
 
