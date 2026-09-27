@@ -17,6 +17,7 @@
 <p align="center">
   <a href="https://github.com/Health-Flare/InnerFlare/actions/workflows/ci.yml"><img src="https://github.com/Health-Flare/InnerFlare/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://github.com/Health-Flare/InnerFlare/releases/latest"><img src="https://img.shields.io/github/v/release/Health-Flare/InnerFlare" alt="Latest release"></a>
+  <a href="https://github.com/sponsors/Health-Flare"><img src="https://img.shields.io/github/sponsors/Health-Flare?label=Sponsor&logo=GitHub" alt="Sponsor on GitHub"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="License: GPL v3"></a>
 </p>
 
@@ -55,6 +56,10 @@ Full policy: [healthflare.org/inner-flare/privacy](https://healthflare.org/inner
 
 - Found a bug or want something? [Open an issue](https://github.com/Health-Flare/InnerFlare/issues/new).
 - Anything that looks like a way data could leave the device, or the lock could be bypassed: please don't open a public issue. Email development@automatedbytes.com.
+
+## Support the project
+
+Inner Flare is free, with no ads and no data to sell. If it helps you, you can [sponsor Health Flare on GitHub](https://github.com/sponsors/Health-Flare). Other ways to give, and where the money goes, are in [FUNDING.md](FUNDING.md).
 
 ## Contributing
 
