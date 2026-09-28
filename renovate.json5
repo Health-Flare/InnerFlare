@@ -39,6 +39,24 @@
       automerge: false,
     },
 
+    // Gradle, the Android Gradle Plugin and the Kotlin Gradle plugin have
+    // hard minimum/maximum versions against each other: AGP 9 refuses to
+    // run on Gradle < 9.6, and AGP 8.x breaks on Gradle >= 9.6 (it uses a
+    // Gradle internal API that was removed). Proposed separately, each PR
+    // breaks the Android build on its own. Group them so they land together.
+    {
+      groupName: 'android toolchain',
+      matchManagers: ['gradle-wrapper', 'gradle'],
+      matchPackageNames: [
+        'gradle',
+        'com.android.application',
+        'com.android.application:com.android.application.gradle.plugin',
+        'org.jetbrains.kotlin.android',
+        'org.jetbrains.kotlin.android:org.jetbrains.kotlin.android.gradle.plugin',
+      ],
+      automerge: false,
+    },
+
     // GitHub Actions majors (actions/checkout, subosito/flutter-action,
     // etc.) don't interact with each other: batch them into one PR instead
     // of one-per-action.
