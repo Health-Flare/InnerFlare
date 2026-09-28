@@ -25,6 +25,7 @@ jobs:
     timeout-minutes: 5
     outputs:
       code: ${{ steps.filter.outputs.code }}
+      android: ${{ steps.filter.outputs.android }}
     steps:
       - uses: actions/checkout@v7
 
@@ -42,6 +43,14 @@ jobs:
               - 'analysis_options.yaml'
               - 'scripts/check_no_network_urls.sh'
               - '.url-scan-ignore'
+              - '.github/workflows/ci.yml'
+            # Anything that can change what Gradle builds: the Android
+            # project itself (Gradle wrapper, AGP/Kotlin plugin versions)
+            # and plugin packages, which bring their own native Android code.
+            android:
+              - 'android/**'
+              - 'pubspec.yaml'
+              - 'pubspec.lock'
               - '.github/workflows/ci.yml'
 
   analyze:
@@ -101,17 +110,51 @@ jobs:
           path: coverage/lcov.info
           retention-days: 14
 
+  # Format/analyze/test never touch Gradle, so without this a Gradle or
+  # Android Gradle Plugin bump (android/** only) skips every real check and
+  # still goes green. Gradle 9.6+ with AGP 8.x, or AGP 9 with Gradle 8.x,
+  # fails at plugin apply time: this job is what catches that.
+  android-build:
+    name: Android build
+    needs: changes
+    if: needs.changes.outputs.android == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Generate Riverpod code
+        run: dart run build_runner build
+
+      - name: Build debug APK
+        run: flutter build apk --debug
+
   required:
     name: CI required
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    needs: [analyze, test]
+    needs: [analyze, test, android-build]
     if: always()
     steps:
       - name: Check required jobs
         run: |
-          if [ "${{ needs.analyze.result }}" = "failure" ] || [ "${{ needs.test.result }}" = "failure" ]; then
-            echo "A required CI job failed."
-            exit 1
-          fi
-          echo "OK (analyze: ${{ needs.analyze.result }}, test: ${{ needs.test.result }})"
+          for result in "${{ needs.analyze.result }}" "${{ needs.test.result }}" "${{ needs.android-build.result }}"; do
+            if [ "$result" = "failure" ] || [ "$result" = "cancelled" ]; then
+              echo "A required CI job did not pass."
+              exit 1
+            fi
+          done
+          echo "OK (analyze: ${{ needs.analyze.result }}, test: ${{ needs.test.result }}, android-build: ${{ needs.android-build.result }})"
