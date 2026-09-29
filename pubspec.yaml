@@ -58,6 +58,7 @@ dependencies:
   # release builds still request no internet permission, and the only URL
   # (the privacy policy) is listed in .url-scan-ignore.
   url_launcher: ^6.3.2
+  package_info_plus: ^10.2.1
 
 dev_dependencies:
   flutter_test:

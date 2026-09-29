@@ -96,6 +96,7 @@ Cycle-math logic (average cycle length, variability, next-period/fertile-window 
 | Export/import | `docs/features/export.feature` |
 | Navigation | `docs/features/navigation.feature` |
 | Symptom tracking settings | `docs/features/symptom_settings.feature` |
+| Settings About section | `docs/features/settings_about.feature` |
 
 ### Review Personas
 
