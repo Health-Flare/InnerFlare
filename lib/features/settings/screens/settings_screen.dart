@@ -13,6 +13,7 @@ import 'package:inner_flare/features/export/screens/import_screen.dart';
 import 'package:inner_flare/features/settings/screens/auto_lock_settings_screen.dart';
 import 'package:inner_flare/features/settings/screens/privacy_disclaimer_screen.dart';
 import 'package:inner_flare/features/settings/screens/symptom_settings_screen.dart';
+import 'package:inner_flare/features/settings/widgets/app_version_tile.dart';
 import 'package:inner_flare/models/cycle_day_log.dart';
 
 /// App settings (docs/features/navigation.feature: "Settings is reachable
@@ -150,6 +151,9 @@ class SettingsScreen extends ConsumerWidget {
                 ),
               );
             },
+          ),
+          const AppVersionTile(
+            contentPadding: EdgeInsets.symmetric(horizontal: 20),
           ),
           ListTile(
             title: const Text('Open source licenses'),
