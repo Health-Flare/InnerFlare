@@ -1,7 +1,9 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:inner_flare/core/providers/cycle_day_log_repository_provider.dart';
 import 'package:inner_flare/data/database/schema.dart';
 import 'package:inner_flare/data/repositories/cycle_day_log_repository.dart';
+import 'package:inner_flare/features/insights/screens/how_estimates_work_screen.dart';
 import 'package:inner_flare/features/insights/screens/insights_screen.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 
@@ -136,5 +138,55 @@ void main() {
 
     expect(find.text('Average cycle length'), findsOneWidget);
     expect(find.textContaining('varied by more than a week'), findsOneWidget);
+  });
+
+  testWidgets('the app bar info button opens how estimates work, even '
+      'with no history', (tester) async {
+    final repository = await seededRepository(const []);
+    await pumpTestApp(
+      tester,
+      const InsightsScreen(),
+      overrides: [
+        cycleDayLogRepositoryProvider.overrideWith((ref) async => repository),
+      ],
+    );
+    await tester.pump(const Duration(milliseconds: 500));
+
+    await tester.tap(find.byTooltip('How estimates work'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(HowEstimatesWorkScreen), findsOneWidget);
+  });
+
+  testWidgets('predictions link to how they are calculated, and the '
+      'fertile window caveat states its assumption', (tester) async {
+    final repository = await seededRepository(
+      regularPeriodStarts(firstStart: DateTime.utc(2026, 7, 1), cycleCount: 3),
+    );
+    await pumpTestApp(
+      tester,
+      const InsightsScreen(),
+      overrides: [
+        cycleDayLogRepositoryProvider.overrideWith((ref) async => repository),
+      ],
+    );
+    await tester.pump(const Duration(milliseconds: 500));
+
+    expect(
+      find.textContaining('about 14 days before your next period'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('not contraception'), findsOneWidget);
+
+    final link = find.text('How is this calculated?');
+    await tester.scrollUntilVisible(
+      link,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(link);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(HowEstimatesWorkScreen), findsOneWidget);
   });
 }

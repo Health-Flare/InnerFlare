@@ -81,7 +81,8 @@ class FertileWindow {
 /// and the user's assumed luteal phase length (BRIEF.md §4.3 settings).
 /// Ovulation is estimated as [nextPeriodStart] minus [lutealPhaseLengthDays];
 /// the fertile window spans the 5 days before ovulation through ovulation
-/// day itself, the standard clinical estimate.
+/// day itself, the six-day window measured by Wilcox et al. (NEJM 1995).
+/// Sources and their caveats: lib/core/citations/medical_sources.dart.
 FertileWindow? predictFertileWindow({
   required DateTime? nextPeriodStart,
   required int lutealPhaseLengthDays,
@@ -96,12 +97,17 @@ FertileWindow? predictFertileWindow({
   );
 }
 
-/// Standard clinical estimate for luteal phase length, used until the user
+/// Average luteal phase length (ACOG: ovulation about 14 days before the
+/// next period). Real cycles range from about 7 to 19 days and a large
+/// app-based study measured a mean of 12.4, so this is a population
+/// average, not a clinical constant; see
+/// lib/core/citations/medical_sources.dart. Used until the user
 /// sets their own value in settings (docs/features/insights.feature covers
 /// the settings surface; not yet implemented).
 const int defaultLutealPhaseLengthDays = 14;
 
-/// Standard estimate for how many days a period lasts, used until the app
+/// Typical period length (ACOG: up to 7 days; mean bleed length 4.0 days in
+/// Bull et al. 2019), used until the app
 /// computes a per-user average from logged period days (v2 candidate per
 /// BRIEF.md §5).
 const int defaultPeriodLengthDays = 5;
@@ -135,7 +141,10 @@ PredictedPeriodRange? predictNextPeriodRange({
 }
 
 /// Whether the last [windowSize] cycle lengths vary by more than [thresholdDays]
-/// from each other (max - min), per docs/features/insights.feature,
+/// from each other (max - min). 7 days is the stricter end of the ACOG/FIGO
+/// regularity limit (7 to 9 days depending on age), applied to everyone;
+/// see lib/core/citations/medical_sources.dart. Per
+/// docs/features/insights.feature,
 /// "Irregular cycles still produce an average, clearly caveated". Fewer than
 /// 2 cycle lengths in the window can't be irregular: there's nothing to vary
 /// against.

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:inner_flare/core/theme/app_theme.dart';
+import 'package:inner_flare/features/insights/screens/how_estimates_work_screen.dart';
 
 /// Explains what each calendar marking means: predictions are explicitly
 /// labeled as estimates, never confirmed events
@@ -31,6 +32,18 @@ class CalendarLegend extends StatelessWidget {
           color: AppColors.midTeal,
           label: 'Fertile window (estimate)',
           isRing: true,
+        ),
+        // Sources for the estimates above (docs/features/citations.feature).
+        SizedBox(
+          height: 14,
+          child: IconButton(
+            tooltip: 'How estimates work',
+            padding: EdgeInsets.zero,
+            iconSize: 16,
+            constraints: const BoxConstraints(minWidth: 24, minHeight: 14),
+            icon: const Icon(Icons.info_outline_rounded),
+            onPressed: () => HowEstimatesWorkScreen.open(context),
+          ),
         ),
       ],
     );

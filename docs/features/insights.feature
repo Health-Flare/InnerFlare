@@ -37,12 +37,13 @@ Feature: Cycle insights and predictions
     Then the predicted next period start is 14 days from today
     And the prediction is labeled as an estimate
 
-  Scenario: Predicted fertile window uses the standard luteal phase length assumption
+  Scenario: Predicted fertile window uses an average luteal phase length assumption
     Given the user's predicted next period start is known
     And the luteal phase length assumption is set in settings
     When the user views insights
     Then the predicted fertile window is computed by subtracting the luteal phase length from the predicted next period start
     And the fertile window is labeled as an estimate
+    And the caveat states the 14-day assumption, its real-world range, and links to its sources (see citations.feature)
 
   Scenario: Irregular cycles still produce an average, clearly caveated
     Given the user's last 3 cycle lengths vary by more than 7 days from each other

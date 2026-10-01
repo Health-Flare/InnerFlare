@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inner_flare/core/providers/cycle_insights_provider.dart';
 import 'package:inner_flare/core/theme/app_theme.dart';
+import 'package:inner_flare/features/insights/screens/how_estimates_work_screen.dart';
 import 'package:inner_flare/features/insights/widgets/insight_stat_card.dart';
 
 const _monthAbbreviations = [
@@ -45,7 +46,16 @@ class InsightsScreen extends ConsumerWidget {
     final insights = ref.watch(cycleInsightsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Insights')),
+      appBar: AppBar(
+        title: const Text('Insights'),
+        actions: [
+          IconButton(
+            tooltip: 'How estimates work',
+            icon: const Icon(Icons.info_outline_rounded),
+            onPressed: () => HowEstimatesWorkScreen.open(context),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: switch (insights) {
           AsyncData(:final value) => _InsightsBody(insights: value),
@@ -135,7 +145,21 @@ class _InsightsBody extends StatelessWidget {
               insights.fertileWindow!.start,
               insights.fertileWindow!.end,
             ),
-            caveat: 'An estimate, not a reliable method of contraception.',
+            caveat:
+                'Assumes ovulation about 14 days before your next period. '
+                'In reality this varies from about 7 to 19 days, so treat '
+                'this as a rough guide, not contraception.',
+          ),
+        ],
+        if (insights.periodRange != null || insights.fertileWindow != null) ...[
+          const SizedBox(height: 4),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: () => HowEstimatesWorkScreen.open(context),
+              icon: const Icon(Icons.info_outline_rounded, size: 18),
+              label: const Text('How is this calculated?'),
+            ),
           ),
         ],
       ],

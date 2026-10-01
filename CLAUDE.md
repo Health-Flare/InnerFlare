@@ -97,6 +97,7 @@ Cycle-math logic (average cycle length, variability, next-period/fertile-window 
 | Navigation | `docs/features/navigation.feature` |
 | Symptom tracking settings | `docs/features/symptom_settings.feature` |
 | Settings About section | `docs/features/settings_about.feature` |
+| Sources for estimates (App Review 1.4.1) | `docs/features/citations.feature` |
 
 ### Review Personas
 
@@ -283,6 +284,7 @@ Use `pump(Duration(milliseconds: 500))` instead of `pumpAndSettle()` when provid
 - Predictions are transparent statistics, not an opaque model: the user can always see what the estimate is based on
 - Clear, specific privacy statements (no vague "we value your privacy")
 - Not a medical device / no diagnostic claims: state this plainly in onboarding
+- Every general medical assumption behind an estimate (fertile window, luteal phase, period length, irregularity threshold) is cited in `lib/core/citations/medical_sources.dart` and shown on "How estimates work" (App Review Guideline 1.4.1). Changing an assumption or its UI wording means updating the citation and its quoted range in the same change.
 
 ## Troubleshooting
 
