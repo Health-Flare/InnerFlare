@@ -8,6 +8,7 @@ import 'package:inner_flare/data/database/schema.dart';
 import 'package:inner_flare/data/repositories/cycle_day_log_repository.dart';
 import 'package:inner_flare/data/repositories/tracked_symptoms_repository.dart';
 import 'package:inner_flare/features/calendar/screens/calendar_screen.dart';
+import 'package:inner_flare/features/insights/screens/how_estimates_work_screen.dart';
 import 'package:inner_flare/models/cycle_day_log.dart';
 import 'package:inner_flare/models/period_flow.dart';
 import 'package:sqflite_common/sqlite_api.dart';
@@ -298,4 +299,27 @@ void main() {
       );
     },
   );
+
+  testWidgets('the legend links to how the estimates are calculated', (
+    tester,
+  ) async {
+    final repository = await seededRepository([]);
+    await pumpTestApp(
+      tester,
+      const CalendarScreen(),
+      overrides: overridesFor(repository, () => DateTime(2026, 1, 5, 9)),
+    );
+    await tester.pumpAndSettle();
+
+    final link = find.byTooltip('How estimates work');
+    await tester.scrollUntilVisible(
+      link,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(link);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(HowEstimatesWorkScreen), findsOneWidget);
+  });
 }

@@ -9,6 +9,7 @@ import 'package:inner_flare/data/repositories/security_settings_repository.dart'
 import 'package:inner_flare/data/repositories/tracked_symptoms_repository.dart';
 import 'package:inner_flare/features/export/screens/export_screen.dart';
 import 'package:inner_flare/features/export/screens/import_screen.dart';
+import 'package:inner_flare/features/insights/screens/how_estimates_work_screen.dart';
 import 'package:inner_flare/features/settings/screens/auto_lock_settings_screen.dart';
 import 'package:inner_flare/features/settings/screens/settings_screen.dart';
 import 'package:inner_flare/features/settings/screens/symptom_settings_screen.dart';
@@ -168,5 +169,23 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(ImportScreen), findsOneWidget);
+  });
+
+  testWidgets('About lists how estimates work, and it opens the sources', (
+    tester,
+  ) async {
+    await pumpTestApp(tester, const SettingsScreen(), overrides: overrides());
+    await tester.pump(const Duration(milliseconds: 500));
+
+    final tile = find.widgetWithText(ListTile, 'How estimates work');
+    await tester.scrollUntilVisible(
+      tile,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(tile);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(HowEstimatesWorkScreen), findsOneWidget);
   });
 }

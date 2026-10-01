@@ -10,6 +10,7 @@ import 'package:inner_flare/core/providers/now_provider.dart';
 import 'package:inner_flare/features/dashboard/widgets/database_status_indicator.dart';
 import 'package:inner_flare/features/export/screens/export_screen.dart';
 import 'package:inner_flare/features/export/screens/import_screen.dart';
+import 'package:inner_flare/features/insights/screens/how_estimates_work_screen.dart';
 import 'package:inner_flare/features/settings/screens/auto_lock_settings_screen.dart';
 import 'package:inner_flare/features/settings/screens/privacy_disclaimer_screen.dart';
 import 'package:inner_flare/features/settings/screens/symptom_settings_screen.dart';
@@ -151,6 +152,15 @@ class SettingsScreen extends ConsumerWidget {
                 ),
               );
             },
+          ),
+          ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+            title: const Text('How estimates work'),
+            subtitle: const Text(
+              'How predictions are calculated, and the sources behind them.',
+            ),
+            trailing: const Icon(Icons.chevron_right_rounded),
+            onTap: () => HowEstimatesWorkScreen.open(context),
           ),
           const AppVersionTile(
             contentPadding: EdgeInsets.symmetric(horizontal: 20),

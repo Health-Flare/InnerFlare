@@ -2,3 +2,9 @@
 # browser. Inner Flare does not request internet permission and does not
 # fetch the page itself. See lib/core/privacy/open_privacy_policy.dart.
 lib/core/privacy/privacy_policy_url.dart
+
+# Citations for the medical assumptions behind the app's estimates (App
+# Review Guideline 1.4.1). Each links to the original publication and is
+# opened only by a user tap in the system browser; the app never fetches
+# them. See lib/core/citations/open_source_link.dart.
+lib/core/citations/medical_sources.dart
