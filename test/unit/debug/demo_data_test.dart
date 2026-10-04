@@ -8,6 +8,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:inner_flare/core/cycle_math/cycle_math.dart';
 import 'package:inner_flare/core/debug/demo_data.dart';
 import 'package:inner_flare/models/cycle_day_log.dart';
+import 'package:inner_flare/models/period_flow.dart';
+
+/// The same rule the repository uses (issue #101).
+List<DateTime> _periodStartsOf(List<CycleDayLog> logs) {
+  return periodStartsFromFlowLog(<DateTime, PeriodFlow>{
+    for (final log in logs)
+      if (log.periodFlow != null) log.date: log.periodFlow!,
+  });
+}
 
 void main() {
   final now = DateTime.utc(2026, 9, 8);
@@ -34,38 +43,13 @@ void main() {
 
   test('produces enough complete cycles for a non-irregular average', () {
     final logs = buildDemoCycleLogs(now: now);
-    // Mirrors CycleDayLogRepository._isPeriodStart: a logged day is a
-    // period start iff the immediately preceding calendar day has no
-    // period flow logged.
-    final logsByDate = {for (final log in logs) log.date: log};
-    final periodStarts = [
-      for (final log in logs)
-        if (log.periodFlow != null &&
-            logsByDate[log.date.subtract(const Duration(days: 1))]
-                    ?.periodFlow ==
-                null)
-          log.date,
-    ];
-
-    final lengths = cycleLengthsFromPeriodStarts(periodStarts);
-    expect(lengths.length, greaterThanOrEqualTo(4));
+    final lengths = cycleLengthsFromPeriodStarts(_periodStartsOf(logs));
+    expect(lengths, [28, 27, 29, 28, 30]);
     expect(averageCycleLength(lengths), isNotNull);
     expect(cycleLengthsAreIrregular(lengths), isFalse);
   });
 
   group('perimenopause dataset', () {
-    List<DateTime> periodStartsOf(List<CycleDayLog> logs) {
-      final logsByDate = {for (final log in logs) log.date: log};
-      return [
-        for (final log in logs)
-          if (log.periodFlow != null &&
-              logsByDate[log.date.subtract(const Duration(days: 1))]
-                      ?.periodFlow ==
-                  null)
-            log.date,
-      ]..sort();
-    }
-
     test('never logs a day after now', () {
       for (final log in buildPerimenopauseDemoCycleLogs(now: now)) {
         expect(log.date.isAfter(now), isFalse, reason: '${log.date} is future');
@@ -87,8 +71,12 @@ void main() {
 
     test('produces the intended irregular cycle lengths', () {
       final logs = buildPerimenopauseDemoCycleLogs(now: now);
-      final lengths = cycleLengthsFromPeriodStarts(periodStartsOf(logs));
-      expect(lengths, [26, 24, 31, 27, 45, 35, 58]);
+      final lengths = cycleLengthsFromPeriodStarts(_periodStartsOf(logs));
+      // Two of the generated periods open with a day of spotting. Since
+      // #101 cycle day 1 is the first day of real flow, so those periods
+      // start a day later than the generator's own start dates: the 27
+      // and 35 day gaps read as 28 and 34.
+      expect(lengths, [26, 24, 31, 28, 45, 34, 58]);
       expect(cycleLengthsAreIrregular(lengths), isTrue);
     });
 

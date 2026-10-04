@@ -1,3 +1,4 @@
+import 'package:inner_flare/core/cycle_math/cycle_math.dart';
 import 'package:inner_flare/data/database/schema.dart';
 import 'package:inner_flare/models/cycle_day_log.dart';
 import 'package:inner_flare/models/ovulation_test_result.dart';
@@ -6,6 +7,14 @@ import 'package:sqflite_common/sqlite_api.dart';
 
 /// Hand-written SQL access to `cycle_day_logs`. Maps rows to/from
 /// [CycleDayLog]; providers call this, never raw SQL directly.
+///
+/// Period starts are never stored. Every read works them out from the
+/// whole flow log with [periodStartsFromFlowLog] (issue #101), so saving
+/// or editing one day always updates its neighbours, the order days were
+/// saved in never matters, and stale flags written by older versions (or
+/// carried in older backup files) are ignored. The `is_period_start`
+/// column stays in the schema for compatibility but is not read; new
+/// rows store 0 there.
 class CycleDayLogRepository {
   CycleDayLogRepository(this._db);
 
@@ -19,7 +28,8 @@ class CycleDayLogRepository {
       limit: 1,
     );
     if (rows.isEmpty) return null;
-    return _fromRow(rows.first);
+    final starts = await _periodStartKeys();
+    return _fromRow(rows.first, starts);
   }
 
   /// All logged days between [start] and [end], inclusive: backs the
@@ -30,19 +40,16 @@ class CycleDayLogRepository {
       where: 'date >= ? AND date <= ?',
       whereArgs: [_dateKey(start), _dateKey(end)],
     );
-    return rows.map(_fromRow).toList();
+    final starts = await _periodStartKeys();
+    return rows.map((row) => _fromRow(row, starts)).toList();
   }
 
   /// Every period-start date on record, oldest first: the raw input to
-  /// the cycle-length/prediction math in `cycle_math.dart`.
+  /// the cycle-length/prediction math in `cycle_math.dart`. Worked out
+  /// from the whole flow log on every call; see the class comment.
   Future<List<DateTime>> getPeriodStartDates() async {
-    final rows = await _db.query(
-      cycleDayLogsTable,
-      columns: ['date'],
-      where: 'is_period_start = 1',
-      orderBy: 'date ASC',
-    );
-    return rows.map((row) => DateTime.parse(row['date'] as String)).toList();
+    final keys = await _periodStartKeys();
+    return [for (final key in keys) DateTime.parse(key)];
   }
 
   /// Every date with a period flow logged: the raw input to
@@ -60,7 +67,8 @@ class CycleDayLogRepository {
   /// export uses to build a backup file (docs/features/export.feature).
   Future<List<CycleDayLog>> getAll() async {
     final rows = await _db.query(cycleDayLogsTable, orderBy: 'date ASC');
-    return rows.map(_fromRow).toList();
+    final starts = _periodStartKeysFromRows(rows);
+    return rows.map((row) => _fromRow(row, starts)).toList();
   }
 
   /// Deletes every row: only used by import's "replace" strategy
@@ -80,37 +88,43 @@ class CycleDayLogRepository {
   /// Saves [log], replacing any existing row for that date: there is
   /// never more than one row per date (see docs/features/log.feature,
   /// "Editing an existing day's log"). `isPeriodStart` on [log] is
-  /// ignored and recomputed from whether the prior day already had a
-  /// period flow logged.
+  /// ignored; the returned log carries the value worked out from the
+  /// whole log after this save.
   Future<CycleDayLog> save(CycleDayLog log) async {
     final dateKey = _dateKey(log.date);
-    final saved = log.copyWith(
-      isPeriodStart: await _isPeriodStart(log.date, log.periodFlow),
-    );
 
     await _db.insert(
       cycleDayLogsTable,
-      _toRow(saved, dateKey),
+      _toRow(log, dateKey),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
 
-    return saved;
+    final starts = await _periodStartKeys();
+    return log.copyWith(isPeriodStart: starts.contains(dateKey));
   }
 
-  Future<bool> _isPeriodStart(DateTime date, PeriodFlow? periodFlow) async {
-    if (periodFlow == null) return false;
-
-    final priorDayKey = _dateKey(date.subtract(const Duration(days: 1)));
-    final priorRows = await _db.query(
+  Future<Set<String>> _periodStartKeys() async {
+    final rows = await _db.query(
       cycleDayLogsTable,
-      columns: ['period_flow'],
-      where: 'date = ?',
-      whereArgs: [priorDayKey],
-      limit: 1,
+      columns: ['date', 'period_flow'],
+      where: 'period_flow IS NOT NULL',
     );
-    final priorHadFlow =
-        priorRows.isNotEmpty && priorRows.first['period_flow'] != null;
-    return !priorHadFlow;
+    return _periodStartKeysFromRows(rows);
+  }
+
+  /// Period-start date keys, in date order, from any set of rows that
+  /// includes every flow day (rows without flow are skipped).
+  Set<String> _periodStartKeysFromRows(List<Map<String, Object?>> rows) {
+    final flowByDate = <DateTime, PeriodFlow>{
+      for (final row in rows)
+        if (row['period_flow'] != null)
+          DateTime.parse(row['date'] as String): PeriodFlow.values.byName(
+            row['period_flow'] as String,
+          ),
+    };
+    return {
+      for (final start in periodStartsFromFlowLog(flowByDate)) _dateKey(start),
+    };
   }
 
   static String _dateKey(DateTime date) {
@@ -122,7 +136,8 @@ class CycleDayLogRepository {
     return {
       'date': dateKey,
       'period_flow': log.periodFlow?.name,
-      'is_period_start': log.isPeriodStart ? 1 : 0,
+      // Legacy column, not read since #101; see the class comment.
+      'is_period_start': 0,
       'symptoms': log.symptoms.join(','),
       'note': log.note,
       'ovulation_test_result': log.ovulationTestResult?.name,
@@ -130,12 +145,13 @@ class CycleDayLogRepository {
     };
   }
 
-  CycleDayLog _fromRow(Map<String, Object?> row) {
+  CycleDayLog _fromRow(Map<String, Object?> row, Set<String> periodStarts) {
     final symptomsRaw = row['symptoms'] as String? ?? '';
+    final dateKey = row['date'] as String;
     return CycleDayLog(
-      date: DateTime.parse(row['date'] as String),
+      date: DateTime.parse(dateKey),
       periodFlow: _enumOrNull(PeriodFlow.values, row['period_flow'] as String?),
-      isPeriodStart: (row['is_period_start'] as int? ?? 0) != 0,
+      isPeriodStart: periodStarts.contains(dateKey),
       symptoms: symptomsRaw.isEmpty ? const {} : symptomsRaw.split(',').toSet(),
       note: row['note'] as String?,
       ovulationTestResult: _enumOrNull(

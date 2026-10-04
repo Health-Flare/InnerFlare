@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:inner_flare/core/cycle_math/cycle_math.dart';
 import 'package:inner_flare/data/database/schema.dart';
 import 'package:inner_flare/data/export/backup_data.dart';
 import 'package:inner_flare/data/export/backup_exporter.dart';
@@ -132,6 +133,73 @@ void main() {
         );
       },
     );
+
+    test('a file from an older version with stale period-start flags '
+        'gives correct starts (#101)', () async {
+      // Shaped like an export from before #101: flags as the old save()
+      // left them after back-logging March 1, plus a spotting "start".
+      final contents = await BackupFileCodec().encode(
+        BackupData(
+          schemaVersion: 8,
+          exportedAt: DateTime.utc(2026, 9, 15),
+          cycleDayLogs: [
+            CycleDayLog(
+              date: DateTime.utc(2026, 3, 1),
+              periodFlow: PeriodFlow.light,
+              isPeriodStart: true,
+            ),
+            CycleDayLog(
+              date: DateTime.utc(2026, 3, 2),
+              periodFlow: PeriodFlow.medium,
+              isPeriodStart: true,
+            ),
+            CycleDayLog(
+              date: DateTime.utc(2026, 3, 15),
+              periodFlow: PeriodFlow.spotting,
+              isPeriodStart: true,
+            ),
+          ],
+          symptoms: const [],
+        ),
+      );
+
+      await importer.import(contents, strategy: ImportStrategy.replace);
+
+      expect((await logRepository.getPeriodStartDates()).map(dateOnly), [
+        DateTime.utc(2026, 3, 1),
+      ]);
+    });
+  });
+
+  group('import: merge recalculates period starts (#101)', () {
+    test('an imported day before a local period moves its start', () async {
+      await logRepository.save(
+        CycleDayLog(
+          date: DateTime.utc(2026, 3, 2),
+          periodFlow: PeriodFlow.medium,
+        ),
+      );
+      final contents = await BackupFileCodec().encode(
+        BackupData(
+          schemaVersion: schemaVersion,
+          exportedAt: DateTime.utc(2026, 9, 15),
+          cycleDayLogs: [
+            CycleDayLog(
+              date: DateTime.utc(2026, 3, 1),
+              periodFlow: PeriodFlow.light,
+              isPeriodStart: true,
+            ),
+          ],
+          symptoms: const [],
+        ),
+      );
+
+      await importer.import(contents, strategy: ImportStrategy.merge);
+
+      expect((await logRepository.getPeriodStartDates()).map(dateOnly), [
+        DateTime.utc(2026, 3, 1),
+      ]);
+    });
   });
 
   group('import: merge', () {

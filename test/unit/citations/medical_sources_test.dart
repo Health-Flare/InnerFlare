@@ -20,6 +20,16 @@ void main() {
     expect(titles, contains('Irregular cycles'));
   });
 
+  test('explains when a period starts, with a source (#101)', () {
+    final average = estimateExplanations.singleWhere(
+      (e) => e.title == 'Average cycle length and variability',
+    );
+    expect(average.method, contains('first day of light, medium or heavy'));
+    expect(average.method, contains('Spotting'));
+    expect(average.sources, containsAll([figo2023, bull2019]));
+    expect(average.evidence, contains('first day of bleeding'));
+  });
+
   test('every source links to the original over https', () {
     for (final source in medicalSources) {
       final uri = Uri.parse(source.url);
