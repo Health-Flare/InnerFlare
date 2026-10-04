@@ -6,6 +6,8 @@ library;
 
 import 'dart:math' as math;
 
+import 'package:inner_flare/models/period_flow.dart';
+
 /// Normalizes a date to UTC midnight so day-count math is never skewed by
 /// daylight saving time transitions in the local timezone.
 DateTime dateOnly(DateTime date) {
@@ -15,6 +17,45 @@ DateTime dateOnly(DateTime date) {
 /// Whole days between two dates, DST-safe.
 int daysBetween(DateTime from, DateTime to) {
   return dateOnly(to).difference(dateOnly(from)).inDays;
+}
+
+/// The longest run of days with nothing logged (or no flow logged) that
+/// still counts as part of the same period: one day. A user who forgets
+/// to log a single day mid-period should not get a 3-day "cycle".
+const int maxDaysWithoutFlowInsidePeriod = 1;
+
+/// Every period start in [flowByDate], oldest first, worked out from the
+/// whole log at once, so the answer never depends on the order days were
+/// saved in (issue #101, docs/features/log.feature).
+///
+/// Flow days (spotting included) separated by at most
+/// [maxDaysWithoutFlowInsidePeriod] days without flow belong to one
+/// bleeding episode. The episode's period start, cycle day 1, is its first
+/// day of light, medium or heavy flow, following the clinical convention
+/// that a cycle runs from the first day of bleeding, not spotting
+/// (FIGO 2023; Bull et al. 2019). An episode of spotting alone starts no
+/// period.
+List<DateTime> periodStartsFromFlowLog(Map<DateTime, PeriodFlow> flowByDate) {
+  final flowByDay = <DateTime, PeriodFlow>{
+    for (final entry in flowByDate.entries) dateOnly(entry.key): entry.value,
+  };
+  final days = flowByDay.keys.toList()..sort();
+
+  final starts = <DateTime>[];
+  DateTime? previousFlowDay;
+  var episodeHasStart = false;
+  for (final day in days) {
+    final newEpisode =
+        previousFlowDay == null ||
+        daysBetween(previousFlowDay, day) > maxDaysWithoutFlowInsidePeriod + 1;
+    if (newEpisode) episodeHasStart = false;
+    if (!episodeHasStart && flowByDay[day] != PeriodFlow.spotting) {
+      starts.add(day);
+      episodeHasStart = true;
+    }
+    previousFlowDay = day;
+  }
+  return starts;
 }
 
 /// Cycle lengths (in days) between each consecutive pair of period start
@@ -163,10 +204,13 @@ bool cycleLengthsAreIrregular(
 /// docs/features/quick_stats.feature.
 enum PeriodReferencePoint { start, end }
 
-/// The last consecutive day of period flow, walking forward day-by-day
-/// from [lastPeriodStart] through [datesWithPeriodFlow]. Stops at the
-/// first day without flow, so an unrelated later logged day (e.g. the
-/// start of a *different* period) is never swept in.
+/// The last day of period flow (spotting included) in the bleeding
+/// episode that begins at [lastPeriodStart], walking forward through
+/// [datesWithPeriodFlow]. A gap of up to [maxDaysWithoutFlowInsidePeriod]
+/// days without flow is stepped over, the same rule
+/// [periodStartsFromFlowLog] uses, so one forgotten day doesn't end the
+/// period early. A longer gap stops the walk, so an unrelated later
+/// logged day (e.g. the start of a *different* period) is never swept in.
 ///
 /// A period still being logged today has no fixed "end" yet. Flow logged
 /// for today keeps this walking forward one more day, landing on today
@@ -178,10 +222,17 @@ DateTime lastLoggedPeriodEndDate({
 }) {
   final flowDates = datesWithPeriodFlow.map(dateOnly).toSet();
   var end = dateOnly(lastPeriodStart);
-  var cursor = end;
-  while (flowDates.contains(cursor)) {
-    end = cursor;
-    cursor = cursor.add(const Duration(days: 1));
+  var advanced = true;
+  while (advanced) {
+    advanced = false;
+    for (var step = 1; step <= maxDaysWithoutFlowInsidePeriod + 1; step++) {
+      final next = end.add(Duration(days: step));
+      if (flowDates.contains(next)) {
+        end = next;
+        advanced = true;
+        break;
+      }
+    }
   }
   return end;
 }

@@ -47,7 +47,50 @@ Feature: Daily logging
     Then the existing entry is updated, not duplicated
     And there is still only one cycle_day_logs row for today's date
 
+  # Period starts are worked out from the whole log every time they are
+  # read, never stored at save time, so editing or back-logging a day
+  # always updates its neighbours too. Rule (issue #101): cycle day 1 is
+  # the first day of light, medium or heavy flow. Spotting can continue a
+  # period but never starts one. One day without flow inside a period
+  # does not split it; two or more days without flow do.
   Scenario: Marking a day as the start of a period
-    When the user logs a day with any non-null period flow
-    Then the app determines whether this day is the period start
-    Based on whether the prior day also had period flow logged
+    Given no flow is logged on the 2 days before
+    When the user logs a day with "light", "medium" or "heavy" flow
+    Then that day is the period start
+
+  Scenario: The order days are saved in does not change the cycles
+    Given the same period days are logged in any order
+    Then the app finds the same period starts every time
+
+  Scenario: Back-logging the day before a period moves its start
+    Given the user logged "medium" flow on March 2
+    When the user back-logs "light" flow on March 1
+    Then March 1 is the period start
+    And March 2 is not a period start
+
+  Scenario: Clearing flow on the first day moves the start to the next day
+    Given the user logged flow on March 1 and March 2
+    When the user changes March 1 to no flow
+    Then March 2 is the period start
+
+  Scenario: Clearing every day of a period removes it
+    Given the user logged flow on March 1 and March 2 only
+    When the user changes both days to no flow
+    Then there is no period start in March
+
+  Scenario: Spotting alone does not start a period
+    Given the user logs only spotting on a day between periods
+    Then no new period starts
+    And the spotting still shows on the calendar
+
+  Scenario: Spotting before a period is part of it, but day 1 is the first day of real flow
+    Given the user logged spotting on March 1 and "medium" flow on March 2
+    Then March 2 is the period start
+
+  Scenario: One unlogged day inside a period does not split it
+    Given the user logged flow on March 1 and 2, nothing on March 3, and flow on March 4
+    Then March 1 is the only period start
+
+  Scenario: Two days without flow end a period
+    Given the user logged flow on March 1, nothing on March 2 and 3, and flow on March 4
+    Then March 1 and March 4 are both period starts

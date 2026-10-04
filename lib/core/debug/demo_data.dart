@@ -57,7 +57,10 @@ List<CycleDayLog> buildDemoCycleLogs({required DateTime now}) {
 ///
 /// Seven complete cycles that start out slightly short (24-26 days),
 /// then drift: 31, 27, then a 45-day gap, a 35-day cycle and a 58-day
-/// gap before the most recent (in-progress) period. Flow varies from
+/// gap before the most recent (in-progress) period. Two periods open
+/// with a day of spotting, so the app (which counts cycle day 1 from the
+/// first day of real flow, issue #101) shows the 27 and 35 day cycles
+/// as 28 and 34. Flow varies from
 /// two-day spotting to nine days of heavy flow, ovulation tests stop
 /// producing a clear positive as the gaps lengthen, and symptoms lean
 /// toward sleep, mood and hot-flash complaints. The built-in symptom

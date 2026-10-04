@@ -109,27 +109,33 @@ const owhMenstrualCycle = MedicalSource(
 
 /// Every source the app cites, in the order first cited.
 const List<MedicalSource> medicalSources = [
+  owhMenstrualCycle,
+  figo2023,
+  bull2019,
+  acogAbnormalBleeding,
   wilcox1995,
   wilcox2000,
   acogFertilityAwareness,
-  owhMenstrualCycle,
-  bull2019,
-  acogAbnormalBleeding,
-  figo2023,
 ];
 
 const List<EstimateExplanation> estimateExplanations = [
   EstimateExplanation(
     title: 'Average cycle length and variability',
     method:
-        'The number of days between each period start you log. The average '
-        'uses your last 6 cycles; variability is how far those cycles '
-        'spread around the average (standard deviation).',
+        'The number of days between each period start you log. A period '
+        'starts on its first day of light, medium or heavy flow. Spotting '
+        'counts as part of a period but never starts one, and one day '
+        'without flow in the middle of a period does not split it. The '
+        'average uses your last 6 cycles; variability is how far those '
+        'cycles spread around the average (standard deviation).',
     evidence:
-        'These come only from your own logged dates. Cycle lengths differ '
-        'between people and from cycle to cycle, which is why the app shows '
-        'variability next to the average rather than the average alone.',
-    sources: [owhMenstrualCycle],
+        'These come only from your own logged dates. A cycle is counted '
+        'from the first day of bleeding in one cycle to the first day of '
+        'the next. Large studies count bleeding, not spotting, when '
+        'measuring periods. Cycle lengths differ between people and from '
+        'cycle to cycle, which is why the app shows variability next to '
+        'the average rather than the average alone.',
+    sources: [owhMenstrualCycle, figo2023, bull2019],
   ),
   EstimateExplanation(
     title: 'Predicted next period',

@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:inner_flare/core/cycle_math/cycle_math.dart';
 import 'package:inner_flare/data/database/schema.dart';
 import 'package:inner_flare/data/repositories/cycle_day_log_repository.dart';
+import 'package:inner_flare/models/cycle_day_log.dart';
 import 'package:inner_flare/models/period_flow.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 
@@ -106,5 +108,123 @@ void main() {
     await repository.deleteAll();
 
     expect(await repository.getAll(), isEmpty);
+  });
+
+  group('period starts are worked out from the whole log (#101)', () {
+    DateTime d(int day) => DateTime.utc(2026, 3, day);
+    CycleDayLog flowLog(int day, PeriodFlow? flow) =>
+        CycleDayLog(date: d(day), periodFlow: flow);
+
+    test('back-logging the day before a period moves its start', () async {
+      await repository.save(flowLog(2, PeriodFlow.medium));
+      await repository.save(flowLog(1, PeriodFlow.light));
+
+      expect((await repository.getPeriodStartDates()).map(dateOnly), [d(1)]);
+      expect((await repository.getByDate(d(2)))?.isPeriodStart, isFalse);
+      expect((await repository.getByDate(d(1)))?.isPeriodStart, isTrue);
+    });
+
+    test('clearing flow on the first day moves the start forward', () async {
+      await repository.save(flowLog(1, PeriodFlow.medium));
+      await repository.save(flowLog(2, PeriodFlow.medium));
+      await repository.save(flowLog(1, null));
+
+      expect((await repository.getPeriodStartDates()).map(dateOnly), [d(2)]);
+    });
+
+    test('clearing every day of a period removes it', () async {
+      await repository.save(flowLog(1, PeriodFlow.medium));
+      await repository.save(flowLog(2, PeriodFlow.medium));
+      await repository.save(flowLog(1, null));
+      await repository.save(flowLog(2, null));
+
+      expect((await repository.getPeriodStartDates()).map(dateOnly), isEmpty);
+    });
+
+    test('deleteAll leaves no period starts behind', () async {
+      await repository.save(flowLog(1, PeriodFlow.medium));
+      await repository.deleteAll();
+
+      expect((await repository.getPeriodStartDates()).map(dateOnly), isEmpty);
+    });
+
+    test('spotting alone does not start a period', () async {
+      await repository.save(flowLog(15, PeriodFlow.spotting));
+
+      expect((await repository.getPeriodStartDates()).map(dateOnly), isEmpty);
+      expect(
+        (await repository.getByDate(d(15)))?.periodFlow,
+        PeriodFlow.spotting,
+      );
+    });
+
+    test('one unlogged day inside a period does not split it', () async {
+      await repository.save(flowLog(1, PeriodFlow.medium));
+      await repository.save(flowLog(2, PeriodFlow.medium));
+      await repository.save(flowLog(4, PeriodFlow.light));
+
+      expect((await repository.getPeriodStartDates()).map(dateOnly), [d(1)]);
+    });
+
+    test('save order never changes the starts', () async {
+      final logs = [
+        flowLog(1, PeriodFlow.spotting),
+        flowLog(2, PeriodFlow.heavy),
+        flowLog(3, PeriodFlow.heavy),
+        flowLog(5, PeriodFlow.light),
+        flowLog(14, PeriodFlow.spotting),
+        flowLog(29, PeriodFlow.medium),
+        flowLog(30, PeriodFlow.medium),
+      ];
+      final orders = [
+        logs,
+        logs.reversed.toList(),
+        [logs[3], logs[0], logs[6], logs[1], logs[4], logs[2], logs[5]],
+      ];
+      for (final order in orders) {
+        await repository.deleteAll();
+        for (final log in order) {
+          await repository.save(log);
+        }
+        expect((await repository.getPeriodStartDates()).map(dateOnly), [
+          d(2),
+          d(29),
+        ]);
+      }
+    });
+
+    test('the value returned by save reflects the whole log', () async {
+      await repository.save(flowLog(2, PeriodFlow.medium));
+      final saved = await repository.save(flowLog(1, PeriodFlow.spotting));
+
+      expect(saved.isPeriodStart, isFalse);
+      expect((await repository.getPeriodStartDates()).map(dateOnly), [d(2)]);
+    });
+
+    test('stale flags stored by an older version are ignored', () async {
+      // Rows exactly as the old save() left them after back-logging:
+      // both days flagged as starts, plus a stray spotting "start".
+      for (final row in [
+        {'date': '2026-03-01', 'period_flow': 'light', 'is_period_start': 1},
+        {'date': '2026-03-02', 'period_flow': 'medium', 'is_period_start': 1},
+        {'date': '2026-03-15', 'period_flow': 'spotting', 'is_period_start': 1},
+      ]) {
+        await db.insert(cycleDayLogsTable, row);
+      }
+
+      expect((await repository.getPeriodStartDates()).map(dateOnly), [d(1)]);
+      final all = await repository.getAll();
+      expect(
+        all.where((log) => log.isPeriodStart).map((log) => dateOnly(log.date)),
+        [d(1)],
+      );
+      final inRange = await repository.getInRange(d(1), d(31));
+      expect(
+        inRange
+            .where((log) => log.isPeriodStart)
+            .map((log) => dateOnly(log.date)),
+        [d(1)],
+      );
+    });
   });
 }

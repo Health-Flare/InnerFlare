@@ -44,6 +44,8 @@ void main() {
     );
 
     final first = estimateExplanations.first.sources.first;
+    await tester.ensureVisible(find.text(first.citation).first);
+    await tester.pump();
     await tester.tap(find.text(first.citation).first);
     await tester.pump();
 
@@ -64,6 +66,8 @@ void main() {
     );
 
     final first = estimateExplanations.first.sources.first;
+    await tester.ensureVisible(find.text(first.citation).first);
+    await tester.pump();
     await tester.tap(find.text(first.citation).first);
     await tester.pump();
 
