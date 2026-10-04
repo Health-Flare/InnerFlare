@@ -9,6 +9,8 @@ class CycleDayLog {
     required this.date,
     this.periodFlow,
     this.isPeriodStart = false,
+    this.periodDayOverride,
+    this.isPeriodDay = false,
     this.symptoms = const {},
     this.note,
     this.ovulationTestResult,
@@ -20,6 +22,18 @@ class CycleDayLog {
   final PeriodFlow? periodFlow;
   final bool isPeriodStart;
 
+  /// The user's own say on whether this day is a period day (issue #103):
+  /// true = it is (and can start a period, whatever flow is logged),
+  /// false = it isn't (left out of cycle maths, flow kept), null = work it
+  /// out from flow. Stored. A choice that matches what flow alone would
+  /// give is stored as null; see `normalisePeriodDayOverride`.
+  final bool? periodDayOverride;
+
+  /// Whether this day counts as part of a period once the whole log and
+  /// every [periodDayOverride] are taken into account. Worked out on read,
+  /// like [isPeriodStart]; never stored.
+  final bool isPeriodDay;
+
   /// [TrackedSymptom.id] values (see lib/models/tracked_symptom.dart), not
   /// the symptoms themselves: a day's log outlives any later rename or
   /// disabling of the symptom it references.
@@ -28,10 +42,16 @@ class CycleDayLog {
   final OvulationTestResult? ovulationTestResult;
   final double? basalBodyTempCelsius;
 
+  static const Object _unset = Object();
+
+  /// [periodDayOverride] takes `null` to clear the choice; leave it out to
+  /// keep the current one.
   CycleDayLog copyWith({
     DateTime? date,
     PeriodFlow? periodFlow,
     bool? isPeriodStart,
+    Object? periodDayOverride = _unset,
+    bool? isPeriodDay,
     Set<String>? symptoms,
     String? note,
     OvulationTestResult? ovulationTestResult,
@@ -41,6 +61,10 @@ class CycleDayLog {
       date: date ?? this.date,
       periodFlow: periodFlow ?? this.periodFlow,
       isPeriodStart: isPeriodStart ?? this.isPeriodStart,
+      periodDayOverride: identical(periodDayOverride, _unset)
+          ? this.periodDayOverride
+          : periodDayOverride as bool?,
+      isPeriodDay: isPeriodDay ?? this.isPeriodDay,
       symptoms: symptoms ?? this.symptoms,
       note: note ?? this.note,
       ovulationTestResult: ovulationTestResult ?? this.ovulationTestResult,
@@ -54,6 +78,8 @@ class CycleDayLog {
         other.date == date &&
         other.periodFlow == periodFlow &&
         other.isPeriodStart == isPeriodStart &&
+        other.periodDayOverride == periodDayOverride &&
+        other.isPeriodDay == isPeriodDay &&
         other.symptoms.length == symptoms.length &&
         other.symptoms.containsAll(symptoms) &&
         other.note == note &&
@@ -66,6 +92,8 @@ class CycleDayLog {
     date,
     periodFlow,
     isPeriodStart,
+    periodDayOverride,
+    isPeriodDay,
     Object.hashAllUnordered(symptoms),
     note,
     ovulationTestResult,

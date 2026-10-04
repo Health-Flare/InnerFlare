@@ -37,6 +37,14 @@ class LogEntryScreen extends ConsumerStatefulWidget {
 
 class _LogEntryScreenState extends ConsumerState<LogEntryScreen> {
   late PeriodFlow? _flow;
+
+  /// The user's own "Period day" choice (issue #103); null = worked out
+  /// from flow.
+  late bool? _periodDayOverride;
+
+  /// Whether the day counts as a period day, as the repository worked it
+  /// out on the last read or save (it depends on the days around it).
+  late bool _isPeriodDay;
   late Set<String> _symptoms;
   late final TextEditingController _noteController;
   bool _saveFailed = false;
@@ -46,6 +54,8 @@ class _LogEntryScreenState extends ConsumerState<LogEntryScreen> {
     super.initState();
     final existing = widget.initialLog;
     _flow = existing?.periodFlow;
+    _periodDayOverride = existing?.periodDayOverride;
+    _isPeriodDay = existing?.isPeriodDay ?? false;
     _symptoms = Set.of(existing?.symptoms ?? const {});
     _noteController = TextEditingController(text: existing?.note ?? '');
   }
@@ -61,6 +71,7 @@ class _LogEntryScreenState extends ConsumerState<LogEntryScreen> {
     return CycleDayLog(
       date: widget.date,
       periodFlow: _flow,
+      periodDayOverride: _periodDayOverride,
       symptoms: _symptoms,
       note: note.isEmpty ? null : note,
     );
@@ -68,10 +79,16 @@ class _LogEntryScreenState extends ConsumerState<LogEntryScreen> {
 
   Future<bool> _persist() async {
     try {
-      await ref
+      final saved = await ref
           .read(cycleDayLogEntryProvider(widget.date).notifier)
           .save(_currentLog());
-      if (mounted) setState(() => _saveFailed = false);
+      if (mounted) {
+        setState(() {
+          _saveFailed = false;
+          _periodDayOverride = saved.periodDayOverride;
+          _isPeriodDay = saved.isPeriodDay;
+        });
+      }
       return true;
     } catch (_) {
       if (mounted) setState(() => _saveFailed = true);
@@ -81,6 +98,14 @@ class _LogEntryScreenState extends ConsumerState<LogEntryScreen> {
 
   Future<void> _onFlowChanged(PeriodFlow? flow) async {
     setState(() => _flow = flow);
+    await _persist();
+  }
+
+  Future<void> _onPeriodDayChanged(bool? choice) async {
+    setState(() {
+      _periodDayOverride = choice;
+      if (choice != null) _isPeriodDay = choice;
+    });
     await _persist();
   }
 
@@ -136,6 +161,8 @@ class _LogEntryScreenState extends ConsumerState<LogEntryScreen> {
             Text('Flow', style: Theme.of(context).textTheme.titleSmall),
             const SizedBox(height: 8),
             FlowSelector(selected: _flow, onChanged: _onFlowChanged),
+            const SizedBox(height: 8),
+            _periodDaySwitch(),
             const SizedBox(height: 24),
             Text('Symptoms', style: Theme.of(context).textTheme.titleSmall),
             const SizedBox(height: 8),
@@ -163,6 +190,39 @@ class _LogEntryScreenState extends ConsumerState<LogEntryScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  /// The user has the last word on whether this is a period day
+  /// (docs/features/log.feature, issue #103). Shows what the app worked
+  /// out until the user changes it, and offers a way back to that.
+  Widget _periodDaySwitch() {
+    final theme = Theme.of(context);
+    final userChose = _periodDayOverride != null;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: const Text('Period day'),
+          subtitle: Text(
+            userChose
+                ? 'You marked this day.'
+                : 'Worked out from your flow. Change it if you know better.',
+          ),
+          value: userChose ? _periodDayOverride! : _isPeriodDay,
+          onChanged: _onPeriodDayChanged,
+        ),
+        if (userChose)
+          TextButton(
+            onPressed: () => _onPeriodDayChanged(null),
+            style: TextButton.styleFrom(
+              padding: EdgeInsets.zero,
+              textStyle: theme.textTheme.bodySmall,
+            ),
+            child: const Text('Work it out from flow'),
+          ),
+      ],
     );
   }
 

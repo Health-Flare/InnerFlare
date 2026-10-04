@@ -34,15 +34,21 @@ class CycleDayLogEntry extends _$CycleDayLogEntry {
   /// the link across the whole method keeps the notifier alive long enough
   /// for that assignment to be safe, then releases it so a date with no
   /// watcher still disposes normally once the save is done.
-  Future<void> save(CycleDayLog log) async {
+  ///
+  /// Returns the log as saved: its "Period day" choice normalised and its
+  /// period start/day worked out from the whole log (issue #103). Throws
+  /// if the save failed, as before.
+  Future<CycleDayLog> save(CycleDayLog log) async {
     final keepAliveLink = ref.keepAlive();
     try {
       // ignore: invalid_use_of_internal_member
       state = const AsyncLoading<CycleDayLog?>().copyWithPrevious(state);
-      state = await AsyncValue.guard(() async {
+      final result = await AsyncValue.guard(() async {
         final repository = await ref.read(cycleDayLogRepositoryProvider.future);
         return repository.save(log);
       });
+      state = result;
+      return result.requireValue;
     } finally {
       keepAliveLink.close();
     }

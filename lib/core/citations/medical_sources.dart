@@ -125,7 +125,9 @@ const List<EstimateExplanation> estimateExplanations = [
         'The number of days between each period start you log. A period '
         'starts on its first day of light, medium or heavy flow. Spotting '
         'counts as part of a period but never starts one, and one day '
-        'without flow in the middle of a period does not split it. The '
+        'without flow in the middle of a period does not split it. If you '
+        'switch "Period day" on or off for a day on the log screen, your '
+        'choice is used instead of this rule for that day. The '
         'average uses your last 6 cycles; variability is how far those '
         'cycles spread around the average (standard deviation).',
     evidence:

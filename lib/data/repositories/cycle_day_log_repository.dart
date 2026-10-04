@@ -15,6 +15,12 @@ import 'package:sqflite_common/sqlite_api.dart';
 /// carried in older backup files) are ignored. The `is_period_start`
 /// column stays in the schema for compatibility but is not read; new
 /// rows store 0 there.
+///
+/// The user's own "Period day" choice (issue #103) is stored in
+/// `period_day_override` and applied on every read through
+/// [effectivePeriodFlowLog], before the period rule runs. A choice that
+/// says no more than the day's flow is stored as NULL (see
+/// [normalisePeriodDayOverride]).
 class CycleDayLogRepository {
   CycleDayLogRepository(this._db);
 
@@ -28,8 +34,8 @@ class CycleDayLogRepository {
       limit: 1,
     );
     if (rows.isEmpty) return null;
-    final starts = await _periodStartKeys();
-    return _fromRow(rows.first, starts);
+    final period = await _periodInfo();
+    return _fromRow(rows.first, period);
   }
 
   /// All logged days between [start] and [end], inclusive: backs the
@@ -40,35 +46,32 @@ class CycleDayLogRepository {
       where: 'date >= ? AND date <= ?',
       whereArgs: [_dateKey(start), _dateKey(end)],
     );
-    final starts = await _periodStartKeys();
-    return rows.map((row) => _fromRow(row, starts)).toList();
+    final period = await _periodInfo();
+    return rows.map((row) => _fromRow(row, period)).toList();
   }
 
   /// Every period-start date on record, oldest first: the raw input to
   /// the cycle-length/prediction math in `cycle_math.dart`. Worked out
   /// from the whole flow log on every call; see the class comment.
   Future<List<DateTime>> getPeriodStartDates() async {
-    final keys = await _periodStartKeys();
-    return [for (final key in keys) DateTime.parse(key)];
+    final period = await _periodInfo();
+    return [for (final key in period.starts) DateTime.parse(key)];
   }
 
-  /// Every date with a period flow logged: the raw input to
-  /// `lastLoggedPeriodEndDate` in cycle_math.dart.
+  /// Every date with period flow once the user's choices are applied:
+  /// logged flow, minus days marked as not a period day, plus days marked
+  /// as one. The raw input to `lastLoggedPeriodEndDate` in cycle_math.dart.
   Future<Set<DateTime>> getDatesWithPeriodFlow() async {
-    final rows = await _db.query(
-      cycleDayLogsTable,
-      columns: ['date'],
-      where: 'period_flow IS NOT NULL',
-    );
-    return rows.map((row) => DateTime.parse(row['date'] as String)).toSet();
+    final effective = _effectiveFlowLog(await _periodRows());
+    return effective.keys.toSet();
   }
 
   /// Every logged day on record, oldest first: the full-history read
   /// export uses to build a backup file (docs/features/export.feature).
   Future<List<CycleDayLog>> getAll() async {
     final rows = await _db.query(cycleDayLogsTable, orderBy: 'date ASC');
-    final starts = _periodStartKeysFromRows(rows);
-    return rows.map((row) => _fromRow(row, starts)).toList();
+    final period = _periodInfoFromRows(rows);
+    return rows.map((row) => _fromRow(row, period)).toList();
   }
 
   /// Deletes every row: only used by import's "replace" strategy
@@ -87,44 +90,71 @@ class CycleDayLogRepository {
 
   /// Saves [log], replacing any existing row for that date: there is
   /// never more than one row per date (see docs/features/log.feature,
-  /// "Editing an existing day's log"). `isPeriodStart` on [log] is
-  /// ignored; the returned log carries the value worked out from the
-  /// whole log after this save.
+  /// "Editing an existing day's log"). `isPeriodStart` and `isPeriodDay`
+  /// on [log] are ignored, and `periodDayOverride` is stored normalised;
+  /// the returned log carries all three as they are after this save.
   Future<CycleDayLog> save(CycleDayLog log) async {
     final dateKey = _dateKey(log.date);
+    final normalised = log.copyWith(
+      periodDayOverride: normalisePeriodDayOverride(
+        flow: log.periodFlow,
+        choice: log.periodDayOverride,
+      ),
+    );
 
     await _db.insert(
       cycleDayLogsTable,
-      _toRow(log, dateKey),
+      _toRow(normalised, dateKey),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
 
-    final starts = await _periodStartKeys();
-    return log.copyWith(isPeriodStart: starts.contains(dateKey));
-  }
-
-  Future<Set<String>> _periodStartKeys() async {
-    final rows = await _db.query(
-      cycleDayLogsTable,
-      columns: ['date', 'period_flow'],
-      where: 'period_flow IS NOT NULL',
+    final period = await _periodInfo();
+    return normalised.copyWith(
+      isPeriodStart: period.starts.contains(dateKey),
+      isPeriodDay: period.days.contains(dateKey),
     );
-    return _periodStartKeysFromRows(rows);
   }
 
-  /// Period-start date keys, in date order, from any set of rows that
-  /// includes every flow day (rows without flow are skipped).
-  Set<String> _periodStartKeysFromRows(List<Map<String, Object?>> rows) {
-    final flowByDate = <DateTime, PeriodFlow>{
-      for (final row in rows)
-        if (row['period_flow'] != null)
-          DateTime.parse(row['date'] as String): PeriodFlow.values.byName(
-            row['period_flow'] as String,
+  /// Only the rows the period rule can see: a flow or a choice.
+  Future<List<Map<String, Object?>>> _periodRows() {
+    return _db.query(
+      cycleDayLogsTable,
+      columns: ['date', 'period_flow', 'period_day_override'],
+      where: 'period_flow IS NOT NULL OR period_day_override IS NOT NULL',
+    );
+  }
+
+  Future<_PeriodInfo> _periodInfo() async =>
+      _periodInfoFromRows(await _periodRows());
+
+  /// Period-start and period-day date keys from any set of rows that
+  /// includes every row with a flow or a choice.
+  _PeriodInfo _periodInfoFromRows(List<Map<String, Object?>> rows) {
+    final effective = _effectiveFlowLog(rows);
+    return _PeriodInfo(
+      starts: {
+        for (final start in periodStartsFromFlowLog(effective)) _dateKey(start),
+      },
+      days: {for (final day in periodDaysFromFlowLog(effective)) _dateKey(day)},
+    );
+  }
+
+  Map<DateTime, PeriodFlow> _effectiveFlowLog(List<Map<String, Object?>> rows) {
+    return effectivePeriodFlowLog(
+      flowByDate: {
+        for (final row in rows)
+          DateTime.parse(row['date'] as String): _enumOrNull(
+            PeriodFlow.values,
+            row['period_flow'] as String?,
           ),
-    };
-    return {
-      for (final start in periodStartsFromFlowLog(flowByDate)) _dateKey(start),
-    };
+      },
+      periodDayOverrides: {
+        for (final row in rows)
+          if (row['period_day_override'] != null)
+            DateTime.parse(row['date'] as String):
+                row['period_day_override'] == 1,
+      },
+    );
   }
 
   static String _dateKey(DateTime date) {
@@ -142,16 +172,26 @@ class CycleDayLogRepository {
       'note': log.note,
       'ovulation_test_result': log.ovulationTestResult?.name,
       'basal_body_temp_celsius': log.basalBodyTempCelsius,
+      'period_day_override': switch (log.periodDayOverride) {
+        null => null,
+        true => 1,
+        false => 0,
+      },
     };
   }
 
-  CycleDayLog _fromRow(Map<String, Object?> row, Set<String> periodStarts) {
+  CycleDayLog _fromRow(Map<String, Object?> row, _PeriodInfo period) {
     final symptomsRaw = row['symptoms'] as String? ?? '';
     final dateKey = row['date'] as String;
     return CycleDayLog(
       date: DateTime.parse(dateKey),
       periodFlow: _enumOrNull(PeriodFlow.values, row['period_flow'] as String?),
-      isPeriodStart: periodStarts.contains(dateKey),
+      isPeriodStart: period.starts.contains(dateKey),
+      isPeriodDay: period.days.contains(dateKey),
+      periodDayOverride: switch (row['period_day_override']) {
+        null => null,
+        final value => value == 1,
+      },
       symptoms: symptomsRaw.isEmpty ? const {} : symptomsRaw.split(',').toSet(),
       note: row['note'] as String?,
       ovulationTestResult: _enumOrNull(
@@ -167,4 +207,11 @@ class CycleDayLogRepository {
     if (name == null) return null;
     return values.byName(name);
   }
+}
+
+class _PeriodInfo {
+  const _PeriodInfo({required this.starts, required this.days});
+
+  final Set<String> starts;
+  final Set<String> days;
 }

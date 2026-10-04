@@ -58,6 +58,91 @@ List<DateTime> periodStartsFromFlowLog(Map<DateTime, PeriodFlow> flowByDate) {
   return starts;
 }
 
+/// The flow log the period rule should see once the user's own choices
+/// are applied (issue #103). A day marked as not a period day is dropped;
+/// a day marked as a period day counts as real flow (so it can start a
+/// period) even if only spotting or nothing was logged. Days with no
+/// choice keep their logged flow. The stored flow is never changed; this
+/// is only the input to [periodStartsFromFlowLog],
+/// [periodDaysFromFlowLog] and [lastLoggedPeriodEndDate].
+Map<DateTime, PeriodFlow> effectivePeriodFlowLog({
+  required Map<DateTime, PeriodFlow?> flowByDate,
+  required Map<DateTime, bool> periodDayOverrides,
+}) {
+  final overrides = {
+    for (final entry in periodDayOverrides.entries)
+      dateOnly(entry.key): entry.value,
+  };
+  final effective = <DateTime, PeriodFlow>{
+    for (final entry in flowByDate.entries)
+      if (entry.value != null) dateOnly(entry.key): entry.value!,
+  };
+  for (final MapEntry(key: day, value: isPeriodDay) in overrides.entries) {
+    if (!isPeriodDay) {
+      effective.remove(day);
+    } else if (effective[day] == null ||
+        effective[day] == PeriodFlow.spotting) {
+      // Only the start rule reads the level, and it only asks "spotting or
+      // not", so any real-flow value works here. Light is the least claim.
+      effective[day] = PeriodFlow.light;
+    }
+  }
+  return effective;
+}
+
+/// Every day that belongs to a period in [flowByDate]: each flow day in a
+/// bleeding episode that has a period start (so spotting inside a period
+/// counts, spotting alone doesn't). Same grouping as
+/// [periodStartsFromFlowLog].
+Set<DateTime> periodDaysFromFlowLog(Map<DateTime, PeriodFlow> flowByDate) {
+  final flowByDay = <DateTime, PeriodFlow>{
+    for (final entry in flowByDate.entries) dateOnly(entry.key): entry.value,
+  };
+  final days = flowByDay.keys.toList()..sort();
+
+  final periodDays = <DateTime>{};
+  var episode = <DateTime>[];
+  var episodeHasStart = false;
+  void closeEpisode() {
+    if (episodeHasStart) periodDays.addAll(episode);
+    episode = [];
+    episodeHasStart = false;
+  }
+
+  for (final day in days) {
+    if (episode.isNotEmpty &&
+        daysBetween(episode.last, day) > maxDaysWithoutFlowInsidePeriod + 1) {
+      closeEpisode();
+    }
+    episode.add(day);
+    if (flowByDay[day] != PeriodFlow.spotting) episodeHasStart = true;
+  }
+  closeEpisode();
+  return periodDays;
+}
+
+/// What a day counts as from its own flow alone, with no choice made:
+/// light, medium or heavy flow is a period day; no flow is not. Spotting
+/// has no fixed answer (it depends on the days around it), so it returns
+/// null.
+bool? periodDayFromFlowAlone(PeriodFlow? flow) {
+  if (flow == null) return false;
+  if (flow == PeriodFlow.spotting) return null;
+  return true;
+}
+
+/// The choice worth storing for a day: [choice], or null when it says no
+/// more than [flow] already does (a period day with light, medium or
+/// heavy flow; not a period day with no flow). Keeps a later flow edit
+/// in charge when the user never actually disagreed with it.
+bool? normalisePeriodDayOverride({
+  required PeriodFlow? flow,
+  required bool? choice,
+}) {
+  if (choice == null) return null;
+  return choice == periodDayFromFlowAlone(flow) ? null : choice;
+}
+
 /// Cycle lengths (in days) between each consecutive pair of period start
 /// dates. [periodStarts] need not be sorted or deduplicated.
 ///
