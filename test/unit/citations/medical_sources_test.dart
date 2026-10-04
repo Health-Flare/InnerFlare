@@ -30,6 +30,13 @@ void main() {
     expect(average.evidence, contains('first day of bleeding'));
   });
 
+  test('the user\'s own "Period day" choice is said to win (#103)', () {
+    final average = estimateExplanations.firstWhere(
+      (e) => e.title == 'Average cycle length and variability',
+    );
+    expect(average.method, contains('"Period day"'));
+  });
+
   test('every source links to the original over https', () {
     for (final source in medicalSources) {
       final uri = Uri.parse(source.url);

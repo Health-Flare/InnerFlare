@@ -101,6 +101,9 @@ class BackupImporter {
   ///   being lost
   /// - a note present on both sides, and different, is concatenated so
   ///   neither is silently dropped
+  ///
+  /// The "Period day" choice follows the same rule: this device's choice
+  /// wins, and the imported one only fills in where there is none.
   CycleDayLog _mergeLog({CycleDayLog? existing, CycleDayLog? imported}) {
     if (existing == null) return imported!;
     if (imported == null) return existing;
@@ -108,6 +111,8 @@ class BackupImporter {
     return CycleDayLog(
       date: existing.date,
       periodFlow: existing.periodFlow ?? imported.periodFlow,
+      periodDayOverride:
+          existing.periodDayOverride ?? imported.periodDayOverride,
       symptoms: {...existing.symptoms, ...imported.symptoms},
       note: _mergeNotes(existing.note, imported.note),
       ovulationTestResult:

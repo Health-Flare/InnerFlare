@@ -35,8 +35,14 @@ class CalendarDayCell extends StatelessWidget {
 
     Color? fillColor;
     Border? border;
-    if (flow != null) {
+    if (flow != null && _markedNotPeriod) {
+      // Bleeding the user says isn't a period (#103): still shown, as a
+      // ring in the flow colour rather than a filled period day.
+      border = Border.all(color: _colorForFlow(flow), width: 2);
+    } else if (flow != null) {
       fillColor = _colorForFlow(flow);
+    } else if (_markedPeriodWithoutFlow) {
+      fillColor = AppColors.softOrange;
     } else if (isPredictedPeriod) {
       border = Border.all(color: AppColors.emberOrange, width: 2);
     } else if (isPredictedFertile) {
@@ -99,6 +105,11 @@ class CalendarDayCell extends StatelessWidget {
     );
   }
 
+  bool get _markedNotPeriod => log?.periodDayOverride == false;
+
+  bool get _markedPeriodWithoutFlow =>
+      log?.periodFlow == null && (log?.periodDayOverride ?? false);
+
   Color _colorForFlow(PeriodFlow flow) {
     switch (flow) {
       case PeriodFlow.spotting:
@@ -115,8 +126,14 @@ class CalendarDayCell extends StatelessWidget {
   String _semanticLabel() {
     final dateLabel = '${date.month}/${date.day}';
     final flow = log?.periodFlow;
+    if (flow != null && _markedNotPeriod) {
+      return '$dateLabel: ${_flowLabel(flow)} flow, not counted as a period';
+    }
     if (flow != null) {
       return '$dateLabel: period day (${_flowLabel(flow)})';
+    }
+    if (_markedPeriodWithoutFlow) {
+      return '$dateLabel: period day';
     }
     if (log?.symptoms.isNotEmpty ?? false) {
       return '$dateLabel: symptoms logged';

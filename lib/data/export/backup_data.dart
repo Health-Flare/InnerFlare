@@ -89,6 +89,9 @@ class BackupData {
       'note': log.note,
       'ovulation_test_result': log.ovulationTestResult?.name,
       'basal_body_temp_celsius': log.basalBodyTempCelsius,
+      // The user's own "Period day" choice (#103); null = no choice.
+      // Missing in files from before schema 9, which reads as no choice.
+      'period_day_override': log.periodDayOverride,
     };
   }
 
@@ -101,6 +104,7 @@ class BackupData {
         json['period_flow'] as String?,
       ),
       isPeriodStart: json['is_period_start'] as bool? ?? false,
+      periodDayOverride: json['period_day_override'] as bool?,
       symptoms: symptoms is List ? symptoms.cast<String>().toSet() : const {},
       note: json['note'] as String?,
       ovulationTestResult: _enumOrNull(

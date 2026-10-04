@@ -94,3 +94,69 @@ Feature: Daily logging
   Scenario: Two days without flow end a period
     Given the user logged flow on March 1, nothing on March 2 and 3, and flow on March 4
     Then March 1 and March 4 are both period starts
+
+  # The user decides (issue #103). The rule above is only the default for
+  # a day the user hasn't marked. "Period day" on the log screen overrides
+  # it for that one day, whatever flow is logged, and never changes the
+  # flow, symptoms or note.
+  Scenario: The Period day switch shows what the app worked out
+    Given the user logged "medium" flow on March 1
+    When the user opens March 1
+    Then "Period day" is on
+    And it says "Worked out from your flow. Change it if you know better."
+
+  Scenario: Spotting the user marks as a period day starts a period
+    Given the user logged spotting on March 1 and "medium" flow on March 2
+    When the user turns "Period day" on for March 1
+    Then March 1 is the period start
+    And March 1 still shows spotting on the calendar
+
+  Scenario: A day with no flow can be marked as a period day
+    Given nothing is logged on the 2 days before March 1
+    When the user opens March 1 and turns "Period day" on without choosing a flow
+    Then March 1 is the period start
+
+  Scenario: Bleeding the user marks as not a period is left out of cycles
+    Given the user logged "heavy" flow on March 10 and 11
+    When the user turns "Period day" off for March 10 and 11
+    Then no period starts on March 10
+    And cycle lengths, predictions and "days since last period" ignore March 10 and 11
+    And the heavy flow is kept and still shows on the calendar, marked "not counted as a period"
+
+  Scenario: Marking the first day as not a period moves the start
+    Given the user logged "medium" flow on March 1, 2 and 3
+    When the user turns "Period day" off for March 1
+    Then March 2 is the period start
+
+  Scenario: Switching back to what the app would work out clears the choice
+    Given the user turned "Period day" on for a day with no flow
+    When the user turns it off again
+    Then no choice is stored for that day
+
+  Scenario: Going back to working it out from flow
+    Given the user turned "Period day" on for a spotting day
+    When the user taps "Work it out from flow"
+    Then no choice is stored for that day
+    And the spotting day counts the same way as any other spotting day
+
+  Scenario: Spotting the user marks as not a period is left out of the period
+    Given the user logged "medium" flow on March 1 and 2 and spotting on March 3
+    When the user turns "Period day" off for March 3
+    Then the period ends on March 2
+
+  Scenario: A changed flow that matches the user's choice clears it
+    Given the user turned "Period day" on for a day with no flow
+    When the user logs "light" flow on that day
+    Then no choice is stored for that day
+    And it is still a period day
+
+  Scenario: The user's choice is kept in backups
+    Given the user marked March 1 as a period day and March 10 as not a period day
+    When the user exports a backup and imports it on another device
+    Then both choices are restored
+
+  Scenario: Merging a backup keeps the choice already on this device
+    Given March 1 is marked as not a period day on this device
+    And the imported backup marks March 1 as a period day
+    When the user merges the backup
+    Then March 1 is still marked as not a period day

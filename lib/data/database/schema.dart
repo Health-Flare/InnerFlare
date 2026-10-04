@@ -7,7 +7,7 @@ import 'package:sqflite_common/sqlite_api.dart';
 /// Bumped whenever the schema changes; every bump needs a matching branch
 /// in [onUpgrade] so exported backups from older versions still import
 /// cleanly (see BRIEF.md §4.2).
-const int schemaVersion = 8;
+const int schemaVersion = 9;
 
 const String cycleDayLogsTable = 'cycle_day_logs';
 
@@ -21,7 +21,8 @@ CREATE TABLE $cycleDayLogsTable (
   symptoms TEXT NOT NULL DEFAULT '',
   note TEXT,
   ovulation_test_result TEXT,
-  basal_body_temp_celsius REAL
+  basal_body_temp_celsius REAL,
+  period_day_override INTEGER
 )
 ''';
 
@@ -217,6 +218,31 @@ Future<void> onUpgrade(Database db, int oldVersion, int newVersion) async {
   if (oldVersion < 8) {
     await _addDisclaimerAcknowledgedColumn(db);
   }
+  if (oldVersion < 9) {
+    await _addPeriodDayOverrideColumn(db);
+  }
+}
+
+/// Adds [cycle_day_logs.period_day_override] (issue #103): the user's own
+/// "Period day" choice, 1 / 0, or NULL for "work it out from flow". Every
+/// existing row gets NULL, so nothing changes until the user makes a
+/// choice. Skipped if the table is missing (partial test fixtures) or
+/// already has the column.
+Future<void> _addPeriodDayOverrideColumn(Database db) async {
+  final tables = await db.rawQuery(
+    "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?",
+    [cycleDayLogsTable],
+  );
+  if (tables.isEmpty) return;
+
+  final columns = await db.rawQuery('PRAGMA table_info($cycleDayLogsTable)');
+  if (columns.any((column) => column['name'] == 'period_day_override')) {
+    return;
+  }
+
+  await db.execute(
+    'ALTER TABLE $cycleDayLogsTable ADD COLUMN period_day_override INTEGER',
+  );
 }
 
 /// Adds [security_settings.disclaimer_acknowledged] for installs that
