@@ -20,7 +20,8 @@ Nothing below is automated past the tag. Everything outward-facing
 2. Bump `version:` in `pubspec.yaml` (`X.Y.Z+N`). `N` becomes Android
    `versionCode` and iOS `CFBundleVersion`; it must be higher than every
    build already uploaded to that store, or the upload is rejected.
-3. Write `release-notes/vX.Y.Z.md`: store "What's new" (Play limit 500
+3. Write `release-notes/vX.Y.Z.md` from the `## [Unreleased]` entries in
+   `CHANGELOG.md` (then date that section): store "What's new" (Play limit 500
    characters), full notes, and the version-specific checklist. Rules for
    copy: no medical or diagnostic claims, no invented social proof, no em
    dashes (see `docs/marketing/README.md`).
