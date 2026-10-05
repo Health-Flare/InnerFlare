@@ -21,11 +21,24 @@ import 'package:inner_flare/core/cycle_math/cycle_math.dart'
 /// represented by a null [NudgeState] wherever this is used, not by a
 /// third enum value, so "never seen" and "seen but not acted on yet"
 /// don't need to be distinguished by callers that don't care.
-enum NudgeDisposition { dismissedPermanently, snoozed }
+enum NudgeDisposition {
+  dismissedPermanently,
+
+  /// Hidden until [NudgeState.snoozedUntil].
+  snoozed,
+
+  /// Hidden until the user next adds a dashboard card (the cleanup
+  /// nudge's snooze, see "Snoozing a cleanup nudge re-surfaces it the next
+  /// time a card is added"). Adding a card deletes this state, so here it
+  /// simply means "still hidden".
+  snoozedUntilCardAdded,
+}
 
 /// The persisted state of a single nudge. [snoozedUntil] is only
 /// meaningful when [disposition] is [NudgeDisposition.snoozed]; a
-/// permanently-dismissed nudge has no expiry.
+/// permanently-dismissed nudge has no expiry, and a
+/// [NudgeDisposition.snoozedUntilCardAdded] one ends on an event, not a
+/// date.
 class NudgeState {
   const NudgeState({required this.disposition, this.snoozedUntil})
     : assert(
@@ -49,6 +62,8 @@ bool shouldShowNudge({required NudgeState? state, required DateTime now}) {
       return false;
     case NudgeDisposition.snoozed:
       return !now.isBefore(state.snoozedUntil!);
+    case NudgeDisposition.snoozedUntilCardAdded:
+      return false;
   }
 }
 

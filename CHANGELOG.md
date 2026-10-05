@@ -26,6 +26,7 @@ Releases up to 1.3.0 are documented in docs/deployment/release-notes/.
 ## [Unreleased]
 
 ### Added
+- The dashboard now suggests a gauge card once you've logged a period, and a trend chart once you've logged two full cycles. It also offers to tidy up when you have 7 or more cards, or the same card twice. Only one suggestion shows at a time, below "Log today". Each has "Not now" and "Don't suggest this again", and your choice stays on this device.
 - A "Period day" switch on the log screen lets you decide whether a day counts as a period day, whatever flow you logged. Turn it on for spotting that you know is the start of your period, or for a day you didn't pick a flow. Turn it off for bleeding that isn't a period; the flow is kept and still shows on the calendar, but it's left out of cycle lengths and predictions. "Work it out from flow" goes back to the app's rule.
 
 ### Changed

@@ -34,6 +34,8 @@ import 'package:sqflite_common/sqlite_api.dart';
 
 import '../helpers/test_app_builder.dart';
 import '../helpers/test_database.dart';
+import 'package:inner_flare/core/providers/nudge_state_repository_provider.dart';
+import 'package:inner_flare/data/repositories/nudge_state_repository.dart';
 
 void main() {
   setUpAll(useInMemoryTestDatabaseFactory);
@@ -82,6 +84,9 @@ void main() {
       ),
       dashboardCardPreferencesRepositoryProvider.overrideWith(
         (ref) async => DashboardCardPreferencesRepository(db),
+      ),
+      nudgeStateRepositoryProvider.overrideWith(
+        (ref) async => NudgeStateRepository(db),
       ),
       trackedSymptomsRepositoryProvider.overrideWith(
         (ref) async => TrackedSymptomsRepository(db),

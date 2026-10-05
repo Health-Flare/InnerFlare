@@ -15,6 +15,7 @@ import 'package:inner_flare/features/dashboard/widgets/dashboard_chip.dart';
 import 'package:inner_flare/features/dashboard/widgets/database_status_indicator.dart';
 import 'package:inner_flare/features/dashboard/widgets/gauge_card.dart';
 import 'package:inner_flare/features/dashboard/widgets/log_today_hero_card.dart';
+import 'package:inner_flare/features/dashboard/widgets/nudge_banner.dart';
 import 'package:inner_flare/features/dashboard/widgets/privacy_reassurance_card.dart';
 import 'package:inner_flare/features/dashboard/widgets/quick_stat_chip.dart';
 import 'package:inner_flare/features/dashboard/widgets/trend_card.dart';
@@ -230,6 +231,9 @@ class DashboardScreen extends ConsumerWidget {
                 detail: todayLog.error?.toString(),
               ),
             ],
+            // At most one, below "Log today" so logging is never pushed
+            // down by it (docs/features/dashboard_nudges.feature).
+            const DashboardNudgeSlot(),
             const SizedBox(height: 20),
             DashboardCardGrid(
               instances: visibleCards,

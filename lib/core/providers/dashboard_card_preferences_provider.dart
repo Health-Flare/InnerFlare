@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:inner_flare/core/providers/dashboard_card_preferences_repository_provider.dart';
+import 'package:inner_flare/core/providers/nudge_state_provider.dart';
 import 'package:inner_flare/models/dashboard_card.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -62,6 +64,15 @@ class DashboardCardPreferencesNotifier
   Future<void> addCard(DashboardCardInstance instance) async {
     final current = await future;
     await _persist([...current, instance]);
+    // Ends a cleanup nudge's "until a card is added" snooze
+    // (docs/features/dashboard_nudges.feature). Best effort: the card is
+    // already saved, and a nudge staying snoozed is harmless, so a failure
+    // here must not turn adding a card into an error.
+    try {
+      await ref.read(nudgeStatesProvider.notifier).cardAdded();
+    } catch (error, stack) {
+      debugPrint('Ending card-added nudge snoozes failed: $error\n$stack');
+    }
   }
 
   /// Removes the instance identified by [id] entirely: for gauge/trend

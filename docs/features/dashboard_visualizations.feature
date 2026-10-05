@@ -101,16 +101,31 @@ Feature: Dashboard visualization cards
     And the card itself stays off the dashboard until the user acts on
       the suggestion or adds it manually through "Add a card"
 
-    # The exact data threshold for "enough to suggest" is still open:
-    # candidates include reusing the same bar the gauge/trend cards
-    # already use for their own thin-history warning, or a lower one
-    # (e.g. a single logged period is enough to suggest a gauge, even
-    # before it can show a precise number). Flagging rather than
-    # guessing until this is settled.
+    # "Enough to suggest" is each card's own "shows real data" bar, so a
+    # suggested card never opens on "not enough data yet" (#44):
+    # - a gauge card: at least one period logged (it can already show
+    #   days since your last period; a precise estimate comes later)
+    # - a "previous cycle lengths" trend card: at least 2 complete cycles,
+    #   the same bar that makes a trend card tappable
+    # Only implemented trend metrics are ever suggested.
 
-  Scenario: The dashboard nudges toward cleanup once there are 6 or more cards
-    Given the user has 6 or more cards on the dashboard, whether default
-      or added
+  Scenario: A suggested card is added straight from the nudge
+    Given a nudge suggests adding a gauge card
+    When the user taps "Add gauge"
+    Then a gauge card is added to the end of the dashboard
+    And the nudge disappears, because its card now exists
+
+  Scenario: No suggestion for a card the user already has
+    Given the user already has a gauge card, shown or hidden
+    When the dashboard decides which nudge to show
+    Then it never suggests adding a gauge card
+
+  # 7, not 6 (#44): the default layout is 4 cards, and accepting both
+  # card suggestions makes 6. A cleanup nudge right after the app's own
+  # suggestions would be the app nagging about its own advice.
+  Scenario: The dashboard nudges toward cleanup once there are 7 or more cards
+    Given the user has 7 or more cards showing on the dashboard, whether
+      default or added (hidden cards don't count)
     When the user opens the dashboard
     Then a cleanup nudge appears (docs/features/dashboard_nudges.feature)
     And it suggests reviewing the dashboard in general terms

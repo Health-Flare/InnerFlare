@@ -7,7 +7,7 @@ import 'package:sqflite_common/sqlite_api.dart';
 /// Bumped whenever the schema changes; every bump needs a matching branch
 /// in [onUpgrade] so exported backups from older versions still import
 /// cleanly (see BRIEF.md §4.2).
-const int schemaVersion = 9;
+const int schemaVersion = 10;
 
 const String cycleDayLogsTable = 'cycle_day_logs';
 
@@ -90,6 +90,25 @@ CREATE TABLE $quickStatPreferencesTable (
 )
 ''';
 
+/// What the user chose for each dashboard nudge (#44,
+/// docs/features/dashboard_nudges.feature). A row exists only once the user
+/// has dismissed or snoozed that nudge; no row means "never acted on".
+/// `nudge_id` is `DashboardNudge.storageKey`; `disposition` is the
+/// `NudgeDisposition` enum name; `snoozed_until` is an ISO-8601 date, set
+/// only for date-based snoozes. Per-device and never exported, same as
+/// `dashboard_card_preferences` ("Nudge choices don't travel with a
+/// backup").
+const String nudgeStatesTable = 'nudge_states';
+
+const String _createNudgeStatesTable =
+    '''
+CREATE TABLE IF NOT EXISTS $nudgeStatesTable (
+  nudge_id TEXT PRIMARY KEY,
+  disposition TEXT NOT NULL,
+  snoozed_until TEXT
+)
+''';
+
 /// The user's configurable symptom catalog (docs/features/symptom_settings.
 /// feature): built-in defaults plus anything they've added, each with its
 /// own enabled state. `cycle_day_logs.symptoms` stores a comma-separated
@@ -127,6 +146,7 @@ Future<void> onCreate(Database db, int version) async {
   await db.execute(_createQuickStatPreferencesTable);
   await db.execute(_createSymptomsTable);
   await _seedBuiltInSymptoms(db);
+  await db.execute(_createNudgeStatesTable);
 }
 
 /// Bump [schemaVersion] and add a branch here (keyed off [oldVersion])
@@ -220,6 +240,11 @@ Future<void> onUpgrade(Database db, int oldVersion, int newVersion) async {
   }
   if (oldVersion < 9) {
     await _addPeriodDayOverrideColumn(db);
+  }
+  if (oldVersion < 10) {
+    // New table only; nothing existing changes. IF NOT EXISTS makes a
+    // repeated run harmless.
+    await db.execute(_createNudgeStatesTable);
   }
 }
 

@@ -16,6 +16,7 @@ import 'package:inner_flare/features/settings/screens/privacy_disclaimer_screen.
 import 'package:inner_flare/features/settings/screens/symptom_settings_screen.dart';
 import 'package:inner_flare/features/settings/widgets/app_version_tile.dart';
 import 'package:inner_flare/models/cycle_day_log.dart';
+import 'package:inner_flare/features/settings/widgets/nudge_debug_section.dart';
 
 /// App settings (docs/features/navigation.feature: "Settings is reachable
 /// without leaving the current task"). Currently the idle-lock timeout
@@ -213,6 +214,11 @@ class SettingsScreen extends ConsumerWidget {
                 child: const Text('Load perimenopause demo data'),
               ),
             ),
+          ],
+          if (NudgeDebugSection.shownInSettings) ...[
+            const Divider(height: 32),
+            const NudgeDebugSection(),
+            const SizedBox(height: 24),
           ],
         ],
       ),
