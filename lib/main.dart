@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:inner_flare/core/files/scratch_files.dart';
 import 'package:inner_flare/core/security/app_lock_gate.dart';
 import 'package:inner_flare/core/theme/app_theme.dart';
 import 'package:inner_flare/features/loading/screens/loading_screen.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  // Remove export files an earlier run left behind (docs/features/
+  // export.feature, issue #100). Runs before anything can open the
+  // database or start a share, so nothing can be using them. Never throws.
+  await ScratchFiles.sweep();
   runApp(const ProviderScope(child: InnerFlareApp()));
 }
 
