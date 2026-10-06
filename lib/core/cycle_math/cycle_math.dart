@@ -158,8 +158,15 @@ List<int> cycleLengthsFromPeriodStarts(Iterable<DateTime> periodStarts) {
   ];
 }
 
+/// How many of the most recent cycle lengths the average and variability
+/// use. Fixed for now; a user setting for it is tracked in issue #37.
+const int defaultCycleHistoryWindow = 6;
+
 /// Mean of the last [windowSize] cycle lengths, or null if there are none.
-double? averageCycleLength(List<int> cycleLengths, {int windowSize = 6}) {
+double? averageCycleLength(
+  List<int> cycleLengths, {
+  int windowSize = defaultCycleHistoryWindow,
+}) {
   if (cycleLengths.isEmpty) return null;
   final window = _lastN(cycleLengths, windowSize);
   return window.reduce((a, b) => a + b) / window.length;
@@ -168,7 +175,10 @@ double? averageCycleLength(List<int> cycleLengths, {int windowSize = 6}) {
 /// Population standard deviation of the last [windowSize] cycle lengths.
 /// Returns null with fewer than 2 cycle lengths: variability is undefined
 /// for a single data point.
-double? cycleLengthVariability(List<int> cycleLengths, {int windowSize = 6}) {
+double? cycleLengthVariability(
+  List<int> cycleLengths, {
+  int windowSize = defaultCycleHistoryWindow,
+}) {
   final window = _lastN(cycleLengths, windowSize);
   if (window.length < 2) return null;
   final mean = window.reduce((a, b) => a + b) / window.length;
@@ -227,9 +237,8 @@ FertileWindow? predictFertileWindow({
 /// next period). Real cycles range from about 7 to 19 days and a large
 /// app-based study measured a mean of 12.4, so this is a population
 /// average, not a clinical constant; see
-/// lib/core/citations/medical_sources.dart. Used until the user
-/// sets their own value in settings (docs/features/insights.feature covers
-/// the settings surface; not yet implemented).
+/// lib/core/citations/medical_sources.dart. Fixed for now; a user
+/// setting for it is tracked in issue #37.
 const int defaultLutealPhaseLengthDays = 14;
 
 /// Typical period length (ACOG: up to 7 days; mean bleed length 4.0 days in

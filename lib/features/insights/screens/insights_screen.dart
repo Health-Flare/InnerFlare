@@ -98,7 +98,7 @@ class _InsightsBody extends StatelessWidget {
     }
 
     final average = insights.averageCycleLength!;
-    final cyclesUsed = insights.cycleLengths.length;
+    final cyclesUsed = insights.cyclesInAverage;
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),

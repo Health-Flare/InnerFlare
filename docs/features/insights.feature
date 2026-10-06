@@ -18,11 +18,13 @@ Feature: Cycle insights and predictions
     Then average cycle length is not shown
     And the app explains that a second cycle is needed to estimate cycle length
 
-  Scenario: Average cycle length is computed from the last N cycles
+  # The window and the luteal phase length are fixed for now. Making them
+  # user settings is tracked in issue #37.
+  Scenario: Average cycle length is computed from the last 6 cycles
     Given the user has logged period start dates for at least 2 complete cycles
     When the user views insights
-    Then the average cycle length is the mean of the last N complete cycle lengths
-    And N matches the cycle history window set in settings
+    Then the average cycle length is the mean of the last 6 complete cycle lengths, or of all of them if there are fewer than 6
+    And the insight says how many cycles it is based on
 
   Scenario: Cycle length variability is shown alongside the average
     Given the user has logged period start dates for at least 3 complete cycles
@@ -39,9 +41,9 @@ Feature: Cycle insights and predictions
 
   Scenario: Predicted fertile window uses an average luteal phase length assumption
     Given the user's predicted next period start is known
-    And the luteal phase length assumption is set in settings
     When the user views insights
-    Then the predicted fertile window is computed by subtracting the luteal phase length from the predicted next period start
+    Then ovulation is estimated as 14 days before the predicted next period start
+    And the predicted fertile window is the 5 days before that estimated ovulation day plus the day itself
     And the fertile window is labeled as an estimate
     And the caveat states the 14-day assumption, its real-world range, and links to its sources (see citations.feature)
 
