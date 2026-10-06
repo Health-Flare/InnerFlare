@@ -100,6 +100,13 @@ void main() {
   });
 
   testWidgets('duplicate cards: "Remove extra" from the nudge', (tester) async {
+    // The provider is autoDispose: with no screen watching it yet, it
+    // would be torn down mid-save. Hold it open the way the dashboard does.
+    final keepAlive = container.listen(
+      dashboardCardPreferencesProvider,
+      (_, _) {},
+    );
+    addTearDown(keepAlive.close);
     final prefs = container.read(dashboardCardPreferencesProvider.notifier);
     await prefs.addCard(newGaugeCardInstance(order: 10));
     await prefs.addCard(newGaugeCardInstance(order: 11));

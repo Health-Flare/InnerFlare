@@ -241,6 +241,8 @@ void main() {
       retry: (_, _) => null,
     );
     addTearDown(container.dispose);
+    // autoDispose: hold it open, as a watching screen would.
+    container.listen(dashboardCardPreferencesProvider, (_, _) {});
 
     await container
         .read(dashboardCardPreferencesProvider.notifier)
