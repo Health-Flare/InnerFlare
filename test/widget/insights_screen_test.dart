@@ -111,6 +111,30 @@ void main() {
     },
   );
 
+  testWidgets(
+    'with more than 6 cycles, the average says it uses the last 6, not all '
+    'of them',
+    (tester) async {
+      final repository = await seededRepository(
+        regularPeriodStarts(
+          firstStart: DateTime.utc(2025, 12, 1),
+          cycleCount: 10,
+        ),
+      );
+      await pumpTestApp(
+        tester,
+        const InsightsScreen(),
+        overrides: [
+          cycleDayLogRepositoryProvider.overrideWith((ref) async => repository),
+        ],
+      );
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(find.text('Based on your last 6 cycles.'), findsOneWidget);
+      expect(find.textContaining('last 9 cycles'), findsNothing);
+    },
+  );
+
   testWidgets('irregular cycles are called out rather than hidden', (
     tester,
   ) async {

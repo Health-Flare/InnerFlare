@@ -35,6 +35,7 @@ Releases up to 1.3.0 are documented in docs/deployment/release-notes/.
 - Logging a day before an existing period, or clearing flow from a day, no longer leaves an extra or missing period start.
 - One-off spotting and single forgotten days inside a period no longer create short 1 to 3 day "cycles" that pulled averages down and could mark your cycles as irregular.
 - "Days since last period", counted from the end of your period, no longer stops at a single day you didn't log.
+- With more than 6 cycles logged, Insights now says the average is based on your last 6 cycles. It used to give the total number of cycles, though only the last 6 were used.
 
 Some cycle lengths, averages and predictions may change after this update, usually by a day.
 

@@ -24,8 +24,7 @@ Feature: Onboarding
 
   Scenario: Default settings are established without requiring input
     When the user completes onboarding without changing any defaults
-    Then a default luteal phase length assumption is set
-    And a default cycle history window (N cycles) is set
+    Then estimates use a 14-day luteal phase length and the last 6 cycles
     And a default dashboard card layout is set
     And the user is taken to the dashboard
 
