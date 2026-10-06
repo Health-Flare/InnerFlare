@@ -11,7 +11,10 @@ enum LockTimeout {
   after1Hour,
   never;
 
-  static const defaultValue = LockTimeout.after15Minutes;
+  /// For anyone who hasn't chosen a timeout. 1 minute since issue #90
+  /// (was 15): a cycle tracker is often on a shared or borrowed phone.
+  /// Schema 10 moves a saved 15 to this too; see `onUpgrade`.
+  static const defaultValue = LockTimeout.after1Minute;
 
   String get label => switch (this) {
     LockTimeout.immediately => 'Immediately',
