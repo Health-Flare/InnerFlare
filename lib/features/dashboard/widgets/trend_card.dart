@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:inner_flare/core/charts/trend_window.dart';
 import 'package:inner_flare/core/providers/dashboard_visualization_displays_provider.dart';
 import 'package:inner_flare/core/theme/app_theme.dart';
 import 'package:inner_flare/models/dashboard_card.dart';
@@ -83,50 +84,91 @@ class _TrendContent extends StatelessWidget {
             ),
           )
         else
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                height: 120,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _TrendYAxisLabels(
-                      maxValue: _TrendPainter.scaleMaxFor(display.cycleLengths),
-                    ),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: CustomPaint(
-                        size: Size.infinite,
-                        painter: _TrendPainter(
-                          values: display.cycleLengths,
-                          average: display.averageCycleLength,
-                          chartType: display.chartType,
-                          barColor: AppColors.emberOrange,
-                          latestBarColor: AppColors.deepTeal,
-                          averageLineColor: AppColors.midTeal,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 8),
-              _TrendLegend(
-                seriesColor: AppColors.emberOrange,
-                latestColor: AppColors.deepTeal,
-                averageColor: AppColors.midTeal,
-                showAverage: display.averageCycleLength != null,
-              ),
-            ],
+          LayoutBuilder(
+            builder: (context, constraints) {
+              // Only as many recent cycles as this card has room for (see
+              // "A trend chart shows only as many recent cycles as its
+              // card has room for"); the rules live in trend_window.dart.
+              final plotWidth =
+                  constraints.maxWidth - _yAxisLabelWidth - _yAxisGap;
+              final window = recentWindow(
+                display.cycleLengths,
+                TrendWindowPolicy.forChartType(
+                  display.chartType,
+                ).capacityFor(plotWidth),
+              );
+              return _TrendChart(display: display, window: window);
+            },
           ),
       ],
     );
   }
 }
 
-/// Numeric y-axis scale for [_TrendPainter], "0" at the bottom and the
-/// chart's padded max at the top, matching [_TrendPainter.yFor] so the
+const _yAxisLabelWidth = 28.0;
+const _yAxisGap = 6.0;
+
+class _TrendChart extends StatelessWidget {
+  const _TrendChart({required this.display, required this.window});
+
+  final TrendCardDisplay display;
+  final TrendWindow window;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          height: 120,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _TrendYAxisLabels(
+                maxValue: TrendChartPainter.scaleMaxFor(window.visible),
+              ),
+              const SizedBox(width: _yAxisGap),
+              Expanded(
+                child: CustomPaint(
+                  key: const ValueKey('trend_chart_plot'),
+                  size: Size.infinite,
+                  painter: TrendChartPainter(
+                    values: window.visible,
+                    average: display.averageCycleLength,
+                    chartType: display.chartType,
+                    barColor: AppColors.emberOrange,
+                    latestBarColor: AppColors.deepTeal,
+                    averageLineColor: AppColors.midTeal,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        _TrendLegend(
+          seriesColor: AppColors.emberOrange,
+          latestColor: AppColors.deepTeal,
+          averageColor: AppColors.midTeal,
+          showAverage: display.averageCycleLength != null,
+        ),
+        if (window.isTruncated) ...[
+          const SizedBox(height: 4),
+          Text(
+            'Last ${window.visible.length} of ${window.total} cycles',
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: AppColors.deepTeal.withValues(alpha: 0.6),
+              fontSize: 10,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// Numeric y-axis scale for [TrendChartPainter], "0" at the bottom and the
+/// chart's padded max at the top, matching [TrendChartPainter.yFor] so the
 /// labels line up with where the painter actually places 0 and
 /// [maxValue] on the canvas.
 class _TrendYAxisLabels extends StatelessWidget {
@@ -154,7 +196,7 @@ class _TrendYAxisLabels extends StatelessWidget {
   }
 }
 
-/// Explains what each color in [_TrendPainter] means: the series/latest
+/// Explains what each color in [TrendChartPainter] means: the series/latest
 /// distinction and (when there's enough history) the dashed average
 /// line, per docs/features/dashboard_visualizations.feature's "the most
 /// recent cycle is visually distinguishable as the latest" and "a
@@ -219,11 +261,15 @@ class _TrendLegendItem extends StatelessWidget {
             ),
           ),
         const SizedBox(width: 4),
-        Text(
-          label,
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-            color: AppColors.deepTeal.withValues(alpha: 0.7),
-            fontSize: 10,
+        // Flexible so a half-width card wraps a long label instead of
+        // overflowing.
+        Flexible(
+          child: Text(
+            label,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: AppColors.deepTeal.withValues(alpha: 0.7),
+              fontSize: 10,
+            ),
           ),
         ),
       ],
@@ -232,7 +278,7 @@ class _TrendLegendItem extends StatelessWidget {
 }
 
 /// A small dashed-line swatch, matching the average line's dash style in
-/// [_TrendPainter].
+/// [TrendChartPainter].
 class _DashedSwatchPainter extends CustomPainter {
   const _DashedSwatchPainter({required this.color});
 
@@ -262,8 +308,11 @@ class _DashedSwatchPainter extends CustomPainter {
       oldDelegate.color != color;
 }
 
-class _TrendPainter extends CustomPainter {
-  const _TrendPainter({
+/// Draws the visible slice of a trend series. Public only so widget tests
+/// can read back what was plotted; nothing outside this file builds one.
+@visibleForTesting
+class TrendChartPainter extends CustomPainter {
+  const TrendChartPainter({
     required this.values,
     required this.average,
     required this.chartType,
@@ -363,7 +412,7 @@ class _TrendPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _TrendPainter oldDelegate) {
+  bool shouldRepaint(covariant TrendChartPainter oldDelegate) {
     return oldDelegate.values != values ||
         oldDelegate.average != average ||
         oldDelegate.chartType != chartType;

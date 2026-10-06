@@ -29,6 +29,7 @@ Releases up to 1.3.0 are documented in docs/deployment/release-notes/.
 - A "Period day" switch on the log screen lets you decide whether a day counts as a period day, whatever flow you logged. Turn it on for spotting that you know is the start of your period, or for a day you didn't pick a flow. Turn it off for bleeding that isn't a period; the flow is kept and still shows on the calendar, but it's left out of cycle lengths and predictions. "Work it out from flow" goes back to the app's rule.
 
 ### Changed
+- Cycle length trend cards now show only as many recent cycles as fit: up to 12 bars or 24 points on a line, fewer on a half-width card. A note under the chart says how many are shown, and tapping the card still lists every cycle.
 - Period starts are now worked out from your whole log, so the order you log days in no longer matters. Day 1 of a cycle is the first day of light, medium or heavy flow. Spotting can lead into a period but doesn't start one, and a single day with no flow inside a period doesn't split it. "How estimates work" explains the rule and its sources.
 
 ### Fixed

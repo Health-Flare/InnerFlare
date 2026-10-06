@@ -72,6 +72,47 @@ Feature: Dashboard visualization cards
     And it states that more cycles are needed before an average or trend
       line can be shown, rather than drawing one from too little data
 
+  # Limits are per chart type, driven by the card's width (row height
+  # doesn't change how many points fit across). Bars get at least 18pt
+  # each and never more than 12, about a year of cycles: past that they
+  # read as a barcode. Lines get at least 12pt per point and never more
+  # than 24. Rules: lib/core/charts/trend_window.dart. Starting proposal,
+  # tune on device.
+  #
+  # | Card                         | Bars | Line |
+  # | Full width, 360pt phone      | 12   | 20   |
+  # | Full width, 390pt phone      | 12   | 23   |
+  # | Full width, tablet           | 12   | 24   |
+  # | Half width, 360pt phone      | 4    | 6    |
+  # | Half width, 390pt phone      | 5    | 7    |
+  # | Half width, 430pt phone      | 6    | 9    |
+  # | Half width, tablet           | 12   | 24   |
+  Scenario Outline: A trend chart shows only as many recent cycles as its card has room for
+    Given the user has logged 20 complete cycles
+    And a "previous cycle lengths" trend card is <width> on a 390pt phone
+    When the card is shown as a <chart> chart
+    Then it plots the <count> most recent cycles, oldest on the left
+    And a caption under the chart reads "Last <count> of 20 cycles"
+    And the y axis scales to the cycles on screen, so one long cycle
+      that's no longer shown can't flatten the rest
+
+    Examples:
+      | width      | chart | count |
+      | full width | bar   | 12    |
+      | half width | bar   | 5     |
+      | half width | line  | 7     |
+
+  Scenario: A short history is drawn whole
+    Given the user has logged 3 complete cycles
+    When the user views a full-width "previous cycle lengths" trend card
+    Then all 3 cycles are plotted
+    And no "Last N of M cycles" caption is shown
+
+  Scenario: Hidden cycles are still one tap away
+    Given a trend card is showing the last 12 of 20 cycles
+    When the user taps the card
+    Then the cycle detail table lists all 20 cycles
+
   Scenario: Additional data points can be added as their own cards
     Given the user has logged symptoms and period flow alongside period
       starts
