@@ -4,10 +4,15 @@ import 'package:inner_flare/core/security/backup_encryption.dart';
 import 'package:inner_flare/data/export/backup_data.dart';
 
 /// Encodes/decodes the on-disk envelope around a [BackupData] payload:
-/// the plain JSON structure for "no encryption" export, and the
-/// salt/nonce/mac/ciphertext structure for "encrypt export" (docs/features/
-/// export.feature, "Optional passphrase encrypts the export file at
-/// rest" / "Plaintext export is the default with encryption opt-in").
+/// the salt/nonce/mac/ciphertext structure for "encrypt export" (the
+/// default), and the plain JSON structure when the user turns encryption
+/// off (docs/features/export.feature).
+///
+/// Files written now carry a generic marker, `"fmt": "ifb1"`, and nothing
+/// else that names the app (issue #100): an encrypted file is only the
+/// marker, the KDF settings and the ciphertext. Files from Inner Flare 1.0
+/// to 1.3 used `"inner_flare_export": true` plus `"envelope_version": 1`;
+/// [decode] still reads those.
 ///
 /// This is a thin wrapper around [BackupEncryption]: it owns the file
 /// shape (what's JSON, what's base64, which fields exist), not the
@@ -16,24 +21,31 @@ class BackupFileCodec {
   BackupFileCodec({BackupEncryption? encryption})
     : _encryption = encryption ?? BackupEncryption();
 
-  /// Bumped only if the envelope shape itself changes (not on every
-  /// database schema_version bump, which lives inside the payload, see
-  /// [BackupData.schemaVersion]).
-  static const _envelopeVersion = 1;
+  /// The format marker written into every new file. Changed only if the
+  /// envelope shape itself changes (not on every database schema_version
+  /// bump, which lives inside the payload, see [BackupData.schemaVersion]).
+  static const formatMarker = 'ifb1';
+
+  /// The envelope key holding [formatMarker].
+  static const formatKey = 'fmt';
+
+  /// The marker files from Inner Flare 1.0 to 1.3 carry instead of
+  /// [formatKey]. Read only, never written.
+  static const _legacyMarkerKey = 'inner_flare_export';
 
   final BackupEncryption _encryption;
 
   /// Encodes [data] as the on-disk file contents. Plaintext unless
   /// [passphrase] is provided, in which case the payload is
   /// AES-256-GCM-encrypted and the plaintext is never written to disk at
-  /// any point during export.
+  /// any point during export. The export screen asks for a passphrase by
+  /// default; plaintext is the user's explicit opt-out.
   Future<String> encode(BackupData data, {String? passphrase}) async {
     final payloadBytes = utf8.encode(jsonEncode(data.toJson()));
 
     if (passphrase == null) {
       return jsonEncode({
-        'inner_flare_export': true,
-        'envelope_version': _envelopeVersion,
+        formatKey: formatMarker,
         'encrypted': false,
         'data': data.toJson(),
       });
@@ -41,8 +53,7 @@ class BackupFileCodec {
 
     final encrypted = await _encryption.encrypt(payloadBytes, passphrase);
     return jsonEncode({
-      'inner_flare_export': true,
-      'envelope_version': _envelopeVersion,
+      formatKey: formatMarker,
       'encrypted': true,
       'kdf_iterations': encrypted.iterations,
       'salt': base64Encode(encrypted.salt),
@@ -98,11 +109,18 @@ class BackupFileCodec {
     }
   }
 
+  /// Accepts the current envelope (`"fmt": "ifb1"`) and the 1.0 to 1.3
+  /// one (`"inner_flare_export": true, "envelope_version": 1`). Both have
+  /// the same `encrypted` / `data` / salt, nonce, mac, ciphertext fields.
   Map<String, Object?> _parseEnvelope(String contents) {
     final parsed = _tryDecodeJson(contents);
-    if (parsed is! Map<String, Object?> ||
-        parsed['inner_flare_export'] != true ||
-        parsed['envelope_version'] is! int) {
+    if (parsed is! Map<String, Object?>) {
+      throw const InvalidBackupFile();
+    }
+    final isCurrent = parsed[formatKey] == formatMarker;
+    final isLegacy =
+        parsed[_legacyMarkerKey] == true && parsed['envelope_version'] is int;
+    if (!isCurrent && !isLegacy) {
       throw const InvalidBackupFile();
     }
     return parsed;

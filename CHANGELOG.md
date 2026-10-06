@@ -37,3 +37,6 @@ Releases up to 1.3.0 are documented in docs/deployment/release-notes/.
 - "Days since last period", counted from the end of your period, no longer stops at a single day you didn't log.
 
 Some cycle lengths, averages and predictions may change after this update, usually by a day.
+
+### Security
+- Backups are now encrypted by default. Turning encryption off shows a warning that anyone with the file can read it. The backup file is deleted once the share sheet is done with it on phones, and leftover backups from older versions are cleared when the app starts. File names and contents no longer say which app made them, and error messages no longer show technical details. Backups from older versions still import.

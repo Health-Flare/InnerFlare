@@ -131,11 +131,65 @@ Feature: Backup export and import
     Then the import fails with a clear "incorrect passphrase" error
     And no data is written to the local database
 
-  Scenario: Plaintext export is the default with encryption opt-in
-    Given the user has not enabled "encrypt export"
+  # --- Export files are protected by default (issue #100) -----------------
+  #
+  # A backup holds every period, symptom, note, ovulation test and
+  # temperature the user has logged. Until 1.3 the default was a plain text
+  # file, left in the temp folder for good, with a name that said what it
+  # was. These scenarios replace "Plaintext export is the default with
+  # encryption opt-in".
+
+  Scenario: Encryption is on by default
+    Given the user opens the export screen
+    Then "Encrypt export" is already on
+    And the passphrase fields are shown
+    And the user can't export until they set a passphrase or turn encryption off
+
+  Scenario: Turning encryption off warns what anyone with the file can read
+    Given the user opens the export screen
+    When the user turns off "Encrypt export"
+    Then a warning says that anyone who gets the file can read it
+    And the warning names what is in it: periods, symptoms, notes,
+      ovulation tests and temperatures
+    And the user can still export a plain file if they choose to
+
+  Scenario: The backup file name and contents don't say what app made it
     When the user exports their data
-    Then the file is written as plaintext
-    And the user is not blocked from exporting by an unset passphrase
+    Then the file is named like "backup_20261005_143000.ifbackup"
+    And the share sheet is given no subject line naming the app
+    And an encrypted file holds only a generic format marker, the
+      encryption settings and the ciphertext, nothing that names the app
+
+  Scenario: Backups from older versions still import
+    Given the user has a backup exported by Inner Flare 1.0 to 1.3
+    When the user imports it
+    Then a plain file from those versions imports as before
+    And an encrypted file from those versions imports with its passphrase
+
+  Scenario: The export file is removed once it has been shared
+    Given the user is on a phone (Android or iOS)
+    When the user exports their data and the share sheet closes
+    Then the file the app wrote for the share sheet is deleted
+    And this happens whether the share finished, was cancelled or failed
+
+  Scenario: Leftover export files are cleared when the app starts
+    Given an earlier run left export files behind (for example it was
+      closed mid-share, or on a computer where the file can't be deleted
+      straight away)
+    When the app starts, before the database is unlocked
+    Then every file in the app's own export folder is deleted
+    And backup files older versions left loose in the temp folder
+      ("inner_flare_backup_*.ifbackup") are deleted
+    And other files in the temp folder are left alone
+
+  Scenario: Export and import errors are shown in plain words
+    Given something unexpected goes wrong during an export
+    Then the user sees "Couldn't create the backup. Nothing was changed."
+    And no technical error text is shown, except in debug builds
+    Given something unexpected goes wrong during an import
+    Then the user sees "Couldn't import this backup. Try again, or check the file."
+    And the specific messages for a wrong passphrase, a missing passphrase,
+      an invalid file and a backup from a newer version are kept
 
   # --- Importing from the platform health store ----------------------------
   #

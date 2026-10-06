@@ -4,10 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inner_flare/core/providers/backup_importer_provider.dart';
 import 'package:inner_flare/core/providers/log_data_invalidation.dart';
 import 'package:inner_flare/core/providers/tracked_symptoms_provider.dart';
-import 'package:inner_flare/core/security/backup_encryption.dart';
-import 'package:inner_flare/data/export/backup_file_codec.dart';
 import 'package:inner_flare/data/export/backup_file_io.dart';
 import 'package:inner_flare/data/export/backup_importer.dart';
+import 'package:inner_flare/features/export/backup_error_messages.dart';
 
 /// Lets the user restore a previously exported backup file (docs/features/
 /// export.feature). Every step below happens only in response to the
@@ -110,19 +109,12 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
       if (!mounted) return;
       setState(() => _successMessage = 'Import complete.');
     } catch (error) {
+      debugPrint('Import failed: $error');
       if (!mounted) return;
-      setState(() => _error = _messageFor(error));
+      setState(() => _error = importErrorMessage(error));
     } finally {
       if (mounted) setState(() => _importing = false);
     }
-  }
-
-  String _messageFor(Object error) {
-    if (error is InvalidBackupFile) return error.toString();
-    if (error is BackupPassphraseRequired) return error.toString();
-    if (error is IncorrectBackupPassphrase) return error.toString();
-    if (error is UnsupportedBackupSchemaVersion) return error.toString();
-    return "Couldn't import: $error";
   }
 
   Future<String?> _promptForPassphrase() {

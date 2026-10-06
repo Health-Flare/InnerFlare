@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:inner_flare/core/files/scratch_files.dart';
 import 'package:inner_flare/core/providers/backup_exporter_provider.dart';
 import 'package:inner_flare/data/export/backup_file_io.dart';
+import 'package:inner_flare/features/export/backup_error_messages.dart';
 import 'package:share_plus/share_plus.dart';
 
 /// Lets the user create a backup file of their data (docs/features/
 /// export.feature). Never runs on its own: the only way this screen's
 /// export logic executes is the user tapping the button below, matching
 /// "export never happens automatically."
+///
+/// Encryption is on by default (issue #100): a plain file is the user's
+/// explicit choice, made after a warning that names what's in it.
 class ExportScreen extends ConsumerStatefulWidget {
   const ExportScreen({super.key});
 
@@ -15,10 +20,16 @@ class ExportScreen extends ConsumerStatefulWidget {
   ConsumerState<ExportScreen> createState() => _ExportScreenState();
 }
 
+/// Shown under the switch while "Encrypt export" is off.
+const unencryptedWarning =
+    'Without encryption, anyone who gets this file can read everything '
+    'in it: your periods, symptoms, notes, ovulation tests and '
+    'temperatures.';
+
 class _ExportScreenState extends ConsumerState<ExportScreen> {
   final _passphraseController = TextEditingController();
   final _confirmController = TextEditingController();
-  bool _encrypt = false;
+  bool _encrypt = true;
   bool _exporting = false;
   String? _error;
 
@@ -47,8 +58,7 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
             contentPadding: EdgeInsets.zero,
             title: const Text('Encrypt export'),
             subtitle: const Text(
-              'Protects the file with a passphrase you set below. Off by '
-              'default: the file is plain text.',
+              'Protects the file with a passphrase you set below.',
             ),
             value: _encrypt,
             onChanged: _exporting
@@ -79,6 +89,14 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
               style: Theme.of(
                 context,
               ).textTheme.bodySmall?.copyWith(fontStyle: FontStyle.italic),
+            ),
+          ],
+          if (!_encrypt) ...[
+            const SizedBox(height: 8),
+            Text(
+              key: const Key('export_plaintext_warning'),
+              unencryptedWarning,
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
             ),
           ],
           if (_error != null) ...[
@@ -129,15 +147,19 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
       final contents = await exporter.buildFileContents(passphrase: passphrase);
       final path = await BackupFileIO().writeTemporaryFile(contents);
 
-      await SharePlus.instance.share(
-        ShareParams(
-          files: [XFile(path, mimeType: 'application/json')],
-          subject: 'Inner Flare backup',
+      // No subject line: on email or messaging targets it would label the
+      // file. The file is deleted once the share sheet is done with it
+      // (phones), or at the next launch (desktop).
+      await ScratchFiles.shareThenDelete(
+        path,
+        () => SharePlus.instance.share(
+          ShareParams(files: [XFile(path, mimeType: 'application/json')]),
         ),
       );
     } catch (error) {
+      debugPrint('Export failed: $error');
       if (!mounted) return;
-      setState(() => _error = "Couldn't export: $error");
+      setState(() => _error = exportErrorMessage(error));
     } finally {
       if (mounted) setState(() => _exporting = false);
     }
