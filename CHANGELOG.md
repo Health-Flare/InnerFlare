@@ -40,3 +40,4 @@ Some cycle lengths, averages and predictions may change after this update, usual
 
 ### Security
 - Backups are now encrypted by default. Turning encryption off shows a warning that anyone with the file can read it. The backup file is deleted once the share sheet is done with it on phones, and leftover backups from older versions are cleared when the app starts. File names and contents no longer say which app made them, and error messages no longer show technical details. Backups from older versions still import.
+- Settings has a new "Erase all data" option. After you unlock with Face ID, fingerprint or your passcode and confirm, it deletes the key that unlocks your data, then your logged days, symptoms, notes and settings, and any backup files left over from exporting, and the app starts over as if just installed. Backups you've already exported aren't affected.
