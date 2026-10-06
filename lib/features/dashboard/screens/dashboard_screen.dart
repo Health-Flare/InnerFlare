@@ -22,6 +22,7 @@ import 'package:inner_flare/features/dashboard/widgets/unlock_error_banner.dart'
 import 'package:inner_flare/features/insights/screens/cycle_detail_screen.dart';
 import 'package:inner_flare/features/insights/screens/insights_screen.dart';
 import 'package:inner_flare/features/log/screens/log_entry_screen.dart';
+import 'package:inner_flare/features/security/widgets/no_screen_lock_warning.dart';
 import 'package:inner_flare/features/settings/screens/settings_screen.dart';
 import 'package:inner_flare/models/dashboard_card.dart';
 
@@ -223,6 +224,7 @@ class DashboardScreen extends ConsumerWidget {
                 label: const Text('Log a previous day'),
               ),
             ),
+            const NoScreenLockWarning(padding: EdgeInsets.only(top: 12)),
             if (todayLog.hasError) ...[
               const SizedBox(height: 12),
               UnlockErrorBanner(

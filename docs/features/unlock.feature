@@ -64,6 +64,82 @@ Feature: Unlocking Inner Flare
     Then no biometric or passcode prompt is shown, since there is nothing to gate with
     And the user goes straight to their data
 
+  # Key binding (part of #90). The key that decrypts the data is held by the
+  # phone's own secure storage and released only after the phone has checked
+  # it's the user: face, fingerprint, or the phone's passcode/PIN. Before
+  # this, the app asked the phone "is this the user?" and then read the key
+  # itself, so anything that could skip that question could read the key.
+  # iPhone: Keychain item with user presence. Android 11 and later: Keystore
+  # key that needs a strong biometric or the screen lock for every use.
+  # Android 9 and 10 can't offer the screen lock as a fallback for this kind
+  # of key, so they keep the old key and the old prompt.
+
+  Scenario: The phone itself releases the key only after it has checked it's the user
+    Given the phone has a screen lock
+    When the user taps "Unlock"
+    Then the phone shows its own face, fingerprint, or passcode prompt
+    And the key is only released to Inner Flare once that prompt succeeds
+    And the user sees one prompt, not two in a row
+
+  Scenario: Cancelling the phone's prompt keeps the data locked
+    Given the phone has a screen lock
+    When the user taps "Unlock" and cancels the phone's prompt
+    Then the dedicated unlock screen stays up with the retry explanation
+    And no prompt is shown again until the user taps "Unlock" again
+
+  Scenario: Updating the app carries the existing key over without losing data
+    Given the user has data from a version of Inner Flare before key binding
+    And the phone has a screen lock
+    When the user taps "Unlock" for the first time after updating
+    Then the existing key is copied into the protected slot and checked
+    And the old copy is removed only after the protected copy has been read back and matches
+    And all of the user's history opens as before
+
+  Scenario: If the carry-over fails, the old key keeps working and it tries again next time
+    Given the user has data from a version of Inner Flare before key binding
+    When copying the key into the protected slot fails, or the copy doesn't match, or the app is closed part way through
+    Then the old key is kept and the user's data still opens
+    And the carry-over is tried again the next time the user unlocks
+
+  Scenario: Adding a new fingerprint or face doesn't lock the user out
+    Given the key is held by the phone's screen lock
+    When the user adds or removes a fingerprint or face in the phone's settings
+    Then their data still opens with face, fingerprint, or passcode as before
+
+  Scenario: A phone with no screen lock says plainly that anyone can open the app
+    Given the phone has no passcode, PIN, pattern, or biometrics set up
+    Then the unlock screen says "This phone has no screen lock, so anyone holding it can open Inner Flare."
+    And the unlock screen does not claim the data is unlocked with Face ID, Touch ID, or a passcode
+    And the dashboard and Settings show the same warning for as long as there is no screen lock
+
+  Scenario: Setting a screen lock later protects the key from the next unlock
+    Given the phone had no screen lock, so the key was stored without one
+    When the user sets a screen lock and next taps "Unlock"
+    Then the key is carried over into the protected slot the same safe way as after an update
+    And the warning is no longer shown
+
+  # Android deletes keys like this for good when the screen lock is turned
+  # off (Keystore: "irreversibly invalidated once the secure lock screen is
+  # disabled"). That's the price of tying the key to the screen lock, so
+  # Settings warns about it ahead of time.
+  Scenario: Settings warns that turning the screen lock off can delete the key
+    Given the key is held by the phone's screen lock
+    When the user opens Settings
+    Then Settings says "Your data's key is tied to this phone's screen lock. Turning the screen lock off can delete that key, so export a backup first."
+
+  Scenario: Turning the screen lock off after the key is protected explains what happened
+    Given the key is held by the phone's screen lock
+    When the user turns the phone's screen lock off and taps "Unlock"
+    Then the unlock screen says "Inner Flare's key was tied to this phone's screen lock, and the screen lock is now off. Turn it back on in your phone's settings and tap Unlock. If your data still doesn't open, the phone removed the key when the screen lock was turned off, and only a backup you exported earlier can bring it back."
+    And no new, empty key is made in its place
+
+  Scenario: If the app can't tell whether the phone has a screen lock, it stays locked
+    Given checking the phone's screen lock settings fails with an error
+    When the user taps "Unlock"
+    Then the data stays locked and the retry explanation is shown
+    And the user can tap "Unlock" again to retry
+    And a phone that genuinely has no screen lock still gets in, with the warning above
+
   Scenario: First-ever launch reaches onboarding without a confusing detour
     Given this is the very first launch on this device, before onboarding has been completed
     When the loading screen finishes
