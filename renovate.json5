@@ -54,6 +54,9 @@
         'org.jetbrains.kotlin.android',
         'org.jetbrains.kotlin.android:org.jetbrains.kotlin.android.gradle.plugin',
       ],
+      // Keep a major in the same PR as its partners' minors; by default
+      // Renovate splits it into a separate major-* branch.
+      separateMajorMinor: false,
       automerge: false,
     },
 
@@ -64,6 +67,18 @@
       groupName: 'github actions',
       matchManagers: ['github-actions'],
       matchUpdateTypes: ['major'],
+      automerge: false,
+    },
+
+    // The JDK that runs Gradle (`java-version` in the workflows, which
+    // Renovate reports as `java-jdk`) is capped by the Gradle version, so it
+    // belongs with the android toolchain, not the actions batch. Must come
+    // after the actions rule above to win the group name.
+    {
+      groupName: 'android toolchain',
+      matchManagers: ['github-actions'],
+      matchDepNames: ['java-jdk'],
+      separateMajorMinor: false,
       automerge: false,
     },
   ],
