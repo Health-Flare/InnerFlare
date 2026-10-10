@@ -11,6 +11,9 @@ on:
     branches: [main]
     types: [opened, edited, synchronize, reopened]
 
+permissions:
+  contents: read
+
 concurrency:
   group: pr-checks-${{ github.workflow }}-${{ github.event.pull_request.number }}
   cancel-in-progress: true
@@ -22,7 +25,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Require a filled-in description
-        uses: actions/github-script@v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         with:
           script: |
             const body = (context.payload.pull_request.body || '');
@@ -39,7 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 0
 

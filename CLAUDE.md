@@ -174,10 +174,13 @@ Use `pump(Duration(milliseconds: 500))` instead of `pumpAndSettle()` when provid
   checks plus `flutter test --coverage`, on every push to `main` and every
   PR.
 - **Android build & release** (`.github/workflows/android-release.yml`):
-  a debug APK builds only on manual dispatch (Actions tab → "Run workflow"),
-  for sideloading during development. It no longer builds automatically on
-  push to `main`. Pushing a `v*.*.*` tag builds a signed
-  release App Bundle + APK and attaches them to a GitHub Release; see
+  a release-mode APK signed with a separate test key builds only on manual
+  dispatch (Actions tab → "Run workflow"), for sideloading during
+  development; never a `--debug` build (debuggable + INTERNET, issue #99).
+  It doesn't build automatically on push to `main`. A release build with no
+  `android/key.properties` fails instead of falling back to the debug key,
+  unless `-PallowDebugSigning=true` is passed. Pushing a `v*.*.*` tag builds
+  a signed release App Bundle + APK and attaches them to a GitHub Release; see
   `docs/deployment/android-release.md` for the one-time keystore/secrets
   setup and the pre-launch Play Store checklist.
 - **iOS build & release** (`.github/workflows/ios-release.yml`): an unsigned
@@ -196,16 +199,22 @@ Use `pump(Duration(milliseconds: 500))` instead of `pumpAndSettle()` when provid
   `docs/deployment/release-tasklist.md` for the submission plan; F-Droid
   builds from a tagged commit on its own infrastructure via a metadata
   file submitted to `fdroid/fdroid-data`, not a workflow in this repo.
-- **Dependency updates** (`renovate.json5`): weekly (Monday) batched PRs for
-  `pubspec.yaml` and GitHub Actions versions, gated by the same CI checks as
-  any other PR. Patch/minor dev-only tooling and GitHub Actions bumps
-  auto-merge once green; runtime (`dependencies:`) bumps, the riverpod
-  family (grouped: it spans `dependencies:`/`dev_dependencies:` and must
-  move together), and every major version bump always wait for manual
-  review. This split exists because routine-looking bumps have broken the
-  build here before (see the biometric-gate and riverpod migration notes
-  under "Encrypted, biometric-gated storage"); tune the `packageRules` in
-  `renovate.json5` directly if that balance needs to shift.
+- **Dependency updates** (`renovate.json5`): weekly (Monday) batched PRs,
+  gated by the same CI checks as any other PR. Only major bumps are proposed
+  for `pubspec.yaml` (patch/minor are disabled: routine-looking bumps have
+  broken the build here before, see the biometric-gate and riverpod
+  migration notes under "Encrypted, biometric-gated storage"), nothing
+  auto-merges, and the riverpod family is grouped (it spans
+  `dependencies:`/`dev_dependencies:` and must move together). Tune the
+  `packageRules` in `renovate.json5` directly if that balance needs to shift.
+- **Workflow supply chain** (issue #99): every third-party action is pinned
+  to a full commit SHA with a `# vN` comment, never a bare tag; Renovate
+  proposes digest PRs for those (review the SHA change, never auto-merge).
+  The Flutter SDK is pinned via `FLUTTER_VERSION` at the top of `ci.yml`,
+  `android-release.yml` and `ios-release.yml` (bump all three together;
+  Renovate doesn't track it), every `flutter pub get` in CI uses
+  `--enforce-lockfile`, and each workflow defaults to
+  `permissions: contents: read`, with jobs widening that only as needed.
 
 ## Code Quality Rules
 

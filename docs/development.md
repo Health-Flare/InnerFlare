@@ -105,7 +105,7 @@ If macOS ever becomes a real target: add `<key>keychain-access-groups</key><arra
 ## CI/CD
 
 - **CI** (`.github/workflows/ci.yml`): format check, `flutter analyze`, offline-URL scan, and `flutter test` on every push to `main` and every PR.
-- **Android build and release** (`.github/workflows/android-release.yml`): a debug APK on demand (Actions tab → "Run workflow"); pushing a `v*.*.*` tag builds a signed release bundle and attaches it to a GitHub Release. See [android-release.md](deployment/android-release.md).
+- **Android build and release** (`.github/workflows/android-release.yml`): a release-mode APK signed with a test key on demand (Actions tab → "Run workflow"); pushing a `v*.*.*` tag builds a signed release bundle and attaches it to a GitHub Release. See [android-release.md](deployment/android-release.md).
 - **iOS build and release** (`.github/workflows/ios-release.yml`): an unsigned Simulator build on demand; pushing a `v*.*.*` tag builds a signed IPA and uploads it to App Store Connect. See [ios-release.md](deployment/ios-release.md).
 - **F-Droid**: builds on F-Droid's own infrastructure, not ours. See [fdroid/README.md](deployment/fdroid/README.md).
 - [release-tasklist.md](deployment/release-tasklist.md) has the full Play Store / App Store / F-Droid launch checklist, and [release-process.md](deployment/release-process.md) the release steps.

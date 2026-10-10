@@ -70,6 +70,24 @@
       automerge: false,
     },
 
+    // Workflow actions are pinned to full commit SHAs with a `# vN` comment
+    // (issue #99): a moved tag must not reach a job that holds the signing
+    // keys or the Play service account. The top-level `digest: false` above
+    // would leave those SHAs frozen forever, so re-enable digest updates for
+    // github-actions only. Each PR shows the old and new SHA for a tag:
+    // review it before merging, never auto-merge it.
+    {
+      matchManagers: ['github-actions'],
+      pinDigests: true,
+    },
+    {
+      groupName: 'github actions',
+      matchManagers: ['github-actions'],
+      matchUpdateTypes: ['digest', 'pinDigest'],
+      enabled: true,
+      automerge: false,
+    },
+
     // The JDK that runs Gradle (`java-version` in the workflows, which
     // Renovate reports as `java-jdk`) is capped by the Gradle version, so it
     // belongs with the android toolchain, not the actions batch. Must come
