@@ -11,13 +11,32 @@ plugins {
 
 // Release signing config, loaded from android/key.properties (see
 // docs/deployment/android-release.md). That file is gitignored and never
-// committed; local `flutter run --release` falls back to debug signing when
-// it's absent, same as CI does until the release secrets are configured.
+// committed. Without it a release build fails rather than silently signing
+// with the debug key; pass -PallowDebugSigning=true (or set
+// ORG_GRADLE_PROJECT_allowDebugSigning=true) to opt in to that for a quick
+// local `flutter run --release`.
 val keystorePropertiesFile = rootProject.file("key.properties")
 val keystoreProperties = Properties()
 val hasKeystoreProperties = keystorePropertiesFile.exists()
 if (hasKeystoreProperties) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
+val allowDebugSigning =
+    providers.gradleProperty("allowDebugSigning").orNull?.toBoolean() ?: false
+
+// Checked once the task graph is known, not at configuration time: the
+// release buildType is configured for debug builds too, and those must keep
+// working with no key.properties.
+gradle.taskGraph.whenReady {
+    val buildsRelease = allTasks.any { it.project == project && it.name.contains("Release") }
+    if (buildsRelease && !hasKeystoreProperties && !allowDebugSigning) {
+        throw GradleException(
+            "Release build without android/key.properties. Refusing to sign " +
+                "with the debug key. Create key.properties (see " +
+                "docs/deployment/android-release.md), or pass " +
+                "-PallowDebugSigning=true for a local, never-distributed build.",
+        )
+    }
 }
 
 android {
@@ -56,9 +75,10 @@ android {
 
     buildTypes {
         release {
-            // Signs with the real upload key once android/key.properties exists
-            // (see docs/deployment/android-release.md); falls back to the debug
-            // key so `flutter run --release` still works with no setup.
+            // Signs with the key in android/key.properties (see
+            // docs/deployment/android-release.md). The debug-key branch is only
+            // reachable with -PallowDebugSigning=true: see the taskGraph check
+            // above.
             signingConfig = if (hasKeystoreProperties) {
                 signingConfigs.getByName("release")
             } else {

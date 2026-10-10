@@ -2,17 +2,44 @@
 
 ## Getting a build onto your phone right now
 
-`.github/workflows/android-release.yml` builds a **debug APK** when run on
-demand (it no longer runs on pushes to `main`):
+`.github/workflows/android-release.yml` builds a **release-mode APK signed
+with a test key** when run on demand (it doesn't run on pushes to `main`):
 
 1. GitHub repo → **Actions** → **Android build & release** → **Run workflow**.
-2. When it finishes, open the run and download the `inner-flare-debug-apk`
+2. When it finishes, open the run and download the `inner-flare-sideload-apk`
    artifact.
-3. Unzip it, copy `app-debug.apk` to your phone, and install it (you'll need
+3. Unzip it, copy `app-release.apk` to your phone, and install it (you'll need
    to allow installs from your file manager / browser, "unknown sources").
 
-No signing setup is needed for this path. It's for sideloading during
-development, not for the Play Store.
+It's for sideloading during development, not for the Play Store.
+
+### Why not a debug APK (issue #99)
+
+This job used to build `flutter build apk --debug`. A debug build is
+`android:debuggable` and carries the `INTERNET` permission
+(`android/app/src/debug/AndroidManifest.xml`), so anyone holding the phone
+with USB debugging on could `adb run-as` into the app sandbox or attach a
+debugger and pull the SQLCipher key out of memory. A sideloaded build should
+be as hard to pick apart as the store one, so it's now a release build.
+
+### Sideload builds: one-time test key setup
+
+The sideload APK is signed with a **separate test keystore**, never the
+upload key: anyone you hand the APK to holds nothing that can publish to
+Play. Generate it the same way as the upload key (step 1 below), with a
+different file and alias, and add four more repo secrets:
+
+| Secret | Value |
+|---|---|
+| `ANDROID_TEST_KEYSTORE_BASE64` | `base64 -w0 test-keystore.jks` (macOS: `base64 -i test-keystore.jks`) |
+| `ANDROID_TEST_KEYSTORE_PASSWORD` | the test store password |
+| `ANDROID_TEST_KEY_ALIAS` | the test key alias |
+| `ANDROID_TEST_KEY_PASSWORD` | the test key password |
+
+The job fails with a list of what's missing until these exist. Keep using
+the same test key: Android refuses to install an update signed with a
+different key over an existing install, so rotating it means uninstalling
+(and losing the data in) the sideloaded app.
 
 ## Signed release build (for the Play Store)
 
@@ -104,9 +131,14 @@ keyAlias=upload
 storeFile=/absolute/path/to/upload-keystore.jks
 ```
 
-Then `flutter build appbundle --release`. Without this file, release builds
-fall back to debug signing so `flutter run --release` keeps working with no
-setup.
+Then `flutter build appbundle --release`. Without this file, a release build
+**fails** rather than silently signing with the debug key (issue #99). For a
+quick local `flutter run --release` that will never leave your machine, opt
+in explicitly:
+
+```bash
+ORG_GRADLE_PROJECT_allowDebugSigning=true flutter run --release
+```
 
 ## Play Store checklist before v1 goes live
 

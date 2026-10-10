@@ -11,6 +11,16 @@ on:
     tags:
       - "v*.*.*"
 
+# Least privilege by default; a job that needs more asks for it itself.
+permissions:
+  contents: read
+
+env:
+  # Pinned so a release build is reproducible and a bad stable push can't
+  # land in a signed build unreviewed. Bump deliberately, in one PR, across
+  # ci.yml, android-release.yml and ios-release.yml together.
+  FLUTTER_VERSION: '3.47.7'
+
 jobs:
   simulator-build:
     name: Simulator build (sideload-free smoke test)
@@ -18,14 +28,15 @@ jobs:
     runs-on: macos-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
 
-      - run: flutter pub get
+      - run: flutter pub get --enforce-lockfile
 
       - name: Generate Riverpod code
         run: dart run build_runner build
@@ -33,7 +44,7 @@ jobs:
       - name: Build for iOS Simulator
         run: flutter build ios --simulator --debug
 
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: inner-flare-simulator-build
           path: build/ios/iphonesimulator/Runner.app
@@ -45,14 +56,15 @@ jobs:
     runs-on: macos-latest
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
 
-      - run: flutter pub get
+      - run: flutter pub get --enforce-lockfile
 
       - name: Generate Riverpod code
         run: dart run build_runner build
@@ -178,7 +190,7 @@ jobs:
           rm -f "$HOME/Library/MobileDevice/Provisioning Profiles/inner_flare.mobileprovision"
           rm -rf "$HOME/.appstoreconnect/private_keys"
 
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: inner-flare-release-ipa
           path: build/ios/ipa/*.ipa
