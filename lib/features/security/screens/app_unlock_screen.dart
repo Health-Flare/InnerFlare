@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:inner_flare/core/providers/key_protection_provider.dart';
 import 'package:inner_flare/core/theme/app_theme.dart';
 
 /// The dedicated, full-screen unlock prompt shown whenever the encrypted
@@ -19,6 +20,8 @@ class AppUnlockScreen extends StatelessWidget {
     required this.busy,
     required this.failed,
     this.onUnlock,
+    this.noScreenLock = false,
+    this.failureMessage,
   });
 
   /// Whether an attempt is currently in flight: disables the button and
@@ -32,6 +35,27 @@ class AppUnlockScreen extends StatelessWidget {
   /// Called when the user taps "Unlock". Null (button disabled) exactly
   /// while [busy] is true.
   final VoidCallback? onUnlock;
+
+  /// The phone has no screen lock: say plainly that anyone holding it can
+  /// open the app, and don't claim it unlocks with a face or passcode.
+  final bool noScreenLock;
+
+  /// Replaces the generic retry text when the failure needs explaining
+  /// (e.g. the key is tied to a screen lock that's been turned off).
+  final String? failureMessage;
+
+  /// Before any attempt, on a phone with a screen lock.
+  static const lockedExplanation =
+      'Your cycle data is encrypted on this device. Unlock with your face, '
+      'fingerprint, or screen lock to continue.';
+
+  /// Before any attempt, on a phone with no screen lock: no unlock claim.
+  static const noScreenLockExplanation =
+      'Your cycle data is encrypted on this device.';
+
+  static const failedExplanation =
+      "That didn't go through, so your data stays hidden until you try "
+      'again.';
 
   @override
   Widget build(BuildContext context) {
@@ -69,17 +93,29 @@ class AppUnlockScreen extends StatelessWidget {
                   const SizedBox(height: 8),
                   Text(
                     failed
-                        ? "That didn't go through, so your data stays "
-                              'hidden until you try again.'
-                        : 'Your cycle data is encrypted on this device. '
-                              'Unlock with Face ID, Touch ID, or your '
-                              'passcode to continue.',
+                        ? failureMessage ?? failedExplanation
+                        : noScreenLock
+                        ? noScreenLockExplanation
+                        : lockedExplanation,
                     style: const TextStyle(
                       color: Color(0xFFB7C4C7),
                       fontSize: 14,
                     ),
                     textAlign: TextAlign.center,
                   ),
+                  if (noScreenLock) ...[
+                    const SizedBox(height: 12),
+                    const Text(
+                      noScreenLockWarning,
+                      key: Key('unlock_no_screen_lock_warning'),
+                      style: TextStyle(
+                        color: AppColors.softOrange,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                   const SizedBox(height: 32),
                   FilledButton(
                     onPressed: onUnlock,

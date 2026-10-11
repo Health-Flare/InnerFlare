@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:inner_flare/core/security/biometric_gate.dart';
 import 'package:local_auth/local_auth.dart';
@@ -122,10 +123,22 @@ void main() {
       },
     );
 
-    test('an error checking capability fails open', () async {
+    test('an error checking capability fails closed, so the user retries '
+        '(#90: this used to fail open and skip the prompt)', () async {
       final gate = LocalAuthBiometricGate(
         auth: _FakeLocalAuthentication(
-          capabilityCheckError: Exception('platform plugin not wired up'),
+          capabilityCheckError: PlatformException(code: 'boom'),
+        ),
+      );
+
+      expect(await gate.authenticate(), isFalse);
+    });
+
+    test('no local_auth plugin at all (desktop builds) still gets in: '
+        'nothing to gate with', () async {
+      final gate = LocalAuthBiometricGate(
+        auth: _FakeLocalAuthentication(
+          capabilityCheckError: MissingPluginException('no local_auth'),
         ),
       );
 
