@@ -35,6 +35,50 @@ that goes stale.
       edge case for them, not a solved default path the way a plain
       Gradle Android app is.
 
+## Signing: build an unsigned release APK
+
+F-Droid signs every APK with its own key, so its build has to produce an
+*unsigned* release APK. `android/app/build.gradle.kts` has no silent
+fallback for this: a release build with no `android/key.properties` stops
+with an error instead of signing with the debug key. The F-Droid recipe
+opts in explicitly:
+
+```bash
+flutter build apk --release --android-project-arg=unsignedRelease=true
+```
+
+That sets the release buildType's `signingConfig` to `null` and skips the
+missing-key check. AGP writes `build/app/outputs/apk/release/app-release-unsigned.apk`,
+and Flutter's Gradle plugin copies it to
+`build/app/outputs/flutter-apk/app-release.apk`. The recipe's `output`
+points at that copy, the same path fdroiddata's
+`templates/build-flutter.yml` uses. The file is unsigned despite its name:
+`apksigner verify` on it reports `DOES NOT VERIFY` / `Missing META-INF/MANIFEST.MF`.
+
+How the release-signing properties combine:
+
+| Build | Signed with |
+|---|---|
+| `key.properties` present | the upload key (Play, `android-release.yml`) |
+| `-PunsignedRelease=true` | nothing: unsigned, for F-Droid (wins over `key.properties`) |
+| `-PallowDebugSigning=true`, no `key.properties` | the debug key (local only, never distribute) |
+| no `key.properties`, neither flag | build fails |
+| both flags | build fails (they contradict each other) |
+
+Debug builds (`flutter build apk --debug`, `flutter run`) use the debug key
+as before and need none of this.
+
+We don't use the other common F-Droid approach, a `prebuild` step that runs
+`sed` to delete `signingConfig` lines. Our `signingConfig` is a multi-line
+Kotlin `if`/`else` expression, so deleting single lines would break the
+Gradle script, and the fix would live in fdroiddata, not here. An explicit
+property is visible in the recipe and can't break silently. fdroidserver's
+`gradleprops` field isn't usable either: it only applies to the `gradle:`
+build method, and Flutter apps build through a manual `build:` command.
+
+`-PunsignedRelease` only exists from the release after v1.3.0. The draft
+recipe's `commit` has to point at a tag that includes it.
+
 ## Metadata
 
 F-Droid metadata is a YAML file submitted as a PR to `fdroid/fdroid-data`,
@@ -58,10 +102,11 @@ copy-paste-ready file, since their schema does evolve.
       own reviewers check independently and can flag things a normal store
       review wouldn't (e.g. a permissive-but-non-OSI-approved license
       buried in a transitive dependency).
-- [ ] The tag the metadata points at (`v1.2.0` today) exists and builds cleanly from a clean checkout with no
-      repo secrets or CI-only environment assumptions (true today: the
-      Android/iOS release workflows only add signing material, they don't
-      change what's compiled).
+- [ ] The tag the metadata points at exists, includes `-PunsignedRelease`
+      (so not `v1.3.0`, which the draft still names), and builds an unsigned
+      APK from a clean checkout with no repo secrets or CI-only environment
+      assumptions (the Android/iOS release workflows only add signing
+      material, they don't change what's compiled).
 - [ ] Reuse `screenshots/play_store/phone/` for F-Droid's listing:
       F-Droid pulls screenshots/description from the metadata repo or an
       app's own repo depending on setup; check their current convention

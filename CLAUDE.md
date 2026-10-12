@@ -179,7 +179,9 @@ Use `pump(Duration(milliseconds: 500))` instead of `pumpAndSettle()` when provid
   development; never a `--debug` build (debuggable + INTERNET, issue #99).
   It doesn't build automatically on push to `main`. A release build with no
   `android/key.properties` fails instead of falling back to the debug key,
-  unless `-PallowDebugSigning=true` is passed. Pushing a `v*.*.*` tag builds
+  unless `-PallowDebugSigning=true` (debug key, local only) or
+  `-PunsignedRelease=true` (unsigned, for F-Droid to sign; see
+  `docs/deployment/fdroid/README.md`) is passed. Pushing a `v*.*.*` tag builds
   a signed release App Bundle + APK and attaches them to a GitHub Release; see
   `docs/deployment/android-release.md` for the one-time keystore/secrets
   setup and the pre-launch Play Store checklist.
