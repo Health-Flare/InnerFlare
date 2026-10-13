@@ -15,6 +15,11 @@ plugins {
 // with the debug key; pass -PallowDebugSigning=true (or set
 // ORG_GRADLE_PROJECT_allowDebugSigning=true) to opt in to that for a quick
 // local `flutter run --release`.
+//
+// -PunsignedRelease=true instead leaves the release APK unsigned, for
+// builders that sign it themselves (F-Droid; see docs/deployment/fdroid/).
+// It's the only way to get a release build with no key.properties and no
+// debug signature, and it wins over key.properties if both are present.
 val keystorePropertiesFile = rootProject.file("key.properties")
 val keystoreProperties = Properties()
 val hasKeystoreProperties = keystorePropertiesFile.exists()
@@ -23,18 +28,28 @@ if (hasKeystoreProperties) {
 }
 val allowDebugSigning =
     providers.gradleProperty("allowDebugSigning").orNull?.toBoolean() ?: false
+val unsignedRelease =
+    providers.gradleProperty("unsignedRelease").orNull?.toBoolean() ?: false
+if (unsignedRelease && allowDebugSigning) {
+    throw GradleException(
+        "-PunsignedRelease=true and -PallowDebugSigning=true contradict each " +
+            "other: pass one or the other.",
+    )
+}
 
 // Checked once the task graph is known, not at configuration time: the
 // release buildType is configured for debug builds too, and those must keep
 // working with no key.properties.
 gradle.taskGraph.whenReady {
     val buildsRelease = allTasks.any { it.project == project && it.name.contains("Release") }
-    if (buildsRelease && !hasKeystoreProperties && !allowDebugSigning) {
+    if (buildsRelease && !hasKeystoreProperties && !allowDebugSigning && !unsignedRelease) {
         throw GradleException(
             "Release build without android/key.properties. Refusing to sign " +
                 "with the debug key. Create key.properties (see " +
-                "docs/deployment/android-release.md), or pass " +
-                "-PallowDebugSigning=true for a local, never-distributed build.",
+                "docs/deployment/android-release.md), pass " +
+                "-PunsignedRelease=true for an unsigned APK that something " +
+                "else will sign (F-Droid), or pass -PallowDebugSigning=true " +
+                "for a local, never-distributed build.",
         )
     }
 }
@@ -78,8 +93,10 @@ android {
             // Signs with the key in android/key.properties (see
             // docs/deployment/android-release.md). The debug-key branch is only
             // reachable with -PallowDebugSigning=true: see the taskGraph check
-            // above.
-            signingConfig = if (hasKeystoreProperties) {
+            // above. -PunsignedRelease=true leaves it unsigned.
+            signingConfig = if (unsignedRelease) {
+                null
+            } else if (hasKeystoreProperties) {
                 signingConfigs.getByName("release")
             } else {
                 signingConfigs.getByName("debug")

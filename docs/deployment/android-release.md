@@ -140,6 +140,9 @@ in explicitly:
 ORG_GRADLE_PROJECT_allowDebugSigning=true flutter run --release
 ```
 
+F-Droid's build uses `-PunsignedRelease=true` instead, which builds an
+unsigned release APK for F-Droid to sign; see `fdroid/README.md`.
+
 ## Play Store checklist before v1 goes live
 
 The pipeline above gets you a signed bundle; these are the non-CI things
