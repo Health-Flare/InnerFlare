@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:inner_flare/core/debug/debug_chrome.dart';
 import 'package:inner_flare/core/providers/cycle_day_log_repository_provider.dart';
 import 'package:inner_flare/core/providers/dashboard_card_preferences_repository_provider.dart';
+import 'package:inner_flare/core/providers/key_protection_provider.dart';
 import 'package:inner_flare/core/providers/now_provider.dart';
 import 'package:inner_flare/core/providers/tracked_symptoms_repository_provider.dart';
 import 'package:inner_flare/data/database/schema.dart';
@@ -106,6 +107,43 @@ void main() {
       find.byType(DatabaseStatusIndicator),
       showDebugChrome ? findsOneWidget : findsNothing,
     );
+  });
+
+  testWidgets('a phone with no screen lock: the dashboard says anyone '
+      'holding it can open the app (docs/features/unlock.feature)', (
+    tester,
+  ) async {
+    await pumpTestApp(
+      tester,
+      const DashboardScreen(),
+      overrides: [
+        ...overridesFor(() => DateTime(2026, 1, 1, 9)),
+        phoneHasScreenLockProvider.overrideWith((ref) async => false),
+      ],
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text(
+        'This phone has no screen lock, so anyone holding it can open Inner '
+        'Flare.',
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('a phone with a screen lock: no such warning', (tester) async {
+    await pumpTestApp(
+      tester,
+      const DashboardScreen(),
+      overrides: [
+        ...overridesFor(() => DateTime(2026, 1, 1, 9)),
+        phoneHasScreenLockProvider.overrideWith((ref) async => true),
+      ],
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('no screen lock'), findsNothing);
   });
 
   testWidgets('shows a greeting, the log-today entry point, and honest '
