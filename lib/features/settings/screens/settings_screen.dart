@@ -15,6 +15,7 @@ import 'package:inner_flare/features/settings/screens/auto_lock_settings_screen.
 import 'package:inner_flare/features/settings/screens/privacy_disclaimer_screen.dart';
 import 'package:inner_flare/features/settings/screens/symptom_settings_screen.dart';
 import 'package:inner_flare/features/settings/widgets/app_version_tile.dart';
+import 'package:inner_flare/features/settings/widgets/erase_all_data_tile.dart';
 import 'package:inner_flare/models/cycle_day_log.dart';
 
 /// App settings (docs/features/navigation.feature: "Settings is reachable
@@ -173,6 +174,10 @@ class SettingsScreen extends ConsumerWidget {
               applicationName: 'Inner Flare',
             ),
           ),
+          // Last of the real settings, set apart from everything above
+          // (docs/features/erase_data.feature).
+          const Divider(height: 32),
+          const EraseAllDataTile(),
           if (showDebugChrome) ...[
             const Divider(height: 32),
             const Padding(
