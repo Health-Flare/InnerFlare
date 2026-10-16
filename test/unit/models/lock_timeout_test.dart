@@ -23,9 +23,9 @@ void main() {
       expect(LockTimeout.fromStoredMinutes(9999), LockTimeout.defaultValue);
     });
 
-    test('no saved row (represented as never having been read) defaults '
-        'to 15 minutes', () {
-      expect(LockTimeout.defaultValue, LockTimeout.after15Minutes);
+    test('the default for someone who never chose a timeout is 1 minute '
+        '(issue #90)', () {
+      expect(LockTimeout.defaultValue, LockTimeout.after1Minute);
     });
   });
 }

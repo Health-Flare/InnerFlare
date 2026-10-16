@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:inner_flare/models/lock_timeout.dart';
 import 'package:inner_flare/models/quick_stat.dart';
 import 'package:inner_flare/models/tracked_symptom.dart';
 import 'package:sqflite_common/sqlite_api.dart';
@@ -7,7 +8,7 @@ import 'package:sqflite_common/sqlite_api.dart';
 /// Bumped whenever the schema changes; every bump needs a matching branch
 /// in [onUpgrade] so exported backups from older versions still import
 /// cleanly (see BRIEF.md §4.2).
-const int schemaVersion = 9;
+const int schemaVersion = 10;
 
 const String cycleDayLogsTable = 'cycle_day_logs';
 
@@ -221,6 +222,33 @@ Future<void> onUpgrade(Database db, int oldVersion, int newVersion) async {
   if (oldVersion < 9) {
     await _addPeriodDayOverrideColumn(db);
   }
+  if (oldVersion < 10) {
+    await _moveOldDefaultLockTimeout(db);
+  }
+}
+
+/// Issue #90: the default idle-lock timeout went from 15 minutes to 1.
+///
+/// Up to schema 9, accepting the first-run statement saved the default
+/// (15) into `lock_timeout_minutes`, so a saved 15 can't be told apart
+/// from someone who never opened Auto-lock. Treat it as never chosen and
+/// move it to the new default; every other saved value (including NULL,
+/// which means "Never") was a real choice and is left alone. Someone who
+/// really wanted 15 can pick it again, and it sticks from then on.
+/// Skipped if the table is missing (partial test fixtures).
+Future<void> _moveOldDefaultLockTimeout(Database db) async {
+  final tables = await db.rawQuery(
+    "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?",
+    [securitySettingsTable],
+  );
+  if (tables.isEmpty) return;
+
+  await db.update(
+    securitySettingsTable,
+    {'lock_timeout_minutes': LockTimeout.defaultValue.storedMinutes},
+    where: 'lock_timeout_minutes = ?',
+    whereArgs: [15],
+  );
 }
 
 /// Adds [cycle_day_logs.period_day_override] (issue #103): the user's own
