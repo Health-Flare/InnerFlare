@@ -36,8 +36,8 @@ What made that work:
   tree, so the scanner sees every package. It removes the prebuilt files it
   finds there (example apps, devtools bundles, test archives); none of them
   are part of the app.
-- `dart run build_runner build` in prebuild: Riverpod's generated files
-  aren't committed.
+- `dart run build_runner build` in prebuild, as `android-release.yml`
+  does, so F-Droid compiles the same generated code as our release.
 - `--android-project-arg=unsignedRelease=true` (#116): a release build
   without our key and without the debug key.
 - Flutter pinned to `FLUTTER_VERSION` from `android-release.yml`, so F-Droid
