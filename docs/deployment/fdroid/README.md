@@ -1,110 +1,77 @@
-# F-Droid submission
+# F-Droid and IzzyOnDroid
 
-Unlike Play/App Store, there's no CI pipeline of ours to build for
-F-Droid — F-Droid's own build servers clone the tagged commit and build
-the APK themselves, independently, using a metadata file that lives in a
-separate repo (`fdroid/fdroid-data`), not this one. Our job is (1) make
-sure that build actually succeeds in their environment and (2) submit the
-metadata.
+Two FOSS Android repositories, two different models:
 
-## Why this is more involved than it sounds
+- **F-Droid** builds the APK itself from a tagged commit, using the recipe
+  in `org.healthflare.app.innerflare.yml` (this folder), and signs it with
+  F-Droid's key. The recipe lives in `fdroid/fdroiddata` once the merge
+  request is accepted; this copy is the one we keep tested.
+- **IzzyOnDroid** takes our signed APK from the GitHub release. It caps
+  a file at about 30 MB, so each release also carries
+  `innerflare-vX.Y.Z-arm64-v8a.apk` (about 26 MB; the universal APK is
+  about 70 MB). Same versionCode and signing key as the universal APK.
 
-Inner Flare is well-suited to F-Droid on paper — GPLv3, no analytics, no
-network calls, no proprietary dependencies (see `NOTICE.md`: every direct
-dependency is MIT/BSD, and SQLCipher's own license is a permissive
-BSD-style license too). That's the easy part.
+Both read the store listing from `fastlane/metadata/android/en-US/`: title,
+short and full description (copied from `docs/deployment/play-store-listing.md`),
+icon, screenshots, and `changelogs/<versionCode>.txt`.
 
-The real open risk is that **F-Droid's build servers run with network
-access tightly restricted** (mirroring their reproducible-build,
-supply-chain-security goals), and a Flutter app's build needs `flutter pub
-get` to pull packages from `pub.dev`, plus the Flutter SDK itself.
+## The build is verified, not assumed
 
-This is a known, actively-supported path today, not a dead end: F-Droid's
-own [Flutter build
-template](https://gitlab.com/fdroid/fdroiddata/-/blob/master/templates/build-flutter.yml)
-pulls the Flutter SDK in via `srclibs: [flutter@<version>]` and runs
-`flutter pub get --enforce-lockfile` against a relocated `PUB_CACHE` during
-`prebuild` (pub.dev access for that specific step is allowlisted), then
-excludes the SDK/cache from the reproducible-build source scan via
-`scanignore`/`scandelete`. `de.wger.flutter` (a real shipping F-Droid app,
-[metadata
-here](https://gitlab.com/fdroid/fdroiddata/-/blob/master/metadata/de.wger.flutter.yml))
-has been built and updated this way across 40+ releases, which is decent
-evidence this is a maintained path, not a two-year-stale one-off. This
-repo's draft metadata (below) has been rewritten to follow that template.
+`.github/workflows/fdroid-build.yml` runs `scripts/fdroid_build.sh` in
+F-Droid's own `fdroidserver:buildserver-trixie` image, the same steps as the
+"fdroid build" job on an fdroiddata merge request: fetch the Flutter srclib,
+run the recipe, scan the source and pub cache for non-free and prebuilt
+binaries, build, then `fdroid lint`. It points the recipe's first build entry
+at the commit under test, so every PR that touches Android, the lockfile or
+the recipe proves the next release still builds there.
 
-What *hasn't* been verified yet, and is exactly what issue #34's spike
-needs to confirm:
+First run (#34), on main at 93e6986: built
+`org.healthflare.app.innerflare_6.apk`, unsigned, 70.7 MB. Checked on the
+output: no `INTERNET` permission, no Play Services or Firebase classes,
+`apksigner verify` says unsigned, as F-Droid expects.
 
-- That this app's specific dependency set (`sqflite_sqlcipher`,
-  `local_auth`, `flutter_secure_storage`, native platform channels) builds
-  cleanly through that recipe — the wger precedent proves the mechanism
-  works in general, not that it works for *this* app's Gradle/plugin
-  config.
-- That `--enforce-lockfile` against our checked-in `pubspec.lock` doesn't
-  hit anything F-Droid's allowlist rejects.
-- An exact Flutter version to pin in `srclibs:` — this repo's own CI
-  (`.github/workflows/*.yml`, via `subosito/flutter-action`) floats on
-  `channel: stable` rather than a pinned version, so there isn't yet a
-  single "the version we build with" to point `flutter@` at.
+What made that work:
 
-- [ ] **Spike first**: try building a release APK using F-Droid's own
-      tooling before writing the metadata for real. F-Droid provides
-      `fdroidserver` (`pip install fdroidserver`) with a `fdroid build
-      --local` / test-build mode that approximates their sandboxed
-      environment. If this doesn't work cleanly, the metadata PR isn't
-      worth opening yet — raise it on F-Droid's `#fdroid` chat or their
-      forum first. (Tracked as issue #34 — this README's job is to leave
-      that spike a good starting recipe, not to run it.)
+- `flutter pub get --enforce-lockfile` with `PUB_CACHE` inside the source
+  tree, so the scanner sees every package. It removes the prebuilt files it
+  finds there (example apps, devtools bundles, test archives); none of them
+  are part of the app.
+- `dart run build_runner build` in prebuild: Riverpod's generated files
+  aren't committed.
+- `--android-project-arg=unsignedRelease=true` (#116): a release build
+  without our key and without the debug key.
+- Flutter pinned to `FLUTTER_VERSION` from `android-release.yml`, so F-Droid
+  builds with the same Flutter as our release.
+- `ndk: 28.2.13676358`, the NDK this Flutter version asks for.
 
-## Metadata
+SQLCipher comes from Maven Central as an AAR (`net.zetetic:sqlcipher-android`,
+BSD-style). The scanner accepts Maven Central; reviewers may still ask, and
+the answer is that its source is public and the license is free.
 
-F-Droid metadata is a YAML file submitted as a PR to `fdroid/fdroid-data`,
-at `metadata/org.healthflare.app.innerflare.yml` (package id matches the
-Android `applicationId` in `android/app/build.gradle.kts`). A draft is at
-`docs/deployment/fdroid/org.healthflare.app.innerflare.yml` in *this* repo, to be
-copied over into that PR once the build spike above passes — treat it as a
-starting point to adapt against F-Droid's current metadata schema
-(`https://f-droid.org/docs/Build_Metadata_Reference/`), not a
-copy-paste-ready file, since their schema does evolve.
+## Anti-features
 
-## Checklist
+None expected: no ads, no tracking, no network access at all (no `INTERNET`
+permission in the release manifest), no non-free dependencies.
 
-- [ ] Build spike above passes against this app's actual dependency set
-      (issue #34) — the draft recipe below is a starting point adapted
-      from F-Droid's own template and a real shipping Flutter app, not a
-      confirmed-working one yet.
-- [x] Draft metadata file reviewed against F-Droid's current Build
-      Metadata Reference and the current official Flutter build template
-      (see "Why this is more involved than it sounds" above) — notably,
-      the previous draft's `commit: v1.0.0` was wrong: F-Droid requires a
-      full commit hash, never a tag/branch name.
-- [x] Confirm no anti-features apply: no ads, no tracking, no non-free
-      network services, no non-free dependencies, no "promotes non-free
-      software" — `NOTICE.md` lists every direct dependency as MIT/BSD and
-      SQLCipher's own license as permissive BSD-style; nothing in
-      `pubspec.yaml` contradicts that. F-Droid's own reviewers still check
-      independently once the merge request is open (they can flag things a
-      normal store review wouldn't, e.g. a permissive-but-non-OSI-approved
-      license buried in a transitive dependency), so this isn't a
-      guarantee, just nothing left to fix on our side today.
-- [ ] Which tagged commit is "the" first store release is still open
-      (issue #29) — `pubspec.yaml` is at `1.1.0+3` while `v1.0.0` is
-      already live on the Play Store (submitted 2026-09-10) and `v1.1.0`
-      has since shipped too, so "reuse `v1.0.0`" and "use whatever's
-      current" now give different answers. The metadata's `commit`,
-      `versionName`/`versionCode`, and `CurrentVersion`/`CurrentVersionCode`
-      all key off whatever this resolves to.
-- [ ] `<chosen>` tag exists and builds cleanly from a clean checkout with
-      no repo secrets or CI-only environment assumptions (true of every
-      tag cut so far — the Android/iOS release workflows only add signing
-      material, they don't change what's compiled).
-- [ ] Reuse `screenshots/play_store/phone/` for F-Droid's listing (the
-      files exist: `01_dashboard.png` … `05_log_entry.png`) — F-Droid
-      pulls screenshots/description from the metadata repo or an app's own
-      repo depending on setup; check their current convention rather than
-      assuming one when the merge request is actually opened.
-- [ ] Open the merge request against `fdroid/fdroid-data`.
-- [ ] Track reviewer feedback — F-Droid inclusion review is manual and
-      often slow (weeks, not days); don't block the Play/App Store launch
-      on it.
+## Submitting (needs a GitLab account)
+
+1. Cut the release that will be the first F-Droid version. It must include
+   #116 (the unsigned build flag), so `v1.3.0` can't be used: the first
+   candidate is the next tag.
+2. In `org.healthflare.app.innerflare.yml`, set `versionName`,
+   `versionCode` and `commit` (full hash of the tag's commit, never the tag
+   name) and `CurrentVersion`/`CurrentVersionCode`. Add
+   `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt`.
+3. Fork https://gitlab.com/fdroid/fdroiddata, copy the file to
+   `metadata/org.healthflare.app.innerflare.yml`, run `fdroid rewritemeta
+   org.healthflare.app.innerflare` and `fdroid lint org.healthflare.app.innerflare`,
+   open the merge request using their "App inclusion" template. Their CI
+   runs the same build as ours.
+4. After that, `AutoUpdateMode: Version` + `UpdateCheckMode: Tags` means
+   F-Droid picks up new `vX.Y.Z` tags itself. Nothing to do per release
+   beyond the changelog file.
+
+IzzyOnDroid: open a request at https://codeberg.org/IzzyOnDroid/repo/issues
+naming the repo and the `-arm64-v8a.apk` asset. Izzy can show a
+reproducible-build badge later if we make the GitHub APK reproducible; not
+in scope yet.

@@ -68,7 +68,7 @@ final class CycleDayLogEntryProvider
   }
 }
 
-String _$cycleDayLogEntryHash() => r'540824f2004759c731c176c974d0c204e4d79b83';
+String _$cycleDayLogEntryHash() => r'b1d0ba5cc5c73074e627a6ac998ffe4a4127dc7c';
 
 /// The saved entry (if any) for a single date. Backs the log-entry
 /// screen for today or any prior day (docs/features/log.feature,
