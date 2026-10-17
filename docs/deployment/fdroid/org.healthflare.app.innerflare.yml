@@ -32,13 +32,12 @@ Builds:
       - $$flutter$$/bin/flutter config --no-analytics
       - $$flutter$$/bin/flutter pub get --enforce-lockfile
       - $$flutter$$/bin/dart run build_runner build
-    scanignore:
-      - $$flutter$$/bin/cache
     scandelete:
       - .pub-cache
     build:
       - export PUB_CACHE=$(pwd)/.pub-cache
       - $$flutter$$/bin/flutter build apk --release --android-project-arg=unsignedRelease=true
+    ndk: 28.2.13676358
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags ^v[\d.]+$
