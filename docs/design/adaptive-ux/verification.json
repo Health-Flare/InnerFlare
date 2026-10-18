@@ -1,0 +1,50 @@
+{
+  "browser": "155.0.8059.84",
+  "checks": [
+    "recommended tablet shows calendar and editor",
+    "date selection loads saved note",
+    "closing keeps editor primary",
+    "closing retains draft",
+    "opening restores calendar",
+    "resizing does not save",
+    "flow and symptom survive resize",
+    "host resize keeps input focus and selection",
+    "date changes retain per-date drafts",
+    "save changes only selected demo record",
+    "cancel restores saved values",
+    "navigation retains selected date and draft",
+    "conservative direction shows bounded calendar path",
+    "calendar supports arrow key date selection",
+    "keyboard opens selected date",
+    "fold control preserves date and unsaved text",
+    "200 percent text is rendered",
+    "200 percent compact editor has no horizontal overflow",
+    "large text exposes a labelled date selector",
+    "large text date selection works",
+    "no page or app horizontal overflow at 320px",
+    "no page or app horizontal overflow at 390px",
+    "no page or app horizontal overflow at 768px",
+    "no page or app horizontal overflow at 1024px",
+    "no page or app horizontal overflow at 1440px",
+    "compact calendar targets are at least 48 CSS pixels",
+    "settings scope dialog opens",
+    "dialog closes by keyboard",
+    "refresh clears demo drafts",
+    "no JavaScript page errors",
+    "no network dependencies requested"
+  ],
+  "checkCount": 31,
+  "errors": [],
+  "networkRequests": [],
+  "scenarios": [
+    {
+      "name": "large-screen-layout.feature",
+      "scenarios": 8
+    },
+    {
+      "name": "iphone-duo-continuity.feature",
+      "scenarios": 6
+    }
+  ],
+  "nativeVerification": false
+}
