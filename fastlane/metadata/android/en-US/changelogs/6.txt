@@ -1,0 +1,1 @@
+Curious what your estimates are based on? Settings and Insights now link to "How estimates work", which explains how each prediction is calculated and cites the published research behind it. The fertile window estimate now states its 14-day assumption and real range up front. Your app version is now shown in Settings > About.

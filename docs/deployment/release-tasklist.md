@@ -11,7 +11,8 @@ ordered, repeatable steps for shipping any version are in
 |---|---|---|---|
 | Google Play | `.github/workflows/android-release.yml` | Signs on `v*.*.*` tag push and uploads to the internal track (needs `PLAY_SERVICE_ACCOUNT_JSON`) | `docs/deployment/android-release.md` |
 | Apple App Store | `.github/workflows/ios-release.yml` | Working: Apple secrets are configured; signed IPAs uploaded to App Store Connect for v1.0.1 and v1.1.0 | `docs/deployment/ios-release.md` |
-| F-Droid | none (F-Droid builds from source on its own infra) | Not started, metadata PR to `fdroid/fdroid-data` | `docs/deployment/fdroid/README.md` |
+| F-Droid | `.github/workflows/fdroid-build.yml` (builds with fdroidserver; F-Droid builds and signs on its own infra) | Recipe builds in F-Droid's buildserver; merge request not opened yet | `docs/deployment/fdroid/README.md` |
+| IzzyOnDroid | `android-release.yml` (attaches the arm64 APK) | Request not opened yet | `docs/deployment/fdroid/README.md` |
 
 ## Cross-cutting, before any store submission
 
@@ -49,15 +50,16 @@ left:
 - [ ] Do at least one TestFlight internal build before the first public release.
 - [ ] Cut the same `v1.0.0` tag (or a separate iOS-specific tag scheme, see doc) once ready.
 
-## F-Droid
+## F-Droid and IzzyOnDroid
 
 See `docs/deployment/fdroid/README.md`. Summary:
 
-- [ ] Verify the app actually builds in F-Droid's sandboxed (network-restricted) build environment: this is the real open risk for a Flutter app and needs a spike before anything else here, since F-Droid's build server can't freely reach `pub.dev` the way normal CI can.
-- [ ] Write the F-Droid metadata file (draft at `docs/deployment/fdroid/org.healthflare.app.innerflare.yml`) describing how to build a release APK from a tagged commit.
-- [ ] Confirm no anti-features apply (no ads, no tracking, no non-free dependencies, no non-free network services; all true today per `NOTICE.md`, but F-Droid's reviewers check independently).
-- [ ] Open a merge request against `fdroid/fdroid-data` adding the metadata file, referencing this repo and the `v1.0.0` tag.
-- [ ] Respond to F-Droid reviewer feedback (their merge request review is usually the slowest part: budget weeks, not days).
+- [x] Verify the app builds in F-Droid's build environment (#34): `fdroid-build.yml` builds it with fdroidserver in F-Droid's buildserver image on every Android/lockfile/recipe PR.
+- [x] Metadata file written and building (`docs/deployment/fdroid/org.healthflare.app.innerflare.yml`); store listing in `fastlane/metadata/android/`.
+- [x] No anti-features: no ads, no tracking, no `INTERNET` permission, no non-free dependencies (checked on the built APK).
+- [ ] Cut a release that includes #116, point the recipe's `commit` at it, open the merge request against `fdroid/fdroiddata` (#35).
+- [ ] Open the IzzyOnDroid request (Codeberg) for the `-arm64-v8a.apk` release asset.
+- [ ] Respond to reviewer feedback (budget weeks, not days).
 
 ## v1.2.0 (first TestFlight release)
 
@@ -86,5 +88,5 @@ Copy, version and per-version checklist: `docs/deployment/release-notes/v1.2.1.m
 - [x] `ci.yml`: format/analyze/URL-scan/test on every push and PR to `main`.
 - [x] `android-release.yml`: test-key-signed release-mode APK on manual dispatch (needs the `ANDROID_TEST_*` secrets); signed AAB+APK GitHub Release plus Play internal-track upload on `v*.*.*` tag (upload step needs the `PLAY_SERVICE_ACCOUNT_JSON` secret, not yet set).
 - [x] `ios-release.yml`: simulator build on manual dispatch; signed IPA uploaded to App Store Connect on `v*.*.*` tag (working since v1.0.1). Build numbers must strictly increase per upload.
-- [ ] F-Droid has no CI of ours to build. It clones the tagged commit and builds independently. Our job is just making sure the tag builds cleanly with only what's checked into the repo (no CI-only secrets baked into the app itself, which is already true here).
+- [x] `fdroid-build.yml`: builds the F-Droid recipe with fdroidserver on PRs that touch Android, the lockfile or the recipe, and on tags. F-Droid itself still builds independently from the tag.
 - [ ] Once both stores are live, decide whether `v*.*.*` tags should trigger *both* release jobs together (simplest) or whether Android/iOS ever need to ship out of step (e.g. an iOS-only hotfix). If so, consider platform-scoped tags (`android-v1.0.1`, `ios-v1.0.1`) instead. Not needed for v1; revisit if it comes up.

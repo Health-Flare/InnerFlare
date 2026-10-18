@@ -1,31 +1,10 @@
-# DRAFT: not yet submitted to fdroid/fdroid-data.
-#
-# Points at v1.3.0 (pubspec 1.3.0+6); v1.2.0 was the first version intended for F-Droid.
-# Bump versionName/versionCode/commit/CurrentVersion together each release
-# (docs/deployment/release-process.md).
-#
-# Starting point only. Validate every field against F-Droid's current
-# Build Metadata Reference (https://f-droid.org/docs/Build_Metadata_Reference/)
-# before opening the actual merge request; this schema evolves. The build
-# steps follow fdroiddata's templates/build-flutter.yml, and the final
-# `flutter build` command has been checked locally to produce an unsigned APK
-# at `output`. They haven't been run in F-Droid's own build sandbox yet
-# (see docs/deployment/fdroid/README.md; the build spike has to pass first).
-# Strip all comments before submitting, per the fdroiddata template.
-
 Categories:
-  - Health
-Summary: Offline, encrypted menstrual cycle tracker
-Description: |
-  Inner Flare is a menstrual cycle tracking companion. It works fully
-  offline: no network calls, no accounts, no cloud sync. All data stays
-  on-device in a SQLite database encrypted at rest, unlocked with
-  biometrics where the device supports it. Not a medical device; no
-  diagnostic claims.
-
+  - Health Manager
 License: GPL-3.0-or-later
+AuthorName: Health Flare
 SourceCode: https://github.com/Health-Flare/InnerFlare
 IssueTracker: https://github.com/Health-Flare/InnerFlare/issues
+Changelog: https://github.com/Health-Flare/InnerFlare/blob/HEAD/CHANGELOG.md
 
 AutoName: Inner Flare
 
@@ -33,19 +12,9 @@ RepoType: git
 Repo: https://github.com/Health-Flare/InnerFlare.git
 
 Builds:
-  - versionName: '1.3.0'
-    versionCode: 6
-    # Must be a tag whose android/app/build.gradle.kts supports
-    # -PunsignedRelease (added after v1.3.0). Older tags ignore the flag and
-    # fail the missing-key.properties check, or (v1.3.0 and earlier) sign
-    # with the debug key. Repoint this at the first release that has it.
-    commit: v1.3.0
-    # No subdir: Flutter runs from the repo root (where pubspec.yaml is), and
-    # `output` is relative to it.
-    #
-    # Flutter's Gradle plugin copies AGP's app-release-unsigned.apk to this
-    # name, so the file here is unsigned even though the name doesn't say so.
-    # Same path as fdroiddata's templates/build-flutter.yml.
+  - versionName: 1.3.1
+    versionCode: 7
+    commit: 0000000000000000000000000000000000000000
     output: build/app/outputs/flutter-apk/app-release.apk
     srclibs:
       - flutter@stable
@@ -56,24 +25,22 @@ Builds:
       - web
       - windows
     prebuild:
-      # Pin the Flutter SDK to the version our own CI builds with.
-      - flutterVersion=$(sed -n -E "s/.*FLUTTER_VERSION:\ '(.*)'/\1/p" .github/workflows/ci.yml)
+      - flutterVersion=$(sed -n -E "s/^ *FLUTTER_VERSION:\ '(.*)'/\1/p" .github/workflows/android-release.yml)
       - '[[ $flutterVersion ]]'
       - git -C $$flutter$$ checkout -f $flutterVersion
-      # Keep the pub cache in the source tree so F-Droid's scanner sees it.
       - export PUB_CACHE=$(pwd)/.pub-cache
       - $$flutter$$/bin/flutter config --no-analytics
       - $$flutter$$/bin/flutter pub get --enforce-lockfile
+      - $$flutter$$/bin/dart run build_runner build
     scandelete:
       - .pub-cache
     build:
       - export PUB_CACHE=$(pwd)/.pub-cache
-      # -PunsignedRelease=true: F-Droid signs the APK itself. Without it the
-      # build stops because there's no android/key.properties, and it never
-      # falls back to the debug key (see docs/deployment/fdroid/README.md).
       - $$flutter$$/bin/flutter build apk --release --android-project-arg=unsignedRelease=true
+    ndk: 28.2.13676358
 
-AutoUpdateMode: None
-UpdateCheckMode: Tags
-CurrentVersion: '1.3.0'
-CurrentVersionCode: 6
+AutoUpdateMode: Version
+UpdateCheckMode: Tags ^v[\d.]+$
+UpdateCheckData: pubspec.yaml|version:\s.+\+(\d+)|.|version:\s(.+)\+
+CurrentVersion: 1.3.1
+CurrentVersionCode: 7
