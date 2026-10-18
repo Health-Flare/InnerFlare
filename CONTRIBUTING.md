@@ -88,6 +88,10 @@ encrypted database or biometric gate could be bypassed), please don't file
 a public issue. Email development@automatedbytes.com directly so it can be fixed
 before it's public.
 
+## Getting credited
+
+Commits are credited automatically through GitHub. Work that isn't code (testing, bug reports, wording or medical review, design, translation) goes in [`CONTRIBUTORS.md`](CONTRIBUTORS.md). Add yourself in your PR, or ask and a maintainer will. See that file for the format and the naming rules.
+
 ## Code of Conduct
 
 This project follows the [Contributor Covenant](CODE_OF_CONDUCT.md). By
