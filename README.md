@@ -69,6 +69,10 @@ Built with Flutter, Riverpod, and SQLCipher.
 
 Inner Flare is part of [Health Flare](https://github.com/Health-Flare/app), a family of privacy-first health apps.
 
+## Contributors
+
+Not every contribution is code. People who test, report bugs, review wording, or design are credited by hand in [CONTRIBUTORS.md](CONTRIBUTORS.md). Code authors are in [GitHub's contributor list](https://github.com/Health-Flare/InnerFlare/graphs/contributors).
+
 ## License
 
 Inner Flare is free software under the GNU GPL v3.0 or later. See [LICENSE](LICENSE). Third-party licenses are in [NOTICE.md](NOTICE.md) and in the app under **Settings → Open source licenses**.
