@@ -41,7 +41,7 @@ Why it exists: [Why Inner Flare exists](https://healthflare.org/inner-flare/blog
 
 - No account. No login.
 - No network access at all. No cloud sync, no analytics, no ads.
-- Your data is encrypted on the device and locked behind Face ID, fingerprint, or your passcode.
+- Your data is encrypted on the device. With a screen lock set, the phone only releases the key after Face ID, fingerprint, or your passcode. Without one, anyone holding the phone can open the app, and the app says so.
 - It's excluded from phone backups. The only way data leaves is when you export it.
 
 Full policy: [healthflare.org/inner-flare/privacy](https://healthflare.org/inner-flare/privacy).

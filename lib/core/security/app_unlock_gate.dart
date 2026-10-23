@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inner_flare/core/providers/database_provider.dart';
 import 'package:inner_flare/core/providers/database_unlocked_provider.dart';
+import 'package:inner_flare/core/providers/key_protection_provider.dart';
+import 'package:inner_flare/core/security/db_passphrase_store.dart';
+import 'package:inner_flare/core/security/screen_lock_probe.dart';
 import 'package:inner_flare/features/dashboard/widgets/database_status_indicator.dart';
 import 'package:inner_flare/features/security/screens/app_unlock_screen.dart';
 
@@ -39,10 +42,14 @@ class _AppUnlockGateState extends ConsumerState<AppUnlockGate> {
 
   @override
   Widget build(BuildContext context) {
+    // Never opens the database: see key_protection_provider.dart.
+    final noScreenLock = ref.watch(showNoScreenLockWarningProvider);
+
     if (!_unlockRequested) {
       return AppUnlockScreen(
         busy: false,
         failed: false,
+        noScreenLock: noScreenLock,
         onUnlock: () => setState(() => _unlockRequested = true),
       );
     }
@@ -63,7 +70,21 @@ class _AppUnlockGateState extends ConsumerState<AppUnlockGate> {
     return AppUnlockScreen(
       busy: dbAsync.isLoading,
       failed: dbAsync.hasError,
+      noScreenLock: noScreenLock,
+      failureMessage: unlockFailureMessage(dbAsync.error),
       onUnlock: dbAsync.hasError ? () => retryDatabaseUnlock(ref) : null,
     );
   }
+}
+
+/// Plain-language text for unlock failures that need more than "try
+/// again"; null for a cancelled or failed prompt, which gets the generic
+/// retry text.
+String? unlockFailureMessage(Object? error) {
+  if (error is DatabaseKeyUnavailable) return error.message;
+  if (error is ScreenLockCheckFailure) {
+    return "Couldn't check whether this phone has a screen lock, so your "
+        'data stays locked. Tap Unlock to try again.';
+  }
+  return null;
 }
