@@ -21,9 +21,14 @@ How to use this file
    empty `## [Unreleased]` above it.
 
 Releases up to 1.3.0 are documented in docs/deployment/release-notes/.
+From 1.4.0 on, each release also has a section below.
 -->
 
 ## [Unreleased]
+
+_Nothing yet._
+
+## [1.4.0] - 2026-10-25
 
 ### Added
 - A "Period day" switch on the log screen lets you decide whether a day counts as a period day, whatever flow you logged. Turn it on for spotting that you know is the start of your period, or for a day you didn't pick a flow. Turn it off for bleeding that isn't a period; the flow is kept and still shows on the calendar, but it's left out of cycle lengths and predictions. "Work it out from flow" goes back to the app's rule.
