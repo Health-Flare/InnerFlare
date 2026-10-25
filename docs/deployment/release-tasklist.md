@@ -88,3 +88,14 @@ Copy, version and per-version checklist: `docs/deployment/release-notes/v1.2.1.m
 - [x] `ios-release.yml`: simulator build on manual dispatch; signed IPA uploaded to App Store Connect on `v*.*.*` tag (working since v1.0.1). Build numbers must strictly increase per upload.
 - [ ] F-Droid has no CI of ours to build. It clones the tagged commit and builds independently. Our job is just making sure the tag builds cleanly with only what's checked into the repo (no CI-only secrets baked into the app itself, which is already true here).
 - [ ] Once both stores are live, decide whether `v*.*.*` tags should trigger *both* release jobs together (simplest) or whether Android/iOS ever need to ship out of step (e.g. an iOS-only hotfix). If so, consider platform-scoped tags (`android-v1.0.1`, `ios-v1.0.1`) instead. Not needed for v1; revisit if it comes up.
+
+## v1.4.0 (encrypted backups by default, period starts from the whole log)
+
+Copy, version and per-version checklist: `docs/deployment/release-notes/v1.4.0.md`.
+
+- [x] Version bumped to `1.4.0+7`, release notes and store "What's new" written, F-Droid draft points at `v1.4.0`.
+- [ ] Upgrade test from a real 1.3.0 install (schema 8 to 9).
+- [ ] Release build confirmed free of debug-only UI.
+- [ ] `v1.4.0` tag pushed from `main`.
+- [ ] Play: internal testing, then promote to production.
+- [ ] App Store: replace the 1.3.0 build in review with build 7.
