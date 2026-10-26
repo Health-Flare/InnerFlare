@@ -225,6 +225,7 @@ Use `pump(Duration(milliseconds: 500))` instead of `pumpAndSettle()` when provid
 1. `flutter analyze`: zero warnings/errors
 2. `dart format --set-exit-if-changed .`: code is formatted
 3. No network URLs in Dart files (offline-only app); flag any exception explicitly in a `.url-scan-ignore` file with a justification comment, same pattern as Health Flare
+   CI enforces this on every change in the "No network access" job: `scripts/check_no_network_code.sh` (URL literals, Dart network APIs, iOS network keys, every package in `pubspec.lock` listed in `scripts/allowed_packages.txt`) and `scripts/check_release_permissions.sh` (the built release APK asks for nothing outside `scripts/release_permissions.txt`, and never a network permission). The signed release build runs the permission check before anything is uploaded.
 4. No bundled-fonts-as-network-fetch packages (fonts bundled locally)
 5. No cloud/analytics/telemetry SDKs of any kind
 

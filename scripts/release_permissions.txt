@@ -1,0 +1,10 @@
+# Permissions the release APK may request, read by
+# scripts/check_release_permissions.sh. One per line, then a note.
+# Network permissions (INTERNET, ACCESS_NETWORK_STATE and the rest) fail the
+# check even if listed here.
+
+android.permission.USE_BIOMETRIC   # app unlock (main manifest, local_auth)
+android.permission.USE_FINGERPRINT # local_auth, for Android 9 and older
+android.permission.VIBRATE         # flutter_local_notifications (unused, #95)
+android.permission.POST_NOTIFICATIONS # flutter_local_notifications (unused, #95)
+org.healthflare.app.innerflare.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION # AndroidX, app-private, added to every app targeting Android 13+
