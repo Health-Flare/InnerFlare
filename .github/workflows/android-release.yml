@@ -80,6 +80,9 @@ jobs:
       - name: Build release-mode APK
         run: flutter build apk --release
 
+      - name: No network permissions in the release APK
+        run: ./scripts/check_release_permissions.sh build/app/outputs/flutter-apk/app-release.apk
+
       - name: Remove signing material
         if: always()
         run: rm -f android/app/test-keystore.jks android/key.properties
@@ -147,6 +150,9 @@ jobs:
 
       - name: Build release APK
         run: flutter build apk --release
+
+      - name: No network permissions in the release APK
+        run: ./scripts/check_release_permissions.sh build/app/outputs/flutter-apk/app-release.apk
 
       - name: Remove signing material
         if: always()

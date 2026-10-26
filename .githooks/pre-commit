@@ -17,5 +17,5 @@ fi
 echo "pre-commit: running flutter analyze..."
 flutter analyze
 
-echo "pre-commit: offline-only URL scan..."
-./scripts/check_no_network_urls.sh
+echo "pre-commit: offline-only checks (URLs, network APIs, packages)..."
+./scripts/check_no_network_code.sh

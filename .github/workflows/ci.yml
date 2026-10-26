@@ -56,8 +56,6 @@ jobs:
               - 'pubspec.yaml'
               - 'pubspec.lock'
               - 'analysis_options.yaml'
-              - 'scripts/check_no_network_urls.sh'
-              - '.url-scan-ignore'
               - '.github/workflows/ci.yml'
             # Anything that can change what Gradle builds: the Android
             # project itself (Gradle wrapper, AGP/Kotlin plugin versions)
@@ -94,8 +92,6 @@ jobs:
       - name: Analyze
         run: flutter analyze
 
-      - name: Offline-only URL scan
-        run: ./scripts/check_no_network_urls.sh
 
   test:
     name: Test
@@ -160,19 +156,63 @@ jobs:
       - name: Build debug APK
         run: flutter build apk --debug
 
+  # Inner Flare ships with no network access, and the website and store
+  # listings say so. This job has no paths filter on purpose: it runs on
+  # every PR and every push to main, whatever changed, because a permission
+  # can arrive from a plugin bump, a manifest edit or a Gradle change, and a
+  # network call from any Dart file or package. It checks the source first
+  # (seconds), then builds an unsigned release APK and reads what it
+  # actually asks for.
+  no-network:
+    name: No network access
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Network APIs, iOS keys, package allowlist
+        run: ./scripts/check_no_network_code.sh
+
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - run: flutter pub get --enforce-lockfile
+
+      - name: Generate Riverpod code
+        run: dart run build_runner build
+
+      - name: Build unsigned release APK
+        run: flutter build apk --release -PunsignedRelease=true
+
+      - name: Release APK permissions
+        run: ./scripts/check_release_permissions.sh build/app/outputs/flutter-apk/app-release.apk
+
   required:
     name: CI required
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    needs: [analyze, test, android-build]
+    needs: [analyze, test, android-build, no-network]
     if: always()
     steps:
       - name: Check required jobs
         run: |
-          for result in "${{ needs.analyze.result }}" "${{ needs.test.result }}" "${{ needs.android-build.result }}"; do
+          for result in "${{ needs.analyze.result }}" "${{ needs.test.result }}" "${{ needs.android-build.result }}" "${{ needs.no-network.result }}"; do
             if [ "$result" = "failure" ] || [ "$result" = "cancelled" ]; then
               echo "A required CI job did not pass."
               exit 1
             fi
           done
-          echo "OK (analyze: ${{ needs.analyze.result }}, test: ${{ needs.test.result }}, android-build: ${{ needs.android-build.result }})"
+          if [ "${{ needs.no-network.result }}" != "success" ]; then
+            echo "No network access must run and pass on every change (got: ${{ needs.no-network.result }})."
+            exit 1
+          fi
+          echo "OK (analyze: ${{ needs.analyze.result }}, test: ${{ needs.test.result }}, android-build: ${{ needs.android-build.result }}, no-network: ${{ needs.no-network.result }})"

@@ -1,0 +1,170 @@
+# Every package allowed in pubspec.lock, direct or transitive, read by
+# scripts/check_no_network_code.sh. A package not listed here fails CI.
+#
+# Before adding one: check whether it opens sockets, makes HTTP calls, or
+# ships native code that does, and whether it ends up in the app or only in
+# dev tooling (flutter pub deps --no-dev). Add a note if it can network.
+# 'dev' means it isn't in the app's runtime dependency graph.
+
+_fe_analyzer_shared                                # dev
+analyzer                                           # dev
+analyzer_buffer                                    # dev
+android_file_picker
+archive                                            # dev
+args
+async
+boolean_selector
+build                                              # dev
+build_config                                       # dev
+build_daemon                                       # dev only (build_runner)
+build_runner                                       # dev
+built_collection                                   # dev
+built_value                                        # dev
+characters
+checked_yaml                                       # dev
+cli_util                                           # dev
+clock
+code_assets
+code_builder                                       # dev
+collection
+convert                                            # dev
+cross_file
+crypto
+cryptography
+cupertino_icons
+cupertino_ui
+dart_style                                         # dev
+dbus
+fake_async
+ffi
+ffi_leak_tracker
+file
+file_picker
+file_picker_darwin
+file_picker_linux
+file_picker_platform_interface
+file_picker_web
+fixnum
+flutter
+flutter_driver                                     # dev
+flutter_launcher_icons                             # dev
+flutter_lints                                      # dev
+flutter_local_notifications
+flutter_local_notifications_linux
+flutter_local_notifications_platform_interface
+flutter_local_notifications_web
+flutter_local_notifications_windows
+flutter_localizations
+flutter_plugin_android_lifecycle
+flutter_riverpod
+flutter_secure_storage
+flutter_secure_storage_darwin
+flutter_secure_storage_linux
+flutter_secure_storage_platform_interface
+flutter_secure_storage_web
+flutter_secure_storage_windows
+flutter_staggered_grid_view
+flutter_test
+flutter_web_plugins
+freezed_annotation                                 # dev
+fuchsia_remote_debug_protocol                      # dev
+glob                                               # dev
+go_router
+graphs                                             # dev
+hooks
+http                                               # runtime, but only imported by package_info_plus's web implementation (package_info_plus_web.dart); not compiled into Android or iOS builds
+http_multi_server                                  # dev only (build_runner)
+http_parser                                        # runtime, comes with http (see above); parsing only
+image                                              # dev
+integration_test                                   # dev
+intl
+io                                                 # dev
+jni
+jni_flutter
+jni_util
+json_annotation                                    # dev
+leak_tracker
+leak_tracker_flutter_testing
+leak_tracker_testing
+lints                                              # dev
+listen
+local_auth
+local_auth_android
+local_auth_darwin
+local_auth_platform_interface
+local_auth_windows
+logging
+matcher
+material_color_utilities
+material_ui
+meta
+mime
+mockito                                            # dev
+native_toolchain_c                                 # dev
+objective_c
+package_config
+package_info_plus
+package_info_plus_platform_interface
+path
+path_provider
+path_provider_android
+path_provider_foundation
+path_provider_linux
+path_provider_platform_interface
+path_provider_windows
+petitparser
+platform
+plugin_platform_interface
+pool                                               # dev
+posix                                              # dev
+process                                            # dev
+pub_semver
+pubspec_parse                                      # dev
+record_use
+riverpod
+riverpod_analyzer_utils                            # dev
+riverpod_annotation
+riverpod_generator                                 # dev
+share_plus
+share_plus_platform_interface
+shelf                                              # dev only (build_runner)
+shelf_web_socket                                   # dev only (build_runner)
+sky_engine
+source_gen                                         # dev
+source_span
+sqflite_common
+sqflite_common_ffi                                 # dev
+sqflite_sqlcipher
+sqlite3                                            # dev
+stack_trace
+state_notifier
+stream_channel
+stream_transform                                   # dev
+string_scanner
+sync_http                                          # dev only (flutter_driver)
+synchronized
+term_glyph
+test_api
+timezone
+typed_data
+url_launcher                                       # hands a user-tapped link to the system browser; the app fetches nothing
+url_launcher_android
+url_launcher_ios
+url_launcher_linux
+url_launcher_macos
+url_launcher_platform_interface
+url_launcher_web
+url_launcher_windows
+uuid
+vector_math
+vm_service                                         # Flutter SDK; debug tooling, not used in release builds
+watcher                                            # dev
+web
+web_socket                                         # dev only (test and build tooling)
+web_socket_channel                                 # dev only (test and build tooling)
+webdriver                                          # dev only (flutter_driver)
+win32
+windows_file_picker
+xdg_directories
+xml
+yaml
