@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 
 /// Gates access to the encrypted database behind the device's biometrics
@@ -23,12 +24,20 @@ class LocalAuthBiometricGate implements BiometricGate {
     try {
       supported = await _auth.isDeviceSupported();
       canCheck = await _auth.canCheckBiometrics;
-    } on Exception {
-      // Couldn't even determine whether biometrics are available (e.g. the
-      // platform plugin isn't wired up). Fail open rather than locking the
-      // user out of their own on-device data over a capability check:
-      // the data is still encrypted at rest either way.
+    } on MissingPluginException {
+      // No local_auth implementation on this platform at all (desktop
+      // builds): nothing to gate with, the same as the no-credentials case
+      // below. iOS and Android always register the plugin, so this never
+      // applies to them.
       return true;
+    } on Exception {
+      // The plugin is there but couldn't say whether the phone has a
+      // screen lock. Fail closed: the user retries with another tap. A
+      // phone that genuinely has no screen lock doesn't land here; it
+      // answers "not supported" below, without throwing, and still gets
+      // in. Kept separate from the authenticate() catches further down
+      // on purpose (see CLAUDE.md "Encrypted, biometric-gated storage").
+      return false;
     }
 
     if (!supported && !canCheck) {
