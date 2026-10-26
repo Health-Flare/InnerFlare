@@ -1,7 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:inner_flare/core/providers/biometric_gate_provider.dart';
 import 'package:inner_flare/core/providers/database_unlocked_provider.dart';
@@ -44,6 +47,14 @@ class _FixedLockTimeoutNotifier extends LockTimeoutNotifier {
   Future<LockTimeout> build() async => value;
 }
 
+/// A setting that hasn't finished loading yet, so AppLockGate falls back
+/// to [LockTimeout.defaultValue]. Also keeps these tests off the real
+/// database.
+class _PendingLockTimeoutNotifier extends LockTimeoutNotifier {
+  @override
+  Future<LockTimeout> build() => Completer<LockTimeout>().future;
+}
+
 /// AppLockGate only eagerly warms lockTimeoutProvider once
 /// databaseUnlockedProvider is true (database_unlocked_provider.dart),
 /// which in the real app is only ever the case once the user has already
@@ -55,87 +66,144 @@ class _AlreadyUnlocked extends DatabaseUnlocked {
   bool build() => true;
 }
 
+void _lifecycle(AppLifecycleState state) {
+  WidgetsBinding.instance.handleAppLifecycleStateChanged(state);
+}
+
+/// The full sequence a phone reports when the app goes to the background
+/// (home gesture, app switcher, another app on top). Some widgets (any
+/// TextField) assert that transitions follow it.
+void _leave() {
+  _lifecycle(AppLifecycleState.inactive);
+  _lifecycle(AppLifecycleState.hidden);
+  _lifecycle(AppLifecycleState.paused);
+}
+
+/// The full sequence on coming back.
+void _comeBack() {
+  _lifecycle(AppLifecycleState.hidden);
+  _lifecycle(AppLifecycleState.inactive);
+  _lifecycle(AppLifecycleState.resumed);
+}
+
+/// Every label and value in the live semantics tree: the same tree
+/// TalkBack, VoiceOver and any Android accessibility service read from.
+List<String> _semanticsText(WidgetTester tester) {
+  final text = <String>[];
+  void visit(SemanticsNode node) {
+    if (node.label.isNotEmpty) text.add(node.label);
+    if (node.value.isNotEmpty) text.add(node.value);
+    node.visitChildren((child) {
+      visit(child);
+      return true;
+    });
+  }
+
+  void visitOwner(PipelineOwner owner) {
+    final root = owner.semanticsOwner?.rootSemanticsNode;
+    if (root != null) visit(root);
+    owner.visitChildren(visitOwner);
+  }
+
+  visitOwner(tester.binding.rootPipelineOwner);
+  return text;
+}
+
 void main() {
+  late _FakeClock clock;
+
+  setUp(() => clock = _FakeClock(DateTime(2026, 1, 1, 12)));
+
+  /// Pumps [home] under AppLockGate. [timeout] null leaves the setting
+  /// unloaded, so the gate falls back to [LockTimeout.defaultValue].
+  Future<void> pumpGate(
+    WidgetTester tester, {
+    Widget home = const Scaffold(body: Text('dashboard content')),
+    LockTimeout? timeout,
+    BiometricGate? gate,
+    bool alreadyUnlocked = true,
+  }) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: <Override>[
+          nowProvider.overrideWithValue(clock.call),
+          if (gate != null) biometricGateProvider.overrideWithValue(gate),
+          if (alreadyUnlocked)
+            databaseUnlockedProvider.overrideWith(_AlreadyUnlocked.new),
+          lockTimeoutProvider.overrideWith(
+            () => timeout == null
+                ? _PendingLockTimeoutNotifier()
+                : _FixedLockTimeoutNotifier(timeout),
+          ),
+        ],
+        child: MaterialApp(
+          builder: (context, child) => AppLockGate(child: child!),
+          home: home,
+        ),
+      ),
+    );
+    await tester.pump();
+  }
+
   group('AppLockGate', () {
     testWidgets('a brief background does not show the lock screen', (
       tester,
     ) async {
-      final clock = _FakeClock(DateTime(2026, 1, 1, 12));
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [nowProvider.overrideWithValue(clock.call)],
-          child: MaterialApp(
-            builder: (context, child) => AppLockGate(child: child!),
-            home: const Scaffold(body: Text('dashboard content')),
-          ),
-        ),
-      );
+      await pumpGate(tester);
 
-      WidgetsBinding.instance.handleAppLifecycleStateChanged(
-        AppLifecycleState.paused,
-      );
-      clock.advanceBy(const Duration(minutes: 5));
-      WidgetsBinding.instance.handleAppLifecycleStateChanged(
-        AppLifecycleState.resumed,
-      );
+      _leave();
+      clock.advanceBy(const Duration(seconds: 30));
+      _comeBack();
       await tester.pump();
 
       expect(find.text('Inner Flare is locked'), findsNothing);
       expect(find.text('dashboard content'), findsOneWidget);
     });
 
-    testWidgets('15 minutes or more backgrounded shows the lock screen over '
-        'whatever was on screen', (tester) async {
-      final clock = _FakeClock(DateTime(2026, 1, 1, 12));
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [nowProvider.overrideWithValue(clock.call)],
-          child: MaterialApp(
-            builder: (context, child) => AppLockGate(child: child!),
-            home: const Scaffold(body: Text('dashboard content')),
-          ),
-        ),
-      );
+    testWidgets('the default timeout (1 minute) backgrounded shows the lock '
+        'screen in place of whatever was on screen', (tester) async {
+      await pumpGate(tester);
 
-      WidgetsBinding.instance.handleAppLifecycleStateChanged(
-        AppLifecycleState.paused,
-      );
-      clock.advanceBy(const Duration(minutes: 15));
-      WidgetsBinding.instance.handleAppLifecycleStateChanged(
-        AppLifecycleState.resumed,
-      );
+      _leave();
+      clock.advanceBy(const Duration(minutes: 1));
+      _comeBack();
       await tester.pump();
 
       expect(find.text('Inner Flare is locked'), findsOneWidget);
-      // The underlying content is still there, just covered, so
-      // nothing downstream needs to know it might be locked.
-      expect(find.text('dashboard content'), findsOneWidget);
+      // The screen underneath is still mounted, so its state survives
+      // the lock, but it's offstage: not painted and not hit-testable.
+      expect(find.text('dashboard content'), findsNothing);
+      expect(
+        find.text('dashboard content', skipOffstage: false),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('a saved 15 minute timeout still waits 15 minutes '
+        '(regression guard)', (tester) async {
+      await pumpGate(tester, timeout: LockTimeout.after15Minutes);
+
+      _leave();
+      clock.advanceBy(const Duration(minutes: 14));
+      _comeBack();
+      await tester.pump();
+      expect(find.text('Inner Flare is locked'), findsNothing);
+
+      _leave();
+      clock.advanceBy(const Duration(minutes: 15));
+      _comeBack();
+      await tester.pump();
+      expect(find.text('Inner Flare is locked'), findsOneWidget);
     });
 
     testWidgets('cancelling re-authentication leaves the lock screen up', (
       tester,
     ) async {
-      final clock = _FakeClock(DateTime(2026, 1, 1, 12));
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            nowProvider.overrideWithValue(clock.call),
-            biometricGateProvider.overrideWithValue(_FixedResultGate(false)),
-          ],
-          child: MaterialApp(
-            builder: (context, child) => AppLockGate(child: child!),
-            home: const Scaffold(body: Text('dashboard content')),
-          ),
-        ),
-      );
+      await pumpGate(tester, gate: _FixedResultGate(false));
 
-      WidgetsBinding.instance.handleAppLifecycleStateChanged(
-        AppLifecycleState.paused,
-      );
+      _leave();
       clock.advanceBy(const Duration(minutes: 15));
-      WidgetsBinding.instance.handleAppLifecycleStateChanged(
-        AppLifecycleState.resumed,
-      );
+      _comeBack();
       await tester.pump();
 
       await tester.tap(find.text('Unlock'));
@@ -147,27 +215,11 @@ void main() {
     testWidgets('successful re-authentication dismisses the lock screen', (
       tester,
     ) async {
-      final clock = _FakeClock(DateTime(2026, 1, 1, 12));
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            nowProvider.overrideWithValue(clock.call),
-            biometricGateProvider.overrideWithValue(_FixedResultGate(true)),
-          ],
-          child: MaterialApp(
-            builder: (context, child) => AppLockGate(child: child!),
-            home: const Scaffold(body: Text('dashboard content')),
-          ),
-        ),
-      );
+      await pumpGate(tester, gate: _FixedResultGate(true));
 
-      WidgetsBinding.instance.handleAppLifecycleStateChanged(
-        AppLifecycleState.paused,
-      );
+      _leave();
       clock.advanceBy(const Duration(minutes: 15));
-      WidgetsBinding.instance.handleAppLifecycleStateChanged(
-        AppLifecycleState.resumed,
-      );
+      _comeBack();
       await tester.pump();
 
       await tester.tap(find.text('Unlock'));
@@ -181,33 +233,12 @@ void main() {
       "the biometric prompt's own inactive/resumed transition doesn't "
       're-lock a successful unlock (regression for the unlock loop)',
       (tester) async {
-        final clock = _FakeClock(DateTime(2026, 1, 1, 12));
         final gate = _ControllableGate();
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              nowProvider.overrideWithValue(clock.call),
-              biometricGateProvider.overrideWithValue(gate),
-              databaseUnlockedProvider.overrideWith(_AlreadyUnlocked.new),
-              lockTimeoutProvider.overrideWith(
-                () => _FixedLockTimeoutNotifier(LockTimeout.immediately),
-              ),
-            ],
-            child: MaterialApp(
-              builder: (context, child) => AppLockGate(child: child!),
-              home: const Scaffold(body: Text('dashboard content')),
-            ),
-          ),
-        );
-        await tester.pump();
+        await pumpGate(tester, gate: gate, timeout: LockTimeout.immediately);
 
         // Any backgrounding at all re-locks on the "Immediately" setting.
-        WidgetsBinding.instance.handleAppLifecycleStateChanged(
-          AppLifecycleState.paused,
-        );
-        WidgetsBinding.instance.handleAppLifecycleStateChanged(
-          AppLifecycleState.resumed,
-        );
+        _lifecycle(AppLifecycleState.paused);
+        _lifecycle(AppLifecycleState.resumed);
         await tester.pump();
         expect(find.text('Inner Flare is locked'), findsOneWidget);
 
@@ -221,9 +252,7 @@ void main() {
         // exactly what Face ID's system sheet (or Android's separate
         // device-credential activity for a manual passcode) does, even
         // though the user never left the app.
-        WidgetsBinding.instance.handleAppLifecycleStateChanged(
-          AppLifecycleState.inactive,
-        );
+        _lifecycle(AppLifecycleState.inactive);
 
         // The authentication succeeds and AppLockScreen unlocks the app...
         gate.complete(true);
@@ -235,14 +264,219 @@ void main() {
         // Before the fix, this was mistaken for a real backgrounding and,
         // with "Immediately" configured, re-locked the app right back:
         // the unlock loop force-closing was the only escape from.
-        WidgetsBinding.instance.handleAppLifecycleStateChanged(
-          AppLifecycleState.resumed,
-        );
+        _lifecycle(AppLifecycleState.resumed);
         await tester.pump();
 
         expect(find.text('Inner Flare is locked'), findsNothing);
         expect(find.text('dashboard content'), findsOneWidget);
       },
     );
+  });
+
+  group('AppLockGate, "Immediately" (issue #91)', () {
+    for (final state in [AppLifecycleState.paused, AppLifecycleState.hidden]) {
+      testWidgets('locks on ${state.name}, before the app comes back', (
+        tester,
+      ) async {
+        await pumpGate(tester, timeout: LockTimeout.immediately);
+
+        _lifecycle(AppLifecycleState.inactive);
+        _lifecycle(AppLifecycleState.hidden);
+        if (state == AppLifecycleState.paused) _lifecycle(state);
+        await tester.pump();
+
+        // No resumed yet: the lock is already up, so the first frame on
+        // return is the lock screen, not stale content.
+        expect(find.text('Inner Flare is locked'), findsOneWidget);
+        expect(find.text('dashboard content'), findsNothing);
+      });
+    }
+
+    testWidgets('inactive alone (control centre, notification shade) does '
+        'not lock (regression guard)', (tester) async {
+      await pumpGate(tester, timeout: LockTimeout.immediately);
+
+      _lifecycle(AppLifecycleState.inactive);
+      await tester.pump();
+
+      expect(find.text('Inner Flare is locked'), findsNothing);
+    });
+
+    testWidgets('a timed setting does not lock on paused, only on return '
+        '(regression guard)', (tester) async {
+      await pumpGate(tester, timeout: LockTimeout.after5Minutes);
+
+      _lifecycle(AppLifecycleState.inactive);
+      _lifecycle(AppLifecycleState.hidden);
+      _lifecycle(AppLifecycleState.paused);
+      await tester.pump();
+
+      expect(find.text('Inner Flare is locked'), findsNothing);
+    });
+
+    testWidgets("Android's passcode screen pausing the app during an unlock "
+        'attempt does not relock it', (tester) async {
+      final gate = _ControllableGate();
+      await pumpGate(tester, gate: gate, timeout: LockTimeout.immediately);
+
+      _leave();
+      _comeBack();
+      await tester.pump();
+      expect(find.text('Inner Flare is locked'), findsOneWidget);
+
+      await tester.tap(find.text('Unlock'));
+      await tester.pump();
+
+      // The device-credential activity covers the app completely, so
+      // Android reports the full inactive > hidden > paused sequence.
+      _lifecycle(AppLifecycleState.inactive);
+      _lifecycle(AppLifecycleState.hidden);
+      _lifecycle(AppLifecycleState.paused);
+      await tester.pump();
+
+      gate.complete(true);
+      await tester.pump();
+
+      _lifecycle(AppLifecycleState.hidden);
+      _lifecycle(AppLifecycleState.inactive);
+      _lifecycle(AppLifecycleState.resumed);
+      await tester.pump();
+
+      expect(find.text('Inner Flare is locked'), findsNothing);
+      expect(find.text('dashboard content'), findsOneWidget);
+    });
+
+    testWidgets('before the first unlock of the session nothing locks: the '
+        "unlock screen is already up, and that first unlock's own prompt "
+        'must not count as time away', (tester) async {
+      await pumpGate(
+        tester,
+        timeout: LockTimeout.immediately,
+        alreadyUnlocked: false,
+      );
+
+      _lifecycle(AppLifecycleState.inactive);
+      _lifecycle(AppLifecycleState.hidden);
+      _lifecycle(AppLifecycleState.paused);
+      clock.advanceBy(const Duration(hours: 2));
+      _lifecycle(AppLifecycleState.hidden);
+      _lifecycle(AppLifecycleState.inactive);
+      _lifecycle(AppLifecycleState.resumed);
+      await tester.pump();
+
+      expect(find.text('Inner Flare is locked'), findsNothing);
+    });
+  });
+
+  group('AppLockGate, what the lock hides (issue #91)', () {
+    Future<void> lockNow(WidgetTester tester) async {
+      _leave();
+      await tester.pump();
+      expect(find.text('Inner Flare is locked'), findsOneWidget);
+    }
+
+    testWidgets('screen readers and accessibility services cannot read the '
+        'screen underneath', (tester) async {
+      final semantics = tester.ensureSemantics();
+      await pumpGate(tester, timeout: LockTimeout.immediately);
+
+      // The walk does see real content before the lock.
+      expect(_semanticsText(tester), contains('dashboard content'));
+
+      await lockNow(tester);
+
+      final text = _semanticsText(tester);
+      expect(
+        text.where((t) => t.contains('Inner Flare is locked')),
+        isNotEmpty,
+      );
+      expect(text.where((t) => t.contains('dashboard content')), isEmpty);
+      semantics.dispose();
+    });
+
+    testWidgets('a note field loses focus and the keyboard cannot move focus '
+        'back into it', (tester) async {
+      final focusNode = FocusNode();
+      final controller = TextEditingController(text: 'private note');
+      addTearDown(focusNode.dispose);
+      addTearDown(controller.dispose);
+      await pumpGate(
+        tester,
+        timeout: LockTimeout.immediately,
+        home: Scaffold(
+          body: TextField(focusNode: focusNode, controller: controller),
+        ),
+      );
+      focusNode.requestFocus();
+      await tester.pump();
+      expect(focusNode.hasFocus, isTrue);
+
+      await lockNow(tester);
+      expect(focusNode.hasFocus, isFalse);
+
+      // A hardware keyboard tabbing around, and code still running
+      // underneath asking for focus directly.
+      for (var i = 0; i < 5; i++) {
+        await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+        await tester.pump();
+        expect(focusNode.hasFocus, isFalse);
+      }
+      focusNode.requestFocus();
+      await tester.pump();
+      expect(focusNode.hasFocus, isFalse);
+      expect(controller.text, 'private note');
+    });
+
+    testWidgets('animations underneath pause while locked and resume after '
+        'unlock', (tester) async {
+      final tickerEnabled = <bool>[];
+      await pumpGate(
+        tester,
+        timeout: LockTimeout.immediately,
+        gate: _FixedResultGate(true),
+        home: Scaffold(
+          body: Builder(
+            builder: (context) {
+              tickerEnabled.add(TickerMode.valuesOf(context).enabled);
+              return const Text('dashboard content');
+            },
+          ),
+        ),
+      );
+      expect(tickerEnabled.last, isTrue);
+
+      await lockNow(tester);
+      expect(tickerEnabled.last, isFalse);
+
+      _comeBack();
+      await tester.pump();
+      await tester.tap(find.text('Unlock'));
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(find.text('Inner Flare is locked'), findsNothing);
+      expect(tickerEnabled.last, isTrue);
+    });
+
+    testWidgets('the screen underneath keeps its state through a lock and '
+        'unlock (regression guard)', (tester) async {
+      final controller = TextEditingController();
+      addTearDown(controller.dispose);
+      await pumpGate(
+        tester,
+        timeout: LockTimeout.immediately,
+        gate: _FixedResultGate(true),
+        home: Scaffold(body: TextField(controller: controller)),
+      );
+      await tester.enterText(find.byType(TextField), 'half-written note');
+      final stateBefore = tester.state(find.byType(EditableText));
+
+      await lockNow(tester);
+      _comeBack();
+      await tester.pump();
+      await tester.tap(find.text('Unlock'));
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(find.text('half-written note'), findsOneWidget);
+      expect(tester.state(find.byType(EditableText)), same(stateBefore));
+    });
   });
 }
