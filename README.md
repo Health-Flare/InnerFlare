@@ -9,6 +9,7 @@
 </p>
 
 <p align="center">
+  <a href="https://apps.apple.com/app/inner-flare/id6810504084">App Store</a> ·
   <a href="https://play.google.com/store/apps/details?id=org.healthflare.app.innerflare">Google Play</a> ·
   <a href="https://github.com/Health-Flare/InnerFlare/releases/latest">Latest release</a> ·
   <a href="https://healthflare.org/inner-flare/">healthflare.org/inner-flare</a>
@@ -48,8 +49,8 @@ Full policy: [healthflare.org/inner-flare/privacy](https://healthflare.org/inner
 
 ## Get it
 
+- **iPhone:** [App Store](https://apps.apple.com/app/inner-flare/id6810504084)
 - **Android:** [Google Play](https://play.google.com/store/apps/details?id=org.healthflare.app.innerflare), or the APK from [GitHub Releases](https://github.com/Health-Flare/InnerFlare/releases/latest)
-- **iPhone:** in App Store review
 - **F-Droid:** planned
 
 ## Help and feedback
