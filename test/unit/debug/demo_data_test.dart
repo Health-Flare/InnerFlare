@@ -44,7 +44,7 @@ void main() {
   test('produces enough complete cycles for a non-irregular average', () {
     final logs = buildDemoCycleLogs(now: now);
     final lengths = cycleLengthsFromPeriodStarts(_periodStartsOf(logs));
-    expect(lengths, [28, 27, 29, 28, 30]);
+    expect(lengths, [27, 30, 26, 29, 31, 27, 29, 28]);
     expect(averageCycleLength(lengths), isNotNull);
     expect(cycleLengthsAreIrregular(lengths), isFalse);
   });
