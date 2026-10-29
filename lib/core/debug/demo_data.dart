@@ -17,18 +17,30 @@ import 'package:inner_flare/models/period_flow.dart';
 /// per CLAUDE.md's "Privacy-Centric", see docs/features/onboarding.
 /// feature), so nothing here writes that name into the app or its data.
 ///
-/// Six period starts (five complete cycles, 27-30 days each, irregular
-/// enough to be believable, not so irregular it trips the "irregular
-/// cycles" caveat) ending 6 days ago, so "today" and yesterday are still
-/// unlogged on a fresh install of the demo data. Each complete cycle gets
-/// a realistic 5-day period taper, an ovulation-test/basal-temp pair, and
-/// a couple of PMS-adjacent symptom days; the most recent (in-progress)
-/// cycle only gets the period days that have actually happened so far.
+/// Nine period starts (eight complete cycles, 26-31 days each, varied
+/// enough that the average cycle length (lib/core/cycle_math/cycle_math.
+/// dart, defaultCycleHistoryWindow = 6) and the dashboard's "Previous
+/// cycle lengths" trend card both have a believable shape instead of a
+/// flat line, but not so irregular it trips the "irregular cycles"
+/// caveat, which only looks at the last 3) ending 6 days ago, so "today"
+/// and yesterday are still unlogged on a fresh install of the demo data.
+/// Eight is deliberately more than the 6-cycle history window, so the
+/// Insights screen exercises and shows its "based on your last 6 cycles"
+/// wording rather than "based on your last 8", the same number as the
+/// total logged (that distinction is CycleInsights.cyclesInAverage vs
+/// cycleLengths.length; see insights_screen.dart). Each complete cycle
+/// gets a realistic 5-day period taper, an ovulation-test/basal-temp
+/// pair, and a couple of PMS-adjacent symptom days; the most recent
+/// (in-progress) cycle only gets the period days that have actually
+/// happened so far.
 List<CycleDayLog> buildDemoCycleLogs({required DateTime now}) {
   final today = DateTime.utc(now.year, now.month, now.day);
 
-  // Gaps between consecutive period starts, oldest pair first.
-  const cycleLengths = [28, 27, 29, 28, 30];
+  // Gaps between consecutive period starts, oldest pair first. Last 3
+  // ([31, 27, 29] -> [27, 29, 28] window as cycles roll off) stay within
+  // cycleLengthsAreIrregular's 7-day spread so Insights never shows the
+  // irregularity caveat here; that's exercised by buildPerimenopauseDemoCycleLogs.
+  const cycleLengths = [27, 30, 26, 29, 31, 27, 29, 28];
   final starts = _periodStartDates(cycleLengths, today: today);
 
   final logs = <CycleDayLog>[];
