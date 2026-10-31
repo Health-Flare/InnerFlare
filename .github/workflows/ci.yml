@@ -41,6 +41,13 @@ jobs:
     outputs:
       code: ${{ steps.filter.outputs.code }}
       android: ${{ steps.filter.outputs.android }}
+      # Scope for `no-network`: the one job below with no path gate of its
+      # own, by design (see that job's comment). This exists only so a
+      # docs/metadata-only PR (README, docs/*.md, AGENTS.md, llms.txt,
+      # CODEOWNERS, issue templates...) can skip it too, without touching
+      # that job's intentionally broad "anything app-related" coverage:
+      # Dart code, both platform projects, and dependency/workflow pins.
+      release_relevant: ${{ steps.filter.outputs.release_relevant }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
@@ -64,6 +71,14 @@ jobs:
               - 'android/**'
               - 'pubspec.yaml'
               - 'pubspec.lock'
+              - '.github/workflows/ci.yml'
+            release_relevant:
+              - 'lib/**'
+              - 'android/**'
+              - 'ios/**'
+              - 'pubspec.yaml'
+              - 'pubspec.lock'
+              - 'analysis_options.yaml'
               - '.github/workflows/ci.yml'
 
   analyze:
@@ -157,14 +172,18 @@ jobs:
         run: flutter build apk --debug
 
   # Inner Flare ships with no network access, and the website and store
-  # listings say so. This job has no paths filter on purpose: it runs on
-  # every PR and every push to main, whatever changed, because a permission
-  # can arrive from a plugin bump, a manifest edit or a Gradle change, and a
-  # network call from any Dart file or package. It checks the source first
-  # (seconds), then builds an unsigned release APK and reads what it
+  # listings say so. A permission or network call can arrive from a plugin
+  # bump, a manifest edit, a Gradle change, or any Dart file, so this is
+  # gated on `release_relevant` (lib/, android/, ios/, pubspec.*,
+  # analysis_options.yaml) rather than the narrower `code`/`android`
+  # outputs above — deliberately broader than either, not narrower. It
+  # only skips for genuine docs/metadata-only PRs. It checks the source
+  # first (seconds), then builds an unsigned release APK and reads what it
   # actually asks for.
   no-network:
     name: No network access
+    needs: changes
+    if: needs.changes.outputs.release_relevant == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -211,8 +230,12 @@ jobs:
               exit 1
             fi
           done
-          if [ "${{ needs.no-network.result }}" != "success" ]; then
-            echo "No network access must run and pass on every change (got: ${{ needs.no-network.result }})."
+          # no-network must run and pass whenever it's relevant (gated on
+          # `release_relevant`, see that job's comment); 'skipped' is only
+          # valid when the PR genuinely didn't touch anything in scope.
+          nn="${{ needs.no-network.result }}"
+          if [ "$nn" != "success" ] && [ "$nn" != "skipped" ]; then
+            echo "No network access must run and pass when it's relevant (got: $nn)."
             exit 1
           fi
           echo "OK (analyze: ${{ needs.analyze.result }}, test: ${{ needs.test.result }}, android-build: ${{ needs.android-build.result }}, no-network: ${{ needs.no-network.result }})"
