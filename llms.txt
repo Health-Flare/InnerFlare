@@ -1,0 +1,40 @@
+# Inner Flare
+
+> A private period and cycle tracker. No account, no cloud, no network. What you log stays on
+> your phone, encrypted at rest.
+
+Log your period, flow, symptoms, and a note in a few taps. Inner Flare shows history on a
+calendar and estimates your next period from your own past cycles — plain statistics, shown
+with what they're based on. Every health estimate cites a source. Built with Flutter,
+Riverpod, and SQLCipher (encrypted SQLite) for local storage.
+
+## Start here
+
+- [README.md](README.md): what the app does, screenshots, store links
+- [CLAUDE.md](CLAUDE.md): full architecture and developer/agent reference — read this before
+  making non-trivial changes
+- [BRIEF.md](BRIEF.md): the original product brief
+- [CONTRIBUTING.md](CONTRIBUTING.md): how to contribute code, and the ground rules
+- [docs/README.md](docs/README.md): index of everything else under `docs/`
+
+## Rules that apply to any change, human or agent
+
+- **Fully offline.** No network calls at all, not even opt-in ones (`scripts/check_no_network_code.sh`
+  and `scripts/check_no_network_urls.sh` enforce this in CI). Don't add one without discussing
+  it first.
+- **Feature files are the spec.** Behavior lives in `docs/features/*.feature` (Gherkin) before
+  it's built. Update the relevant `.feature` file as part of a behavior change, not after.
+- **Cite estimates.** Any health/cycle estimate the app shows must cite its source
+  (`citations.feature`).
+
+## Key docs
+
+- [docs/development.md](docs/development.md): day-to-day build/test/ship workflow
+- [docs/features/](docs/features/): Gherkin feature files, one per app area
+- [docs/personas/](docs/personas/): the user personas the app is designed around
+- [docs/deployment/](docs/deployment/): release process per platform
+
+## Not source of truth for current behavior
+
+`docs/marketing/` holds marketing specs and assets, not app behavior — see `docs/features/`
+for what the app actually does.
