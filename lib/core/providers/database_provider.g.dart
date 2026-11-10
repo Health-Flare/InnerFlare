@@ -19,7 +19,14 @@ part of 'database_provider.dart';
 /// rather than extending `Error`, and the default policy retries anything
 /// that isn't an `Error`/`ProviderException`. That would mean a cancelled
 /// prompt gets unsolicited repeat prompts moments later, contradicting
-/// "the user decides when to retry" (see `UnlockErrorBanner`).
+/// "the user decides when to retry" (see `UnlockErrorBanner`). The same
+/// holds for the key-store errors the unlock can throw now that the OS
+/// prompt itself releases the key (`KeyStoreAuthenticationFailed`,
+/// `ScreenLockCheckFailure`, `DatabaseKeyUnavailable`): all `Exception`s.
+///
+/// Records how the key was protected in [keyProtectionStateProvider] so
+/// the "no screen lock" warning can show without anything else watching
+/// this provider.
 
 @ProviderFor(appDatabase)
 final appDatabaseProvider = AppDatabaseProvider._();
@@ -35,7 +42,14 @@ final appDatabaseProvider = AppDatabaseProvider._();
 /// rather than extending `Error`, and the default policy retries anything
 /// that isn't an `Error`/`ProviderException`. That would mean a cancelled
 /// prompt gets unsolicited repeat prompts moments later, contradicting
-/// "the user decides when to retry" (see `UnlockErrorBanner`).
+/// "the user decides when to retry" (see `UnlockErrorBanner`). The same
+/// holds for the key-store errors the unlock can throw now that the OS
+/// prompt itself releases the key (`KeyStoreAuthenticationFailed`,
+/// `ScreenLockCheckFailure`, `DatabaseKeyUnavailable`): all `Exception`s.
+///
+/// Records how the key was protected in [keyProtectionStateProvider] so
+/// the "no screen lock" warning can show without anything else watching
+/// this provider.
 
 final class AppDatabaseProvider
     extends
@@ -52,7 +66,14 @@ final class AppDatabaseProvider
   /// rather than extending `Error`, and the default policy retries anything
   /// that isn't an `Error`/`ProviderException`. That would mean a cancelled
   /// prompt gets unsolicited repeat prompts moments later, contradicting
-  /// "the user decides when to retry" (see `UnlockErrorBanner`).
+  /// "the user decides when to retry" (see `UnlockErrorBanner`). The same
+  /// holds for the key-store errors the unlock can throw now that the OS
+  /// prompt itself releases the key (`KeyStoreAuthenticationFailed`,
+  /// `ScreenLockCheckFailure`, `DatabaseKeyUnavailable`): all `Exception`s.
+  ///
+  /// Records how the key was protected in [keyProtectionStateProvider] so
+  /// the "no screen lock" warning can show without anything else watching
+  /// this provider.
   AppDatabaseProvider._()
     : super(
         from: null,
@@ -78,4 +99,4 @@ final class AppDatabaseProvider
   }
 }
 
-String _$appDatabaseHash() => r'a17f9c94294b1a0cb4242c89bba009e650d216cf';
+String _$appDatabaseHash() => r'c729b0f33d0b65204213dae249ccba0ad9d412bc';
