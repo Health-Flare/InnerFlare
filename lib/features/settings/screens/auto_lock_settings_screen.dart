@@ -46,6 +46,24 @@ class AutoLockSettingsScreen extends ConsumerWidget {
                 ],
               ),
             ),
+            if (current == LockTimeout.never)
+              const Padding(
+                key: Key('auto_lock_never_warning'),
+                padding: EdgeInsets.fromLTRB(20, 8, 20, 0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.warning_amber_rounded, size: 20),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Anyone who picks up your unlocked phone can open '
+                        'Inner Flare.',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
           ],
         ),
       ),

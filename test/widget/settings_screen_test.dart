@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:inner_flare/core/debug/debug_chrome.dart';
+import 'package:inner_flare/core/providers/lock_timeout_provider.dart';
 import 'package:inner_flare/core/providers/security_settings_repository_provider.dart';
 import 'package:inner_flare/core/providers/tracked_symptoms_repository_provider.dart';
 import 'package:inner_flare/data/database/schema.dart';
@@ -62,13 +64,13 @@ void main() {
   });
 
   testWidgets('the Auto-lock entry shows the current timeout, defaulting to '
-      '15 minutes with nothing saved yet', (tester) async {
+      '1 minute with nothing saved yet', (tester) async {
     await pumpTestApp(tester, const SettingsScreen(), overrides: overrides());
     await tester.pumpAndSettle();
 
     final tile = find.widgetWithText(ListTile, 'Auto-lock');
     expect(
-      find.descendant(of: tile, matching: find.text('After 15 minutes')),
+      find.descendant(of: tile, matching: find.text('After 1 minute')),
       findsOneWidget,
     );
     // The options live on their own page, not inline.
@@ -87,7 +89,7 @@ void main() {
     final group = tester.widget<RadioGroup<LockTimeout>>(
       find.byType(RadioGroup<LockTimeout>),
     );
-    expect(group.groupValue, LockTimeout.after15Minutes);
+    expect(group.groupValue, LockTimeout.after1Minute);
   });
 
   testWidgets('every timeout choice is offered on the Auto-lock page', (
@@ -131,6 +133,47 @@ void main() {
       ),
       findsOneWidget,
     );
+  });
+
+  const neverWarning =
+      'Anyone who picks up your unlocked phone can open Inner Flare.';
+
+  testWidgets('choosing Never shows a warning, and choosing anything else '
+      'takes it away', (tester) async {
+    await pumpTestApp(tester, const SettingsScreen(), overrides: overrides());
+    await tester.pumpAndSettle();
+    await openAutoLock(tester);
+
+    expect(find.text(neverWarning), findsNothing);
+
+    await tester.tap(find.widgetWithText(RadioListTile<LockTimeout>, 'Never'));
+    await tester.pumpAndSettle();
+    expect(find.text(neverWarning), findsOneWidget);
+
+    await tester.tap(
+      find.widgetWithText(RadioListTile<LockTimeout>, 'After 5 minutes'),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text(neverWarning), findsNothing);
+  });
+
+  testWidgets('the Never warning is shown when Never was already saved', (
+    tester,
+  ) async {
+    await pumpTestApp(tester, const SettingsScreen(), overrides: overrides());
+    await tester.pumpAndSettle();
+    await SecuritySettingsRepository(openDb!).setLockTimeout(LockTimeout.never);
+    await tester.pumpAndSettle();
+
+    // Re-read the saved value, as on a fresh launch.
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(SettingsScreen)),
+    );
+    container.invalidate(lockTimeoutProvider);
+    await tester.pumpAndSettle();
+    await openAutoLock(tester);
+
+    expect(find.text(neverWarning), findsOneWidget);
   });
 
   testWidgets('the symptoms entry point opens symptom settings '
