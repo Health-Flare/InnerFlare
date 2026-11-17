@@ -35,7 +35,12 @@ REPO = Path(__file__).resolve().parents[2]
 SHOTS = REPO / "screenshots/app_store/iphone_6.5in"
 FONTS = REPO / "docs/marketing/fonts"
 ICON = REPO / "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024@1x.png"
-OUT = REPO / "build/store_creative"
+# Committed, not scratch: these are the actual files uploaded to App Store
+# Connect, kept current in main like screenshots/store/ (see tool/
+# store_creative/README.md). `preview` mode's three _preview*.png files
+# are local-only scratch even when written here; .gitignore excludes them
+# by name so a preview run can't accidentally get committed.
+OUT = REPO / "screenshots/store/app_store/creative"
 
 # lib/core/theme/app_theme.dart AppColors (brand v2.0)
 DAWN = (251, 247, 242)

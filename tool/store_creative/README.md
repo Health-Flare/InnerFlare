@@ -22,8 +22,16 @@ Ported from the same tool in the Health Flare repo
 (`tool/store_creative/make_creative.py`), re-pointed at Inner Flare's
 screenshot set, palette and fonts.
 
-Output goes to `build/store_creative/`, which is gitignored. Only the
-generator is committed.
+Output is committed, not scratch: it lands in
+`screenshots/store/app_store/creative/` by default (same home as the
+rest of `screenshots/store/`), so the latest render is always what's on
+`main` rather than a local-only build artifact someone has to remember
+to regenerate before upload. Regenerate and commit it any time the
+inputs below change (see "When to run it"); CI doesn't check staleness,
+so this is on the honour system for now. `preview` mode's three
+`*_preview*.png` stills are the one exception: they're gitignored by
+name even when written into that same directory, since they're just a
+fast local look, not a deliverable.
 
 ## When to run it
 
@@ -31,9 +39,13 @@ generator is committed.
   calendar, insights or settings screens changed.
 - When the copy changes (see [Changing the content](#changing-the-content)).
 - When Apple changes the creative asset specs.
+- When the brand palette, fonts or app icon change, even without a
+  screenshot re-shoot (the colours and icon are read directly, not from
+  a screenshot).
 
 Creative assets are reviewed by Apple apart from app versions, so a new set
-doesn't need a release.
+doesn't need a release. It does need a commit: run `video` then `verify`,
+then `git add screenshots/store/app_store/creative/ && git commit`.
 
 ## Setup
 
@@ -60,7 +72,8 @@ $PY tool/store_creative/make_creative.py video     # both MP4s + PNG stills, abo
 $PY tool/store_creative/make_creative.py verify    # checks the MP4s
 ```
 
-Options: `--fps 60` (default 30), `--out DIR` (default `build/store_creative`).
+Options: `--fps 60` (default 30), `--out DIR` (default
+`screenshots/store/app_store/creative`).
 
 `preview` writes `header_preview.png`, `search_preview.png` and
 `search_preview_fade.png` (mid crossfade between two screens). Look at
@@ -107,9 +120,9 @@ Everything is in `make_creative.py`:
   back phone. The script stops with a list of missing files if a re-shoot
   renamed any.
 - **Colours:** the constants at the top match `AppColors` in
-  `lib/core/theme/app_theme.dart` (cream `#F3E9DB`, ember orange `#E0834A`,
-  soft orange `#F2B183`, deep teal `#17272C`, mid teal `#2B4249`). Keep the
-  text dark (deep teal) on the light cream/orange backgrounds.
+  `lib/core/theme/app_theme.dart` (dawn `#FBF7F2`, rose `#D2546E`, rose
+  tint `#EBC0CB`, ink `#221C18`, slate `#6B5E54`). Keep the text dark
+  (ink) on the light dawn/rose backgrounds.
 
 ### Keep the loop seamless
 
