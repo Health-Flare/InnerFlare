@@ -56,7 +56,11 @@ gradle.taskGraph.whenReady {
 
 android {
     namespace = "org.healthflare.app.innerflare"
-    compileSdk = flutter.compileSdkVersion
+    // flutter_local_notifications 23.x pulls in androidx.core:core 1.19.0,
+    // which requires compiling against API 37+ (Flutter's own default is
+    // still 36 as of this SDK). Override just compileSdk, not minSdk/
+    // targetSdk: Gradle's own warning says that's independent and safe.
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
