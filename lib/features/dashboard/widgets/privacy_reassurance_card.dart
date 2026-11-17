@@ -12,12 +12,12 @@ class PrivacyReassuranceCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.deepTeal,
+        color: AppColors.ink,
         borderRadius: BorderRadius.circular(24),
       ),
       child: Row(
         children: [
-          const Icon(Icons.lock_outline_rounded, color: AppColors.softOrange),
+          const Icon(Icons.lock_outline_rounded, color: AppColors.amber),
           const SizedBox(width: 16),
           Expanded(
             child: Column(

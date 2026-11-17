@@ -101,9 +101,7 @@ class _CycleDetailList extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: AppColors.emberOrange.withValues(alpha: 0.15),
-            ),
+            border: Border.all(color: AppColors.rose.withValues(alpha: 0.15)),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

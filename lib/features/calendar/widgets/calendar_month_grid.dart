@@ -40,7 +40,7 @@ class CalendarMonthGrid extends StatelessWidget {
                   child: Text(
                     label,
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: AppColors.deepTeal.withValues(alpha: 0.6),
+                      color: AppColors.ink.withValues(alpha: 0.6),
                       fontWeight: FontWeight.w600,
                     ),
                   ),

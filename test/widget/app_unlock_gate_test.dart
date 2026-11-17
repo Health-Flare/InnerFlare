@@ -50,7 +50,7 @@ void main() {
       // (AppLockScreen): this shouldn't feel like a second, different
       // mechanism.
       final icon = tester.widget<Icon>(find.byIcon(Icons.lock_rounded));
-      expect(icon.color, AppColors.softOrange);
+      expect(icon.color, AppColors.amber);
 
       // Sitting on this screen must never touch the database on its own.
       // Only a tap should.

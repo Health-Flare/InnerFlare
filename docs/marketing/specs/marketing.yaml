@@ -8,15 +8,14 @@
 version: 1
 
 brand:
-  # Source of truth is lib/core/theme/app_theme.dart (AppColors).
+  # Source of truth is lib/core/theme/app_theme.dart (AppColors), brand v2.0.
   colors:
-    cream: "#F3E9DB"
-    ember_orange: "#E0834A"
-    soft_orange: "#F2B183"
-    deep_teal: "#17272C"
-    mid_teal: "#2B4249"
-  logo: assets/images/Inner Flare Logo.png
-  logo_512: assets/images/Inner Flare Logo 512.png
+    dawn: "#FBF7F2"
+    rose: "#D2546E"
+    rose_tint: "#EBC0CB"
+    ink: "#221C18"
+    slate: "#6B5E54"
+  logo: docs/brand/app-icons/innerflare-app-icon.png
   fonts:
     # Local files, same pairing as the website's Inner Flare page.
     # See ../fonts/README.md.
@@ -29,45 +28,45 @@ layouts:
   - id: story
     description: "Store 'story' screenshot: headline above, framed device below."
     size_from: store_slots          # use the slot's pixel size
-    background: {type: solid, color: cream}
-    headline: {color: deep_teal, align: center, max_lines: 2, top_pct: 6}
-    subhead: {color: mid_teal, align: center, max_lines: 3, top_pct: 17}
+    background: {type: solid, color: dawn}
+    headline: {color: ink, align: center, max_lines: 2, top_pct: 6}
+    subhead: {color: slate, align: center, max_lines: 3, top_pct: 17}
     device: {frame: simple_bezel, scale_pct: 82, anchor: bottom, bleed_bottom_pct: 8}
     targets: [iphone_6_5]
   - id: story_play
     description: "The `story` layout at Play's phone size, from iPhone 6.5in captures."
     pixels: [1080, 1920]
-    background: {type: solid, color: cream}
-    headline: {color: deep_teal, align: center, max_lines: 2, top_pct: 6}
-    subhead: {color: mid_teal, align: center, max_lines: 3, top_pct: 17}
+    background: {type: solid, color: dawn}
+    headline: {color: ink, align: center, max_lines: 2, top_pct: 6}
+    subhead: {color: slate, align: center, max_lines: 3, top_pct: 17}
     device: {frame: simple_bezel, scale_pct: 78, anchor: bottom, bleed_bottom_pct: 8}
     targets: [iphone_6_5]
   - id: story_dark
     description: "Same as story on the deep teal backdrop from the loading screen."
     size_from: store_slots
-    background: {type: gradient, from: deep_teal, to: mid_teal, angle: 180}
-    headline: {color: cream, align: center, max_lines: 2, top_pct: 6}
-    subhead: {color: soft_orange, align: center, max_lines: 3, top_pct: 17}
+    background: {type: gradient, from: ink, to: slate, angle: 180}
+    headline: {color: dawn, align: center, max_lines: 2, top_pct: 6}
+    subhead: {color: rose_tint, align: center, max_lines: 3, top_pct: 17}
     device: {frame: simple_bezel, scale_pct: 82, anchor: bottom, bleed_bottom_pct: 8}
     targets: [iphone_6_5]
   - id: social_square
     pixels: [1080, 1080]
-    background: {type: solid, color: cream}
-    headline: {color: deep_teal, align: left, max_lines: 3, top_pct: 10, left_pct: 8}
+    background: {type: solid, color: dawn}
+    headline: {color: ink, align: left, max_lines: 3, top_pct: 10, left_pct: 8}
     device: {frame: simple_bezel, scale_pct: 90, anchor: bottom_right, bleed_bottom_pct: 15}
     targets: [iphone_6_5]
   - id: feature_graphic
     description: "Play feature graphic: not a screenshot. Logo and tagline."
     pixels: [1024, 500]
-    background: {type: gradient, from: deep_teal, to: mid_teal, angle: 90}
+    background: {type: gradient, from: ink, to: slate, angle: 90}
     logo: {height_pct: 40, anchor: left_center}
-    headline: {color: cream, align: left, max_lines: 2}
+    headline: {color: dawn, align: left, max_lines: 2}
     device: {frame: none, shots: [dashboard], scale_pct: 110, anchor: right_bleed}
     targets: []                      # no capture device: composes from a shot
   - id: landscape_video
     description: "Video backdrop for web_landscape."
     pixels: [1920, 1080]
-    background: {type: solid, color: cream}
+    background: {type: solid, color: dawn}
     device: {frame: simple_bezel, scale_pct: 88, anchor: center}
     targets: [iphone_6_5]
 
@@ -75,7 +74,7 @@ frames:
   simple_bezel:
     kind: drawn                      # drawn by the runner, no proprietary artwork
     corner_radius_pct: 11
-    bezel_color: deep_teal
+    bezel_color: ink
     bezel_px_pct: 2.2
     shadow: {blur_pct: 4, opacity: 0.25}
 

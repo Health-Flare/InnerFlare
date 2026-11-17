@@ -21,7 +21,7 @@ class HowEstimatesWorkScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final muted = Theme.of(context).textTheme.bodyMedium?.copyWith(
-      color: AppColors.deepTeal.withValues(alpha: 0.7),
+      color: AppColors.ink.withValues(alpha: 0.7),
     );
 
     return Scaffold(
@@ -69,9 +69,7 @@ class _ExplanationCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: AppColors.emberOrange.withValues(alpha: 0.15),
-        ),
+        border: Border.all(color: AppColors.rose.withValues(alpha: 0.15)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -88,7 +86,7 @@ class _ExplanationCard extends StatelessWidget {
           Text(
             explanation.sources.length == 1 ? 'Source' : 'Sources',
             style: textTheme.labelLarge?.copyWith(
-              color: AppColors.deepTeal.withValues(alpha: 0.7),
+              color: AppColors.ink.withValues(alpha: 0.7),
             ),
           ),
           for (final source in explanation.sources) _SourceLink(source: source),
@@ -106,7 +104,7 @@ class _SourceLink extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final style = Theme.of(context).textTheme.bodySmall?.copyWith(
-      color: AppColors.deepTeal,
+      color: AppColors.ink,
       decoration: TextDecoration.underline,
       height: 1.4,
     );

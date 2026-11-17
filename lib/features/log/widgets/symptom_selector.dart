@@ -37,7 +37,7 @@ class SymptomSelector extends StatelessWidget {
               }
               onChanged(next);
             },
-            selectedColor: AppColors.deepTeal,
+            selectedColor: AppColors.ink,
             labelStyle: TextStyle(
               color: selected.contains(symptom.id) ? Colors.white : null,
               fontWeight: selected.contains(symptom.id)

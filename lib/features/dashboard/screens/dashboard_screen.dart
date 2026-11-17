@@ -172,7 +172,7 @@ class DashboardScreen extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Image.asset(
-              'assets/images/Inner Flare Logo.png',
+              'assets/images/brand/innerflare-mark-compact-rose.png',
               width: 28,
               height: 28,
             ),

@@ -37,12 +37,12 @@ FONTS = REPO / "docs/marketing/fonts"
 ICON = REPO / "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024@1x.png"
 OUT = REPO / "build/store_creative"
 
-# lib/core/theme/app_theme.dart AppColors
-CREAM = (243, 233, 219)
-EMBER = (224, 131, 74)
-SOFT_ORANGE = (242, 177, 131)
-DEEP_TEAL = (23, 39, 44)
-MID_TEAL = (43, 66, 73)
+# lib/core/theme/app_theme.dart AppColors (brand v2.0)
+DAWN = (251, 247, 242)
+ROSE = (210, 84, 110)
+ROSE_TINT = (235, 192, 203)
+INK = (34, 28, 24)
+SLATE = (107, 94, 84)
 
 LOOP_S = 12.0
 
@@ -84,8 +84,8 @@ def phone(shot_name, height, tilt=0.0):
     body = Image.new("RGBA", (bw, bh), (0, 0, 0, 0))
     r_out = int(bw * 0.15)
     # Bezel colour matches Inner Flare's own drawn-frame spec (marketing.yaml
-    # frames.simple_bezel: bezel_color deep_teal), not a generic near-black.
-    body.paste((*DEEP_TEAL, 255), (0, 0), rounded_mask((bw, bh), r_out))
+    # frames.simple_bezel: bezel_color ink), not a generic near-black.
+    body.paste((*INK, 255), (0, 0), rounded_mask((bw, bh), r_out))
     body.paste(shot, (bezel, bezel), rounded_mask((sw, sh), r_out - bezel))
     pad = int(height * 0.12)
     canvas = Image.new("RGBA", (bw + 2 * pad, bh + 2 * pad), (0, 0, 0, 0))
@@ -125,7 +125,7 @@ class Header:
     # 3840): the line lives in the middle, the phones frame it from the edges.
 
     def __init__(self):
-        self.bg = gradient(self.W + 240, self.H + 120, EMBER, SOFT_ORANGE, 12)
+        self.bg = gradient(self.W + 240, self.H + 120, ROSE, ROSE_TINT, 12)
         h = 1240
         self.phones = [
             (phone("01_dashboard", h, 7), -260, 250, 0.0),
@@ -148,7 +148,7 @@ class Header:
             img.alpha_composite(p, (x, int(y + 36 * wave(t, ph))))
         d = ImageDraw.Draw(img)
         # marketing.yaml copy.dashboard, grounded in the store listing.
-        text_block(d, ["Your cycle data stays", "on your phone."], self.W // 2, 660, self.title, DEEP_TEAL, 200, "ma")
+        text_block(d, ["Your cycle data stays", "on your phone."], self.W // 2, 660, self.title, INK, 200, "ma")
         return img.convert("RGB")
 
 
@@ -158,11 +158,11 @@ class Search:
     SCREENS = ["01_dashboard", "05_log_entry", "02_calendar", "03_insights"]
 
     def __init__(self):
-        self.bg = gradient(self.W + 200, self.H + 160, CREAM, SOFT_ORANGE, 70)
+        self.bg = gradient(self.W + 200, self.H + 160, DAWN, ROSE_TINT, 70)
         blob = Image.new("L", self.bg.size, 0)
         ImageDraw.Draw(blob).ellipse([2050, 250, 3950, 2350], fill=150)
         blob = blob.filter(ImageFilter.GaussianBlur(300))
-        self.bg = Image.composite(gradient(*self.bg.size, EMBER, SOFT_ORANGE, 30), self.bg, blob)
+        self.bg = Image.composite(gradient(*self.bg.size, ROSE, ROSE_TINT, 30), self.bg, blob)
         h = 2050
         self.front = [phone(s, h, 0) for s in self.SCREENS]
         self.back = phone("04_settings", int(h * 0.86), -7)
@@ -191,11 +191,11 @@ class Search:
         x = 300
         img.alpha_composite(self.icon, (x, 470))
         # feature_graphic headline, grounded in the Play short description.
-        y = text_block(d, ["Track your", "cycle."], x, 820, self.title, DEEP_TEAL, 240)
+        y = text_block(d, ["Track your", "cycle."], x, 820, self.title, INK, 240)
         y = text_block(
             d,
             ["Private cycle tracking.", "Offline and encrypted.", "", "No account needed."],
-            x, y + 90, self.body, MID_TEAL, 125,
+            x, y + 90, self.body, SLATE, 125,
         )
         return img.convert("RGB")
 

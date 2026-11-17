@@ -17,22 +17,22 @@ class CalendarLegend extends StatelessWidget {
           spacing: 16,
           runSpacing: 8,
           children: [
-            _swatch(context, color: AppColors.emberOrange, label: 'Period'),
+            _swatch(context, color: AppColors.rose, label: 'Period'),
             _swatch(
               context,
-              color: AppColors.midTeal,
+              color: AppColors.slate,
               label: 'Symptoms',
               isDot: true,
             ),
             _swatch(
               context,
-              color: AppColors.emberOrange,
+              color: AppColors.rose,
               label: 'Predicted period (estimate)',
               isRing: true,
             ),
             _swatch(
               context,
-              color: AppColors.midTeal,
+              color: AppColors.slate,
               label: 'Fertile window (estimate)',
               isRing: true,
             ),
@@ -49,7 +49,7 @@ class CalendarLegend extends StatelessWidget {
             child: TextButton.icon(
               onPressed: () => HowEstimatesWorkScreen.open(context),
               style: TextButton.styleFrom(
-                foregroundColor: AppColors.deepTeal.withValues(alpha: 0.7),
+                foregroundColor: AppColors.ink.withValues(alpha: 0.7),
                 padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -95,7 +95,7 @@ class CalendarLegend extends StatelessWidget {
         Text(
           label,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: AppColors.deepTeal.withValues(alpha: 0.7),
+            color: AppColors.ink.withValues(alpha: 0.7),
           ),
         ),
       ],

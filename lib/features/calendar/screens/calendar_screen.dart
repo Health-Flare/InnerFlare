@@ -147,7 +147,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 'entry.',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.deepTeal.withValues(alpha: 0.7),
+                  color: AppColors.ink.withValues(alpha: 0.7),
                 ),
               ),
             ],

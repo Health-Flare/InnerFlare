@@ -30,14 +30,15 @@ class LogTodayHeroCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: isLoggedToday
-              ? [AppColors.midTeal, AppColors.deepTeal]
-              : [AppColors.emberOrange, AppColors.softOrange],
+              ? [AppColors.slate, AppColors.ink]
+              : [AppColors.rose, AppColors.roseTint],
         ),
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: (isLoggedToday ? AppColors.deepTeal : AppColors.emberOrange)
-                .withValues(alpha: 0.25),
+            color: (isLoggedToday ? AppColors.ink : AppColors.rose).withValues(
+              alpha: 0.25,
+            ),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -76,9 +77,7 @@ class LogTodayHeroCard extends StatelessWidget {
             onPressed: isBusy ? null : onLogToday,
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
-              foregroundColor: isLoggedToday
-                  ? AppColors.deepTeal
-                  : AppColors.emberOrange,
+              foregroundColor: isLoggedToday ? AppColors.ink : AppColors.rose,
             ),
             icon: isBusy
                 ? const SizedBox(

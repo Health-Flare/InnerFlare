@@ -26,7 +26,7 @@ class FlowSelector extends StatelessWidget {
             label: Text(_label(flow)),
             selected: selected == flow,
             onSelected: (isSelected) => onChanged(isSelected ? flow : null),
-            selectedColor: AppColors.emberOrange,
+            selectedColor: AppColors.rose,
             labelStyle: TextStyle(
               color: selected == flow ? Colors.white : null,
               fontWeight: selected == flow ? FontWeight.w600 : null,

@@ -42,18 +42,18 @@ class CalendarDayCell extends StatelessWidget {
     } else if (flow != null) {
       fillColor = _colorForFlow(flow);
     } else if (_markedPeriodWithoutFlow) {
-      fillColor = AppColors.softOrange;
+      fillColor = AppColors.roseTint;
     } else if (isPredictedPeriod) {
-      border = Border.all(color: AppColors.emberOrange, width: 2);
+      border = Border.all(color: AppColors.rose, width: 2);
     } else if (isPredictedFertile) {
-      border = Border.all(color: AppColors.midTeal, width: 2);
+      border = Border.all(color: AppColors.slate, width: 2);
     }
 
     final textColor = fillColor != null
         ? Colors.white
         : isCurrentMonth
-        ? AppColors.deepTeal
-        : AppColors.deepTeal.withValues(alpha: 0.35);
+        ? AppColors.ink
+        : AppColors.ink.withValues(alpha: 0.35);
 
     return Tooltip(
       message: _semanticLabel(),
@@ -72,7 +72,7 @@ class CalendarDayCell extends StatelessWidget {
                 border:
                     border ??
                     (isToday
-                        ? Border.all(color: AppColors.deepTeal, width: 1.5)
+                        ? Border.all(color: AppColors.ink, width: 1.5)
                         : null),
               ),
               child: Stack(
@@ -93,7 +93,7 @@ class CalendarDayCell extends StatelessWidget {
                         size: 5,
                         color: fillColor != null
                             ? Colors.white
-                            : AppColors.midTeal,
+                            : AppColors.slate,
                       ),
                     ),
                 ],
@@ -113,13 +113,13 @@ class CalendarDayCell extends StatelessWidget {
   Color _colorForFlow(PeriodFlow flow) {
     switch (flow) {
       case PeriodFlow.spotting:
-        return AppColors.softOrange.withValues(alpha: 0.55);
+        return AppColors.roseTint.withValues(alpha: 0.55);
       case PeriodFlow.light:
-        return AppColors.softOrange;
+        return AppColors.roseTint;
       case PeriodFlow.medium:
-        return AppColors.emberOrange.withValues(alpha: 0.8);
+        return AppColors.rose.withValues(alpha: 0.8);
       case PeriodFlow.heavy:
-        return AppColors.emberOrange;
+        return AppColors.rose;
     }
   }
 

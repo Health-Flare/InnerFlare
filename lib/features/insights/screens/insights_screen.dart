@@ -186,7 +186,7 @@ class _EmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 40, color: AppColors.emberOrange),
+            Icon(icon, size: 40, color: AppColors.rose),
             const SizedBox(height: 16),
             Text(
               title,
@@ -200,7 +200,7 @@ class _EmptyState extends StatelessWidget {
               message,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.deepTeal.withValues(alpha: 0.7),
+                color: AppColors.ink.withValues(alpha: 0.7),
               ),
             ),
           ],

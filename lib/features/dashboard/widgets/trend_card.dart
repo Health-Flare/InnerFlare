@@ -24,9 +24,7 @@ class TrendCard extends ConsumerWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: AppColors.emberOrange.withValues(alpha: 0.15),
-        ),
+        border: Border.all(color: AppColors.rose.withValues(alpha: 0.15)),
       ),
       child: displayAsync.when(
         loading: () => const SizedBox(
@@ -72,7 +70,7 @@ class _TrendContent extends StatelessWidget {
           Text(
             'Coming soon: this data point isn\'t tracked yet.',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppColors.deepTeal.withValues(alpha: 0.7),
+              color: AppColors.ink.withValues(alpha: 0.7),
             ),
           )
         else if (!display.hasEnoughHistory)
@@ -80,7 +78,7 @@ class _TrendContent extends StatelessWidget {
             'Not enough cycles logged yet: at least 2 complete cycles are '
             'needed before a trend can be shown.',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppColors.deepTeal.withValues(alpha: 0.7),
+              color: AppColors.ink.withValues(alpha: 0.7),
             ),
           )
         else
@@ -136,9 +134,9 @@ class _TrendChart extends StatelessWidget {
                     values: window.visible,
                     average: display.averageCycleLength,
                     chartType: display.chartType,
-                    barColor: AppColors.emberOrange,
-                    latestBarColor: AppColors.deepTeal,
-                    averageLineColor: AppColors.midTeal,
+                    barColor: AppColors.rose,
+                    latestBarColor: AppColors.ink,
+                    averageLineColor: AppColors.slate,
                   ),
                 ),
               ),
@@ -147,9 +145,9 @@ class _TrendChart extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         _TrendLegend(
-          seriesColor: AppColors.emberOrange,
-          latestColor: AppColors.deepTeal,
-          averageColor: AppColors.midTeal,
+          seriesColor: AppColors.rose,
+          latestColor: AppColors.ink,
+          averageColor: AppColors.slate,
           showAverage: display.averageCycleLength != null,
         ),
         if (window.isTruncated) ...[
@@ -157,7 +155,7 @@ class _TrendChart extends StatelessWidget {
           Text(
             'Last ${window.visible.length} of ${window.total} cycles',
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: AppColors.deepTeal.withValues(alpha: 0.6),
+              color: AppColors.ink.withValues(alpha: 0.6),
               fontSize: 10,
             ),
           ),
@@ -179,7 +177,7 @@ class _TrendYAxisLabels extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final style = Theme.of(context).textTheme.labelSmall?.copyWith(
-      color: AppColors.deepTeal.withValues(alpha: 0.6),
+      color: AppColors.ink.withValues(alpha: 0.6),
       fontSize: 10,
     );
     return SizedBox(
@@ -267,7 +265,7 @@ class _TrendLegendItem extends StatelessWidget {
           child: Text(
             label,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: AppColors.deepTeal.withValues(alpha: 0.7),
+              color: AppColors.ink.withValues(alpha: 0.7),
               fontSize: 10,
             ),
           ),
