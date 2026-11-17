@@ -99,3 +99,20 @@ Copy, version and per-version checklist: `docs/deployment/release-notes/v1.4.0.m
 - [ ] `v1.4.0` tag pushed from `main`.
 - [ ] Play: internal testing, then promote to production.
 - [ ] App Store: replace the 1.3.0 build in review with build 7.
+
+## v1.5.0 (brand v2.0 restyle)
+
+Copy, version and per-version checklist: `docs/deployment/release-notes/v1.5.0.md`.
+
+- [x] Version bumped to `1.5.0+8`, release notes and store "What's new"
+      written, F-Droid draft points at `v1.5.0`.
+- [x] Store screenshots and App Store creative videos regenerated against
+      the rebranded app (brand v2.0 PR).
+- [ ] Upgrade test from a real 1.4.0 install (no schema change this
+      release, so this is a lighter check: confirm data, layout and
+      unlock survive, and a 1.4.0 backup still imports).
+- [ ] Release build confirmed free of debug-only UI.
+- [ ] `v1.5.0` tag pushed from `main`.
+- [ ] Play: internal testing, then promote to production.
+- [ ] App Store: confirm the new icon and screenshots on the product page
+      before submitting for review.
