@@ -29,21 +29,19 @@ class InsightStatCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: AppColors.emberOrange.withValues(alpha: 0.15),
-        ),
+        border: Border.all(color: AppColors.rose.withValues(alpha: 0.15)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, color: AppColors.emberOrange, size: 20),
+              Icon(icon, color: AppColors.rose, size: 20),
               const SizedBox(width: 8),
               Text(
                 title,
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: AppColors.deepTeal.withValues(alpha: 0.7),
+                  color: AppColors.ink.withValues(alpha: 0.7),
                 ),
               ),
             ],
@@ -60,7 +58,7 @@ class InsightStatCard extends StatelessWidget {
             Text(
               caveat!,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppColors.deepTeal.withValues(alpha: 0.6),
+                color: AppColors.ink.withValues(alpha: 0.6),
                 height: 1.4,
               ),
             ),

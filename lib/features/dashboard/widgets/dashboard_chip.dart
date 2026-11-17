@@ -40,9 +40,7 @@ class DashboardChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: AppColors.emberOrange.withValues(alpha: 0.15),
-        ),
+        border: Border.all(color: AppColors.rose.withValues(alpha: 0.15)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -52,10 +50,10 @@ class DashboardChip extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppColors.softOrange.withValues(alpha: 0.3),
+                color: AppColors.roseTint.withValues(alpha: 0.3),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: AppColors.emberOrange, size: 20),
+              child: Icon(icon, color: AppColors.rose, size: 20),
             )
           else
             Text(

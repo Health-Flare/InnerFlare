@@ -67,7 +67,7 @@ class FirstRunScreen extends ConsumerWidget {
               FilledButton(
                 onPressed: () => _acknowledge(context, ref),
                 style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.emberOrange,
+                  backgroundColor: AppColors.rose,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(

@@ -21,17 +21,14 @@ class UnlockErrorBanner extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.emberOrange.withValues(alpha: 0.4)),
+        border: Border.all(color: AppColors.rose.withValues(alpha: 0.4)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(
-                Icons.lock_outline_rounded,
-                color: AppColors.emberOrange,
-              ),
+              const Icon(Icons.lock_outline_rounded, color: AppColors.rose),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
@@ -49,7 +46,7 @@ class UnlockErrorBanner extends StatelessWidget {
             Text(
               detail!,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppColors.deepTeal.withValues(alpha: 0.6),
+                color: AppColors.ink.withValues(alpha: 0.6),
               ),
             ),
           ],

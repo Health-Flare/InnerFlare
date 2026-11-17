@@ -26,7 +26,10 @@ From 1.4.0 on, each release also has a section below.
 
 ## [Unreleased]
 
-_Nothing yet._
+### Changed
+- Updated the app's look to Health Flare's brand v2.0: a warmer rose colour
+  palette, a new app icon, and Fraunces and DM Sans as the new display and
+  interface typefaces.
 
 ## [1.4.0] - 2026-10-25
 

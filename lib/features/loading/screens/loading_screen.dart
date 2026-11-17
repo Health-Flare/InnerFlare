@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:inner_flare/core/security/app_unlock_gate.dart';
+import 'package:inner_flare/core/theme/app_theme.dart';
 import 'package:inner_flare/features/dashboard/screens/dashboard_screen.dart';
 import 'package:inner_flare/features/first_run/screens/first_run_screen.dart';
 import 'package:inner_flare/features/loading/loading_quotes.dart';
@@ -80,7 +81,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
             // Deep, desaturated teal, complementary to the logo's warm
             // orange/cream so the mark reads clearly, while staying calm
             // and private rather than clinical.
-            colors: [Color(0xFF17272C), Color(0xFF0B1416)],
+            colors: [AppColors.ink, AppColors.inkDeep],
           ),
         ),
         child: SafeArea(
@@ -89,7 +90,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Image.asset(
-                  'assets/images/Inner Flare Logo.png',
+                  'assets/images/brand/innerflare-mark-full-amber.png',
                   width: 160,
                   height: 160,
                 ),
@@ -100,7 +101,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
                     _quote,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
-                      color: Color(0xFFEFE3D3),
+                      color: AppColors.sand,
                       fontSize: 16,
                       fontStyle: FontStyle.italic,
                       height: 1.4,

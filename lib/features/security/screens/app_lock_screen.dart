@@ -44,7 +44,7 @@ class _AppLockScreenState extends ConsumerState<AppLockScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFF17272C), Color(0xFF0B1416)],
+            colors: [AppColors.ink, AppColors.inkDeep],
           ),
         ),
         child: SafeArea(
@@ -56,14 +56,14 @@ class _AppLockScreenState extends ConsumerState<AppLockScreen> {
                 children: [
                   const Icon(
                     Icons.lock_rounded,
-                    color: AppColors.softOrange,
+                    color: AppColors.amber,
                     size: 56,
                   ),
                   const SizedBox(height: 24),
                   const Text(
                     'Inner Flare is locked',
                     style: TextStyle(
-                      color: AppColors.cream,
+                      color: AppColors.sand,
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
                     ),
@@ -73,14 +73,14 @@ class _AppLockScreenState extends ConsumerState<AppLockScreen> {
                   const Text(
                     "You've been away a while, so your data is hidden "
                     'until you unlock again.',
-                    style: TextStyle(color: Color(0xFFB7C4C7), fontSize: 14),
+                    style: TextStyle(color: Color(0xFFB7A99C), fontSize: 14),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 32),
                   FilledButton(
                     onPressed: _authenticating ? null : _unlock,
                     style: FilledButton.styleFrom(
-                      backgroundColor: AppColors.emberOrange,
+                      backgroundColor: AppColors.rose,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 32,

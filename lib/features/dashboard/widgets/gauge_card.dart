@@ -27,9 +27,7 @@ class GaugeCard extends ConsumerWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: AppColors.emberOrange.withValues(alpha: 0.15),
-        ),
+        border: Border.all(color: AppColors.rose.withValues(alpha: 0.15)),
       ),
       child: displayAsync.when(
         loading: () => const SizedBox(
@@ -88,8 +86,8 @@ class _GaugeContent extends StatelessWidget {
           child: CustomPaint(
             painter: _GaugePainter(
               fillFraction: display.fillFraction ?? 0,
-              trackColor: AppColors.softOrange.withValues(alpha: 0.25),
-              fillColor: AppColors.emberOrange,
+              trackColor: AppColors.roseTint.withValues(alpha: 0.25),
+              fillColor: AppColors.rose,
             ),
             child: Center(
               child: Text(
@@ -129,7 +127,7 @@ class _GaugeContent extends StatelessWidget {
                     ? 'days, an estimate'
                     : 'days, counted from the period start',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.deepTeal.withValues(alpha: 0.7),
+                  color: AppColors.ink.withValues(alpha: 0.7),
                 ),
               ),
             ],
