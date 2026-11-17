@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/images/Inner%20Flare%20Logo%20512.png" alt="Inner Flare" width="120">
+  <img src="assets/images/brand/innerflare-app-icon.png" alt="Inner Flare" width="120">
 </p>
 
 <h1 align="center">Inner Flare</h1>
