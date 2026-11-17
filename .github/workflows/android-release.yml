@@ -100,6 +100,10 @@ jobs:
     timeout-minutes: 30
     permissions:
       contents: write
+      # Only for "Check Play upload result" below, to fetch this job's own
+      # in-progress log and distinguish a known-benign Play rejection from
+      # a real upload failure.
+      actions: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
@@ -192,6 +196,8 @@ jobs:
           fi
 
       - name: Upload to Play Store (internal track)
+        id: play_upload
+        continue-on-error: true
         uses: r0adkll/upload-google-play@e738b9dd8f2476ea806d921b64aacd24f34515a5 # v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
@@ -199,3 +205,40 @@ jobs:
           releaseFiles: build/app/outputs/bundle/release/app-release.aab
           track: internal
           status: completed
+
+      # continue-on-error above means a real Play failure wouldn't fail
+      # the job on its own; this step is what actually decides that. It
+      # exists for exactly one scenario: re-running this job against a
+      # version that's already on the internal track (e.g. retagging a
+      # release to retry the unrelated iOS job), where Play rejects the
+      # upload with "Version code N has already been used" even though
+      # nothing is actually wrong, see
+      # https://github.com/Health-Flare/InnerFlare/pull/142. There's no
+      # structured error output from the action to check directly, so
+      # this re-reads this same job's own (already-written) log for that
+      # step and matches the exact Play error text. Any other failure
+      # (bad credentials, a real upload problem) doesn't match and still
+      # fails the job.
+      - name: Check Play upload result
+        if: always() && steps.play_upload.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          job_id=$(gh api "repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" \
+            --jq '.jobs[] | select(.name == "Signed release (AAB + APK)") | .id')
+          if [[ -z "$job_id" ]]; then
+            echo "Could not find this job's own id to check its log; failing closed." >&2
+            exit 1
+          fi
+          log=$(gh api --allow-escape-sequences "repos/${{ github.repository }}/actions/jobs/$job_id/logs")
+          if echo "$log" | grep -qE 'Version code [0-9]+ has already been used\.'; then
+            echo "::warning::Play rejected this upload because version code" \
+              "$(echo "$log" | grep -oE 'Version code [0-9]+ has already been used' | head -1 | grep -oE '[0-9]+')" \
+              "is already on the internal track. Treating as already-released," \
+              "not a failure; confirm in Play Console if in doubt."
+          else
+            echo "Play upload failed for a reason other than an already-used" \
+              "version code. Not tolerating this one; see the upload step's" \
+              "own log above." >&2
+            exit 1
+          fi
