@@ -60,6 +60,16 @@ dependencies:
   url_launcher: ^6.3.2
   package_info_plus: ^10.2.1
 
+# android_file_picker 2.2.0 is broken: its own bundled Kotlin source
+# references FilePickerDelegate members file_picker 13.4.0 doesn't wire
+# up, so :android_file_picker:compileDebugKotlin fails on every build.
+# Pin to the last version file_picker's own changelog documents as
+# compatible (13.3.3: "Requires android_file_picker 2.1.5") until
+# upstream fixes the resolution. Remove this once file_picker's
+# constraint on android_file_picker excludes the broken release.
+dependency_overrides:
+  android_file_picker: 2.1.5
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
