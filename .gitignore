@@ -48,3 +48,11 @@ app.*.map.json
 # submission-ready copies live in /screenshots/app_store and
 # /screenshots/play_store instead (see test_driver/integration_test.dart).
 /screenshots/raw/
+
+# tool/store_creative/make_creative.py's `preview` mode: quick-look stills
+# for local iteration, not the real deliverables. Even written into
+# screenshots/store/app_store/creative/ (its default --out, same as
+# `video` mode) these never get committed; the real header_*/search_*
+# .mp4/.png pairs from `video` mode aren't matched by this and do.
+screenshots/store/app_store/creative/*_preview.png
+screenshots/store/app_store/creative/*_preview_fade.png

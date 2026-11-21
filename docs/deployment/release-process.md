@@ -28,8 +28,12 @@ Nothing below is automated past the tag. Everything outward-facing
 4. Update the F-Droid draft build entry (`fdroid/org.healthflare.app.innerflare.yml`)
    to the new `versionName`, `versionCode` and tag.
 5. If the schema version changed, do the upgrade test below.
-6. Regenerate store screenshots and videos from `docs/marketing/` if the UI
-   changed, or confirm the existing ones are still accurate.
+6. Regenerate store screenshots from `docs/marketing/` if the UI changed,
+   or confirm the existing ones are still accurate. If the screenshots,
+   brand palette, fonts or app icon changed, also regenerate the App
+   Store creative videos (`tool/store_creative/README.md`) and commit
+   `screenshots/store/app_store/creative/` — it's tracked, not a build
+   artifact, so it must stay current on `main` like the screenshots do.
 7. `flutter analyze`, `dart format --set-exit-if-changed .`, `flutter test`
    all clean. Merge the branch to `main` through a PR (CI must pass).
 
