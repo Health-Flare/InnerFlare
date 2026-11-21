@@ -26,6 +26,13 @@ From 1.4.0 on, each release also has a section below.
 
 ## [Unreleased]
 
+## [1.5.1] - 2026-11-20
+
+### Fixed
+- Fixed the Android app icon showing blank on the home screen and app
+  drawer after the 1.5.0 brand update. The adaptive icon was missing its
+  background and foreground layers.
+
 ## [1.5.0] - 2026-11-17
 
 ### Changed

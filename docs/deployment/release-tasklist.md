@@ -116,3 +116,22 @@ Copy, version and per-version checklist: `docs/deployment/release-notes/v1.5.0.m
 - [ ] Play: internal testing, then promote to production.
 - [ ] App Store: confirm the new icon and screenshots on the product page
       before submitting for review.
+
+## v1.5.1 (hotfix: blank Android launcher icon)
+
+Copy, version and per-version checklist: `docs/deployment/release-notes/v1.5.1.md`.
+
+- [x] Version bumped to `1.5.1+9`, release notes and store "What's new"
+      written, F-Droid draft points at `v1.5.1`.
+- [x] Local gates clean on `main`: `dart format`, `flutter analyze
+      --fatal-infos`, `flutter test` (393 tests), `flutter pub get
+      --enforce-lockfile`.
+- [x] No schema change this release; manual check on a real Android
+      device confirmed the launcher icon now renders correctly (debug
+      build, user-confirmed).
+- [ ] Release build confirmed free of debug-only UI.
+- [ ] `v1.5.1` tag pushed from `main`.
+- [ ] Play: internal testing, confirm the icon shows, promote to
+      production.
+- [ ] App Store: iOS unaffected, no action needed beyond keeping version
+      numbers in sync.
