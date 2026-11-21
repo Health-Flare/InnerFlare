@@ -177,11 +177,19 @@ jobs:
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
         run: |
+          # --use-old-altool: recent Xcode 26.x altool builds added a new
+          # provider-lookup path that silently fails for accounts with
+          # more than one provider/team, surfacing as the unrelated-looking
+          # "Cannot determine the Apple ID from Bundle ID ... (19)" error
+          # instead of a real auth/lookup failure. This forces the older,
+          # working lookup path. Widely reported (e.g. fastlane/fastlane
+          # #30114, #29820); drop this flag if/when Apple fixes it upstream.
           xcrun altool --upload-app \
             --type ios \
             --file build/ios/ipa/*.ipa \
             --apiKey "$APP_STORE_CONNECT_KEY_ID" \
-            --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID"
+            --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID" \
+            --use-old-altool
 
       - name: Remove signing material
         if: always()
