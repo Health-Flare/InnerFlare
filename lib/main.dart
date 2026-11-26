@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:inner_flare/core/app_restart.dart';
 import 'package:inner_flare/core/files/scratch_files.dart';
 import 'package:inner_flare/core/security/app_lock_gate.dart';
 import 'package:inner_flare/core/theme/app_theme.dart';
@@ -11,8 +12,15 @@ Future<void> main() async {
   // export.feature, issue #100). Runs before anything can open the
   // database or start a share, so nothing can be using them. Never throws.
   await ScratchFiles.sweep();
-  runApp(const ProviderScope(child: InnerFlareApp()));
+  runApp(rootApp());
 }
+
+/// The widget tree [main] runs. [AppRestartScope] sits above
+/// [ProviderScope] so Erase all data can throw away every provider and
+/// the navigator and start over as on a fresh install
+/// (docs/features/erase_data.feature).
+Widget rootApp() =>
+    const AppRestartScope(child: ProviderScope(child: InnerFlareApp()));
 
 class InnerFlareApp extends StatelessWidget {
   const InnerFlareApp({super.key});

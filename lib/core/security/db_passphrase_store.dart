@@ -32,6 +32,20 @@ class DbPassphraseStore {
     return generated;
   }
 
+  /// Deletes the passphrase from the secure key store (Erase all data,
+  /// docs/features/erase_data.feature). Once it's gone, the database file
+  /// can't be decrypted by anyone, even if deleting the file itself fails.
+  /// The next [getOrCreate] makes a new one. Throws if the platform store
+  /// refuses, so the caller can stop before touching anything else.
+  Future<void> delete() async {
+    await _storage.delete(key: _key);
+    // Checked rather than trusted: the erase is only safe to carry on
+    // with once the key is really gone.
+    if (await _storage.read(key: _key) != null) {
+      throw StateError('The database key is still in secure storage.');
+    }
+  }
+
   String _generatePassphrase() {
     final random = Random.secure();
     final bytes = List<int>.generate(32, (_) => random.nextInt(256));

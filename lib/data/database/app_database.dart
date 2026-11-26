@@ -1,5 +1,6 @@
 import 'package:inner_flare/core/security/backup_exclusion.dart';
 import 'package:inner_flare/core/security/biometric_gate.dart';
+import 'package:inner_flare/core/security/data_eraser.dart';
 import 'package:inner_flare/core/security/db_passphrase_store.dart';
 import 'package:inner_flare/data/database/schema.dart';
 import 'package:path/path.dart' as p;
@@ -27,7 +28,10 @@ class AppDatabase {
   }) : _biometricGate = biometricGate ?? LocalAuthBiometricGate(),
        _passphraseStore = passphraseStore ?? DbPassphraseStore();
 
-  static const _fileName = '.if_store.db';
+  /// The database file's name inside the app support directory. Public
+  /// so Erase all data (lib/core/security/data_eraser.dart) deletes the
+  /// same file this opens.
+  static const fileName = '.if_store.db';
 
   final BiometricGate _biometricGate;
   final DbPassphraseStore _passphraseStore;
@@ -38,9 +42,15 @@ class AppDatabase {
       throw const BiometricAuthenticationFailure();
     }
 
-    final passphrase = await _passphraseStore.getOrCreate();
     final directory = await getApplicationSupportDirectory();
-    final path = p.join(directory.path, _fileName);
+    // Before any key is made: clears what an interrupted Erase all data
+    // left behind, so a new key never meets the old file.
+    await DataEraser.finishPendingErase(
+      directory: directory,
+      passphraseStore: _passphraseStore,
+    );
+    final passphrase = await _passphraseStore.getOrCreate();
+    final path = p.join(directory.path, fileName);
 
     final db = await sqlcipher.openDatabase(
       path,
