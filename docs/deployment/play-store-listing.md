@@ -29,7 +29,7 @@ Most cycle trackers ask you to create an account and sync to the cloud. Inner Fl
 
 ENCRYPTED WHERE IT LIVES
 
-Your logs are stored in a database encrypted at rest, unlocked with your fingerprint or face using your device's built-in biometrics (with a device passcode fallback). Leave the app in the background too long and it locks itself again automatically. This isn't a marketing claim. It's how the app is actually built.
+Your logs are stored in a database encrypted at rest. On a phone with a screen lock, the key that opens it is held by the phone itself and only released after your fingerprint, face, or screen lock (on Android 9 and 10, the app asks for them before reading the key). On a phone with no screen lock, anyone holding it can open the app, and Inner Flare tells you so. Leave the app in the background too long and it locks itself again automatically. This isn't a marketing claim. It's how the app is actually built.
 
 LOGGING THAT DOESN'T FEEL LIKE A CHORE
 

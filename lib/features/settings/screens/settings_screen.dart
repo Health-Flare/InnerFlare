@@ -4,15 +4,18 @@ import 'package:inner_flare/core/debug/debug_chrome.dart';
 import 'package:inner_flare/core/debug/demo_data.dart';
 import 'package:inner_flare/core/providers/cycle_day_log_repository_provider.dart';
 import 'package:inner_flare/core/providers/database_provider.dart';
+import 'package:inner_flare/core/providers/key_protection_provider.dart';
 import 'package:inner_flare/core/providers/lock_timeout_provider.dart';
 import 'package:inner_flare/core/providers/log_data_invalidation.dart';
 import 'package:inner_flare/core/providers/now_provider.dart';
 import 'package:inner_flare/features/dashboard/widgets/database_status_indicator.dart';
 import 'package:inner_flare/features/export/screens/export_screen.dart';
 import 'package:inner_flare/features/export/screens/import_screen.dart';
+import 'package:inner_flare/core/security/db_passphrase_store.dart';
 import 'package:inner_flare/features/insights/screens/how_estimates_work_screen.dart';
 import 'package:inner_flare/features/settings/screens/auto_lock_settings_screen.dart';
 import 'package:inner_flare/features/settings/screens/privacy_disclaimer_screen.dart';
+import 'package:inner_flare/features/security/widgets/no_screen_lock_warning.dart';
 import 'package:inner_flare/features/settings/screens/symptom_settings_screen.dart';
 import 'package:inner_flare/features/settings/widgets/app_version_tile.dart';
 import 'package:inner_flare/models/cycle_day_log.dart';
@@ -59,6 +62,13 @@ class SettingsScreen extends ConsumerWidget {
               style: TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
+          const NoScreenLockWarning(padding: EdgeInsets.fromLTRB(20, 4, 20, 8)),
+          if (ref.watch(keyProtectionStateProvider) == KeyProtection.bound)
+            const Padding(
+              key: Key('bound_key_export_advice'),
+              padding: EdgeInsets.fromLTRB(20, 4, 20, 8),
+              child: Text(boundKeyExportAdvice),
+            ),
           ListTile(
             contentPadding: const EdgeInsets.symmetric(horizontal: 20),
             title: const Text('Auto-lock'),
